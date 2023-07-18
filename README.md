@@ -1,10 +1,9 @@
-# Governance platform
+# Incident Notification Platform
 
 
 ## Description
 
 - portal for the Notification Incident Platform;
-- management of users permissions;
 
 
 
