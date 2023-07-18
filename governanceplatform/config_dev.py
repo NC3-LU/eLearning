@@ -17,7 +17,7 @@ REGULATOR_CONTACT = {
 }
 
 # The generic site/tool name. Used to load specific config, templates, styles, logo.
-SITE_NAME = "governanceplatform"
+SITE_NAME = "Incident Notification Platform"
 
 SECRET_KEY = "django-insecure-1*nt5exfgm+po13ngrz7fm5sitfvi24f!13t=z*l5zz*w9zic$"
 
