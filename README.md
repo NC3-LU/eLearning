@@ -3,7 +3,7 @@
 
 ## Description
 
-- portal for the Informed Governance project;
+- portal for the Notification Incident Platform;
 - management of users permissions;
 
 

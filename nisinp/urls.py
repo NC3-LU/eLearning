@@ -1,5 +1,5 @@
 """
-URL configuration for governanceplatform project.
+URL configuration for nisinp project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.2/topics/http/urls/
@@ -19,16 +19,12 @@ from django.views.i18n import set_language
 from two_factor.urls import urlpatterns as tf_urls
 from two_factor.views import LoginView
 
-from governanceplatform import views
-from governanceplatform.settings import DEBUG, REGULATOR_CONTACT, SITE_NAME
+from nisinp import views
+from nisinp.settings import DEBUG, REGULATOR_CONTACT, SITE_NAME
 
 urlpatterns = [
     # Root
     path("", views.index, name="index"),
-    # Regulator
-    path("regulator/", include("regulator.urls")),
-    # Operator
-    path("operateur/", include("operateur.urls")),
     # Accounts
     path("account/", include("django.contrib.auth.urls")),
     path("", include(tf_urls)),

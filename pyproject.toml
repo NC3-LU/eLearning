@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "governanceplatform"
+name = "nisinp"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 license = "AGPL-3.0-or-later"
 readme = "README.md"
 
-homepage = "https://github.com/informed-governance-project/governance-platform"
-repository = "https://github.com/informed-governance-project/governance-platform"
+homepage = "https://github.com/informed-governance-project/NISINP"
+repository = "https://github.com/informed-governance-project/NISINP"
 
 [tool.poetry.dependencies]
 python = "^3.10"

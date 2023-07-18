@@ -18,8 +18,8 @@ docker/postgres/data/*
 
 logs/
 
-governanceplatform/config_prod.py
-governanceplatform/config.py
-governanceplatform/static/
+nisinp/config_prod.py
+nisinp/config.py
+nisinp/static/
 
 static/npm_components
