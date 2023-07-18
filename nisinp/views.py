@@ -10,15 +10,9 @@ def index(request):
     if not request.user.is_verified():
         return redirect("two_factor:profile")
 
-    otp_required(index)
-
     user = request.user
-    if user.is_authenticated:
-        if user.is_operateur:
-            return index(request)
-        elif user.is_regulator:
-            return index(request)
-
+    if user.is_superuser:
+        return redirect("admin:index")
 
 def logout_view(request):
     logout(request)

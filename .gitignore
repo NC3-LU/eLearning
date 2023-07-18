@@ -22,4 +22,6 @@ nisinp/config_prod.py
 nisinp/config.py
 nisinp/static/
 
+sent_emails
+
 static/npm_components

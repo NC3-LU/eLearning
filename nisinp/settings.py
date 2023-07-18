@@ -85,6 +85,7 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_totp",
     "django_otp.plugins.otp_static",
     "two_factor",
+    "parler",
 ]
 
 context_processors = [
@@ -141,7 +142,12 @@ TEMPLATES = [
         ],
         "APP_DIRS": True,
         "OPTIONS": {
-            "context_processors": context_processors,
+            "context_processors": [
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request",
+               # "nisinp.context_processors.extra_content_for_all_templates",
+            ],
         },
     },
 ]
@@ -169,9 +175,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Authentication
-
-AUTHENTICATION_BACKENDS = ["nisinp.authentication.CustomAuth"]
 
 # User Model
 
@@ -194,6 +197,12 @@ LANGUAGES = [
     ("en", "English"),
     ("fr", "Français"),
     ("nl", "Dutch"),
+]
+
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, "locale"),
+    os.path.join(BASE_DIR, "theme/locale"),
 ]
 
 # Email
@@ -276,5 +285,25 @@ BOOTSTRAP5 = {
     },
     "field_renderers": {
         "default": "django_bootstrap5.renderers.FieldRenderer",
+    },
+}
+
+# Multinlingual DB parameter
+PARLER_DEFAULT_LANGUAGE_CODE = "en"
+PARLER_LANGUAGES = {
+    1: (
+        {
+            "code": "en",
+        },  # English
+        {
+            "code": "fr",
+        },  # French
+        {
+            "code": "nl",
+        },  # Dutch
+    ),
+    "default": {
+        "fallbacks": ["en"],
+        "hide_untranslated": False,
     },
 }

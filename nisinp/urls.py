@@ -19,6 +19,8 @@ from django.views.i18n import set_language
 from two_factor.urls import urlpatterns as tf_urls
 from two_factor.views import LoginView
 
+from nisinp.admin import admin_site
+
 from nisinp import views
 from nisinp.settings import DEBUG, REGULATOR_CONTACT, SITE_NAME
 
@@ -36,6 +38,8 @@ urlpatterns = [
         ),
         name="login",
     ),
+    # Admin
+    path("admin/", admin_site.urls),
     # Logout
     path("logout", views.logout_view, name="logout"),
     # Terms of Service
