@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib import admin
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -105,6 +106,9 @@ class PredifinedAnswer(TranslatableModel):
         verbose_name=_("Additional Answer")
     )
 
+    def __str__(self):
+        return self.predifined_answer
+
 #category for the question (to order)
 class QuestionCategory(TranslatableModel):
     translations = TranslatedFields(
@@ -118,8 +122,11 @@ class QuestionCategory(TranslatableModel):
     position = models.IntegerField()
 
     class Meta:
-        verbose_name = _("QuestionCategory")
-        verbose_name_plural = _("QuestionCategories")
+        verbose_name = _("Question Category")
+        verbose_name_plural = _("Question Categories")
+    
+    def __str__(self):
+        return self.label
 
 # questions asked during the Incident notification process
 class Question(TranslatableModel):
@@ -140,6 +147,17 @@ class Question(TranslatableModel):
     )
     predifined_answers = models.ManyToManyField(PredifinedAnswer)
     position = models.IntegerField()
+    category = models.ForeignKey(
+        QuestionCategory, 
+        on_delete=models.SET_NULL,
+        default=None,
+        null=True,
+        blank=True
+        )
+    
+    @admin.display(description="get_predifined_answers")
+    def get_predifined_answers(self):
+        return [predifined_answer.predifined_answer for predifined_answer in self.predifined_answers.all()]
 
 #type of regulation
 class RegulationType(TranslatableModel):

@@ -364,8 +364,48 @@ class FunctionalityResource(resources.ModelResource):
         attribute="name",
     )
 
-#class PredifinedAnswerResource(resources.ModelResource):
-    
+class PredifinedAnswerResource(resources.ModelResource):
+    id = fields.Field(
+        column_name="id",
+        attribute="id",
+    )
+    predifined_answer = fields.Field(
+        column_name="predifined_answer",
+        attribute="predifined_answer",
+    )
+    allowed_additional_answer = fields.Field(
+        column_name="allowed_additional_answer",
+        attribute="allowed_additional_answer",
+    )
+
+    class Meta:
+        model = PredifinedAnswer
+
+@admin.register(PredifinedAnswer, site=admin_site)
+class PredifinedAnswerAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ["predifined_answer", "allowed_additional_answer"]
+    search_fields = ["allowed_additional_answer, predifined_answer"]
+    resource_class = PredifinedAnswerResource
+
+class QuestionCategoryResource(resources.ModelResource):
+    id = fields.Field(
+        column_name="id",
+        attribute="id",
+    )
+    label = fields.Field(
+        column_name="label",
+        attribute="label",
+    )
+
+    class Meta:
+        model = QuestionCategory
+
+@admin.register(QuestionCategory, site=admin_site)
+class QuestionCategoryAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ["label", "position"]
+    search_fields = ["label"]
+    resource_class = QuestionCategoryResource
+
 class QuestionResource(resources.ModelResource):
     id = fields.Field(
         column_name="id",
@@ -376,13 +416,28 @@ class QuestionResource(resources.ModelResource):
         column_name="label",
         attribute="label",
     )
+    predifined_answers = fields.Field(
+        column_name="predifined_answers",
+        attribute="predifined_answers",
+        widget=ManyToManyWidget(PredifinedAnswer, field="predifined_answer", separator=","),
+    )
+    category = fields.Field(
+        column_name="category",
+        attribute="category",
+        widget=ManyToManyWidget(QuestionCategory, field="label", separator=","),
+    )
 
     class Meta:
         model = Question
+        fields = "__all__"
 
 
 @admin.register(Question, site=admin_site)
 class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ["label"]
+    list_display = [
+        "label",
+        "category", 
+        "get_predifined_answers"
+    ]
     search_fields = ["label"]
     resource_class = QuestionResource
