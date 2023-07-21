@@ -153,7 +153,10 @@ class Question(TranslatableModel):
             null=True
         )
     )
-    predifined_answers = models.ManyToManyField(PredifinedAnswer)
+    predifined_answers = models.ManyToManyField(
+        PredifinedAnswer,
+        blank = True
+    )
     position = models.IntegerField()
     category = models.ForeignKey(
         QuestionCategory, 
