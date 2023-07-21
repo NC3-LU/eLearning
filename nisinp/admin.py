@@ -10,7 +10,7 @@ from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from parler.admin import TranslatableAdmin
 
-from nisinp.models import Company, Sector, Services, User, Question, QuestionCategory, PredifinedAnswer
+from nisinp.models import Company, Sector, Services, User, Question, QuestionCategory, PredifinedAnswer, NotificationType
 from nisinp.settings import SITE_NAME
 
 
@@ -364,6 +364,18 @@ class FunctionalityResource(resources.ModelResource):
         attribute="name",
     )
 
+class NotificationTypeResource(resources.ModelResource):
+    name = fields.Field(
+        column_name = "name",
+        attribute = "name"
+    )
+
+@admin.register(NotificationType, site=admin_site)
+class NotificationTypeAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ["name"]
+    search_fields = ["name"]
+    resource_class = NotificationTypeResource
+
 class PredifinedAnswerResource(resources.ModelResource):
     id = fields.Field(
         column_name="id",
@@ -426,6 +438,11 @@ class QuestionResource(resources.ModelResource):
         attribute="category",
         widget=ManyToManyWidget(QuestionCategory, field="label", separator=","),
     )
+    notification_type = fields.Field(
+        column_name="notification_type",
+        attribute="notification_type",
+        widget=ManyToManyWidget(NotificationType, field="name", separator=","),
+    )
 
     class Meta:
         model = Question
@@ -435,6 +452,7 @@ class QuestionResource(resources.ModelResource):
 @admin.register(Question, site=admin_site)
 class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = [
+        "notification_type",
         "label",
         "category", 
         "get_predifined_answers"

@@ -95,6 +95,14 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
+# e.g. preliminary or final notif
+class NotificationType(TranslatableModel):
+    translations = TranslatedFields(
+        name = models.CharField(max_length=100)
+    )
+
+    def __str__(self):
+        return self.name
 
 # answers for the question 
 class PredifinedAnswer(TranslatableModel):
@@ -154,8 +162,15 @@ class Question(TranslatableModel):
         null=True,
         blank=True
         )
+    notification_type = models.ForeignKey(
+        NotificationType,
+        on_delete=models.SET_NULL,
+        blank=True, 
+        default=None, 
+        null=True
+        )
     
-    @admin.display(description="get_predifined_answers")
+    @admin.display(description="Predifined Answer")
     def get_predifined_answers(self):
         return [predifined_answer.predifined_answer for predifined_answer in self.predifined_answers.all()]
 
