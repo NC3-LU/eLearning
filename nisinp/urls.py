@@ -48,6 +48,12 @@ urlpatterns = [
     path("privacy/", views.privacy, name="privacy"),
     # Language Selector
     path("set-language/", set_language, name="set_language"),
+    # Notifications
+    path("notifications/", views.notifications, name="notification"),
+    # incident declaration
+    path("notifications/declaration", views.declaration, name="declaration"),
+    # incident list
+    path("notifications/incident_list", views.incident_list, name="incident_list"),
 ]
 
 if DEBUG:

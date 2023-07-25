@@ -1,0 +1,11 @@
+{% extends 'home/base.html' %}
+{% block content %}
+<div class="text-justify">
+    <h1>Faire une déclaration</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit">
+    </form>
+</div>
+{% endblock %}
