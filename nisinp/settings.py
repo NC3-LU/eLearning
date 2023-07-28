@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "two_factor",
     "import_export",
     "parler",
+    "formtools",
 ]
 
 context_processors = [

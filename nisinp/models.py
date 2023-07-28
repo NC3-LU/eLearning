@@ -142,7 +142,7 @@ class Question(TranslatableModel):
         max_length = 10, 
         blank = False, 
         default = 'FREETEXT'
-    ) #DROPDOWN, FREETEXT
+    ) #MULTI, FREETEXT, DATE,
     is_mandatory = models.BooleanField(default=False, verbose_name=_("Mandatory"))
     translations = TranslatedFields(
         label = models.TextField(),
