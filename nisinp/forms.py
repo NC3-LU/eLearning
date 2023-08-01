@@ -1,6 +1,7 @@
 from django_otp.forms import OTPAuthenticationForm
 from django import forms
-from .models import Question, QuestionCategory, NotificationType
+from .models import Question, QuestionCategory
+from django.forms import formset_factory, BaseFormSet
 
 class AuthenticationForm(OTPAuthenticationForm):
     otp_device = forms.CharField(required=False, widget=forms.HiddenInput)
@@ -14,21 +15,20 @@ class DummyForm(forms.Form):
 class QuestionForm(forms.Form):
 
     label = forms.CharField(widget=forms.HiddenInput(), required=False)
-    answers = forms.CharField(widget=forms.HiddenInput(), required=False)
-    
+    print('je suis questionform')
     def __init__(self, *args, **kwargs):
         questions = Question.objects.all().order_by('position')
-        question = questions[0]
-        if 'position' in kwargs:
-            questions = Question.objects.all()
-            position = kwargs.pop("position") -1
-            question = questions[position]
+        question = questions[1]
+        if 'question' in kwargs:
+            print('je suis le')
+            question = kwargs.pop("question") 
             print(question)
-        super().__init__(*args, **kwargs)
+        super(QuestionForm, self).__init__(*args, **kwargs)
 
-        print(question.question_type)
-        print(question.label)
+        print(args)
+        print(kwargs)
         self.fields['label'].label = question.label
+        
         if question.question_type == 'MULTI':
             choices = []
             for choice in question.predifined_answers.all():
@@ -47,6 +47,18 @@ class QuestionForm(forms.Form):
             )
             self.fields['label'].label = question.label
 
+class CategoryFormSet():
+    def add_questions(position):
+        questionFormset = formset_factory(QuestionForm)
+        categories = QuestionCategory.objects.all().order_by('position')
+        category = categories[position]
+        question_form = questionFormset()
+        question_form.forms = []
+        questions = Question.objects.all().filter(category=category)
+        for question in questions:
+            question_form.forms.append(QuestionForm(question=question))
+        return question_form
+            
 
 # the first question for preliminary notification
 class ContactForm(forms.Form):
@@ -71,13 +83,14 @@ class PreliminaryNotificationForm(forms.Form):
 
     # get the question for preliminary
     def get_number_of_question():
-        questions = Question.objects.all()
-        question_tree = [ContactForm]
+        questionFormset = formset_factory(QuestionForm)
+        categories = QuestionCategory.objects.all()
+        category_tree = [ContactForm]
         
-        for question in questions:
-            question_tree.append(QuestionForm)           
+        for category in categories:
+            category_tree.append(questionFormset)           
         
-        return question_tree
+        return category_tree
 
 
 

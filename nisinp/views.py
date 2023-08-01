@@ -2,7 +2,8 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django_otp.decorators import otp_required
-from .forms import PreliminaryNotificationForm, QuestionForm
+from .forms import PreliminaryNotificationForm, QuestionForm, CategoryFormSet, ContactForm
+from django.forms import formset_factory
 
 from django.http import HttpResponseRedirect
 
@@ -56,11 +57,6 @@ def notifications(request):
 def incident_list(request):
     return render(request, "notification/incident_list.html", context={"site_name": SITE_NAME})
 
-# def class_for_name(module_name, class_name):
-#         m = importlib.import_module(module_name)
-#         c = getattr(m, class_name)
-#         return c
-
 # initialize data
 def get_form_list(request, form_list=None):
     return FormWizardView.as_view(form_list=PreliminaryNotificationForm.get_number_of_question())(request)
@@ -79,15 +75,19 @@ class FormWizardView(SessionWizardView):
     def get_context_data(self, form, **kwargs):
         data = self.get_cleaned_data_for_step(
             self.get_prev_step(self.steps.current))
-        # print(data)
-        # we have passed the predifined first question, need to load the question from DB
+        print(data)
+        print('formlist')
+        print(self.form_list)
+
+        
         print(self.steps.current)
-        if int(self.steps.current) > 0:
+        position = int(self.steps.current)
+        if position > 0:
             print('self.steps.current')
             print(self.steps.current)
             # create the form with the correct question/answers
-            form = QuestionForm(position=int(self.steps.current))
-        
+            form = CategoryFormSet.add_questions(position=position-1)
+
         context = super(FormWizardView, self).get_context_data(
                 form=form,
                 **kwargs
