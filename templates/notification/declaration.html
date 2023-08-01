@@ -15,10 +15,12 @@
   {% endif %}
   </table>
   {% if wizard.steps.prev %}
-  <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">First step</button>
-  <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Prev step</button>
-  <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.next }}">Next step</button>
+    <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">First step</button>
+    <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">Prev step</button>
   {% endif %}
-  <input type="submit" value="submit"/>
+  <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.next }}">Next step</button>
+  {% if not wizard.steps.next %}
+    <input type="submit" value="submit"/>
+  {% endif %}
 </form>
 {% endblock %}

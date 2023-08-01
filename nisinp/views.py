@@ -75,16 +75,9 @@ class FormWizardView(SessionWizardView):
     def get_context_data(self, form, **kwargs):
         data = self.get_cleaned_data_for_step(
             self.get_prev_step(self.steps.current))
-        print(data)
-        print('formlist')
-        print(self.form_list)
 
-        
-        print(self.steps.current)
         position = int(self.steps.current)
         if position > 0:
-            print('self.steps.current')
-            print(self.steps.current)
             # create the form with the correct question/answers
             form = CategoryFormSet.add_questions(position=position-1)
 

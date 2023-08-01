@@ -1,7 +1,7 @@
 from django_otp.forms import OTPAuthenticationForm
 from django import forms
 from .models import Question, QuestionCategory
-from django.forms import formset_factory, BaseFormSet
+from django.forms import formset_factory
 
 class AuthenticationForm(OTPAuthenticationForm):
     otp_device = forms.CharField(required=False, widget=forms.HiddenInput)
@@ -15,18 +15,13 @@ class DummyForm(forms.Form):
 class QuestionForm(forms.Form):
 
     label = forms.CharField(widget=forms.HiddenInput(), required=False)
-    print('je suis questionform')
     def __init__(self, *args, **kwargs):
         questions = Question.objects.all().order_by('position')
         question = questions[1]
         if 'question' in kwargs:
-            print('je suis le')
             question = kwargs.pop("question") 
-            print(question)
         super(QuestionForm, self).__init__(*args, **kwargs)
 
-        print(args)
-        print(kwargs)
         self.fields['label'].label = question.label
         
         if question.question_type == 'MULTI':
@@ -47,14 +42,16 @@ class QuestionForm(forms.Form):
             )
             self.fields['label'].label = question.label
 
+# group the question in one formset
 class CategoryFormSet():
     def add_questions(position):
         questionFormset = formset_factory(QuestionForm)
-        categories = QuestionCategory.objects.all().order_by('position')
+        categories = QuestionCategory.objects.all().order_by(
+            'position').filter(question__is_preliminary = True).distinct()
         category = categories[position]
         question_form = questionFormset()
         question_form.forms = []
-        questions = Question.objects.all().filter(category=category)
+        questions = Question.objects.all().filter(category=category, is_preliminary= True)
         for question in questions:
             question_form.forms.append(QuestionForm(question=question))
         return question_form
@@ -79,12 +76,13 @@ class ContactForm(forms.Form):
     # incident_reference = forms.CharField(max_length=255)
     # complaint_reference = forms.CharField(max_length=255)
     
+# class for the preliminary notification
 class PreliminaryNotificationForm(forms.Form):
 
     # get the question for preliminary
     def get_number_of_question():
         questionFormset = formset_factory(QuestionForm)
-        categories = QuestionCategory.objects.all()
+        categories = QuestionCategory.objects.all().filter(question__is_preliminary = True).distinct()
         category_tree = [ContactForm]
         
         for category in categories:

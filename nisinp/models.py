@@ -95,15 +95,6 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
-# e.g. preliminary or final notif
-class NotificationType(TranslatableModel):
-    translations = TranslatedFields(
-        name = models.CharField(max_length=100)
-    )
-
-    def __str__(self):
-        return self.name
-
 # answers for the question 
 class PredifinedAnswer(TranslatableModel):
     translations = TranslatedFields(
@@ -144,6 +135,7 @@ class Question(TranslatableModel):
         default = 'FREETEXT'
     ) #MULTI, FREETEXT, DATE,
     is_mandatory = models.BooleanField(default=False, verbose_name=_("Mandatory"))
+    is_preliminary = models.BooleanField(default=False, verbose_name=_("Preliminary"))
     translations = TranslatedFields(
         label = models.TextField(),
         tooltip = models.CharField(
@@ -164,13 +156,6 @@ class Question(TranslatableModel):
         default=None,
         null=True,
         blank=True
-        )
-    notification_type = models.ForeignKey(
-        NotificationType,
-        on_delete=models.SET_NULL,
-        blank=True, 
-        default=None, 
-        null=True
         )
     
     @admin.display(description="Predifined Answer")
