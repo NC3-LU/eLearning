@@ -59,7 +59,10 @@ def incident_list(request):
 
 # initialize data
 def get_form_list(request, form_list=None):
-    return FormWizardView.as_view(form_list=PreliminaryNotificationForm.get_number_of_question())(request)
+    return FormWizardView.as_view(
+        form_list=PreliminaryNotificationForm.get_number_of_question(),
+        initial_dict={'0': ContactForm.prepare_initial_value(request=request)}
+    )(request)
 
 
 # Wizard to manage the form
@@ -69,13 +72,14 @@ class FormWizardView(SessionWizardView):
     
     def __init__(self, **kwargs):
         self.form_list = kwargs.pop('form_list')
+        self.initial_dict = kwargs.pop('initial_dict')
         return super(FormWizardView, self).__init__(**kwargs)
     
     
     def get_context_data(self, form, **kwargs):
         data = self.get_cleaned_data_for_step(
             self.get_prev_step(self.steps.current))
-
+        print(kwargs)
         position = int(self.steps.current)
         if position > 0:
             # create the form with the correct question/answers

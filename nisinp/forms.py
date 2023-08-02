@@ -59,22 +59,43 @@ class CategoryFormSet():
 
 # the first question for preliminary notification
 class ContactForm(forms.Form):
+
+    
+
     company_name = forms.CharField(label="Company name", max_length=100)
 
-    # contact_lastname = forms.CharField(max_length=100)
-    # contact_firstname = forms.CharField(max_length=100)
-    # contact_title = forms.CharField(max_length=100)
-    # contact_email = forms.CharField(max_length=100)
-    # contact_telephone = forms.CharField(max_length=100)
+    contact_lastname = forms.CharField(max_length=100)
+    contact_firstname = forms.CharField(max_length=100)
+    contact_title = forms.CharField(max_length=100)
+    contact_email = forms.CharField(max_length=100)
+    contact_telephone = forms.CharField(max_length=100)
 
-    # technical_lastname = forms.CharField(max_length=100)
-    # technical_firstname = forms.CharField(max_length=100)
-    # technical_title = forms.CharField(max_length=100)
-    # technical_email = forms.CharField(max_length=100)
-    # technical_telephone = forms.CharField(max_length=100)
+    is_technical_the_same = forms.BooleanField(
+        required = False,
+        widget=forms.CheckboxInput(
+           # attrs={"class": "required checkbox form-control"}
+        ),
+        initial = False
+    )
+    technical_lastname = forms.CharField(max_length=100)
+    technical_firstname = forms.CharField(max_length=100)
+    technical_title = forms.CharField(max_length=100)
+    technical_email = forms.CharField(max_length=100)
+    technical_telephone = forms.CharField(max_length=100)
 
-    # incident_reference = forms.CharField(max_length=255)
-    # complaint_reference = forms.CharField(max_length=255)
+    incident_reference = forms.CharField(max_length=255)
+    complaint_reference = forms.CharField(max_length=255)
+
+    def prepare_initial_value(**kwargs):
+        request = kwargs.pop("request") 
+        return {
+                'contact_lastname' : request.user.last_name,
+                'contact_firstname' : request.user.first_name,
+                'contact_email' : request.user.email,
+                'contact_telephone' : request.user.phone_number
+            }
+        
+
     
 # class for the preliminary notification
 class PreliminaryNotificationForm(forms.Form):
@@ -84,7 +105,7 @@ class PreliminaryNotificationForm(forms.Form):
         questionFormset = formset_factory(QuestionForm)
         categories = QuestionCategory.objects.all().filter(question__is_preliminary = True).distinct()
         category_tree = [ContactForm]
-        
+
         for category in categories:
             category_tree.append(questionFormset)           
         
