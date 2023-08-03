@@ -173,6 +173,9 @@ class RegulationType(TranslatableModel):
         )
     )
 
+    def __str__(self):
+        return self.label
+
 #incident
 class Incident(models.Model):
     # XXXX-SSS-SSS-NNNN-YYYY

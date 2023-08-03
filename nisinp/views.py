@@ -81,7 +81,8 @@ class FormWizardView(SessionWizardView):
             self.get_prev_step(self.steps.current))
         print(kwargs)
         position = int(self.steps.current)
-        if position > 0:
+        # when we have passed the fixed forms
+        if position > 1:
             # create the form with the correct question/answers
             form = CategoryFormSet.add_questions(position=position-1)
 

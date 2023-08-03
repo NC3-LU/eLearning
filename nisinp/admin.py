@@ -10,7 +10,7 @@ from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget
 from parler.admin import TranslatableAdmin
 
-from nisinp.models import Company, Sector, Services, User, Question, QuestionCategory, PredifinedAnswer
+from nisinp.models import Company, Sector, Services, User, Question, QuestionCategory, PredifinedAnswer, RegulationType
 from nisinp.settings import SITE_NAME
 
 
@@ -441,3 +441,18 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
     ]
     search_fields = ["label"]
     resource_class = QuestionResource
+
+class RegulationTypeResource(resources.ModelResource):
+    label = fields.Field(
+        column_name="label",
+        attribute="label",
+    )
+
+    class Meta:
+        model = RegulationType
+
+@admin.register(RegulationType, site=admin_site)
+class RegulationTypeAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ["label"]
+    search_fields = ["label"]
+    resource_class = RegulationTypeResource
