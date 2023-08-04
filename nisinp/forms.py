@@ -1,7 +1,7 @@
 from django_otp.forms import OTPAuthenticationForm
 from django import forms
 from .models import Question, QuestionCategory, RegulationType, Services, Sector
-from django.forms import formset_factory
+from django.forms import formset_factory, BaseFormSet
 
 class AuthenticationForm(OTPAuthenticationForm):
     otp_device = forms.CharField(required=False, widget=forms.HiddenInput)
@@ -29,7 +29,7 @@ class QuestionForm(forms.Form):
             for choice in question.predifined_answers.all():
                 choices.append([choice.id, choice])
             self.fields["label"] = forms.MultipleChoiceField(
-                required=question.is_mandatory,
+                required= False,
                 choices=choices,
                 widget=forms.CheckboxSelectMultiple(
                     attrs={"class": "multiple-selection"}
@@ -49,9 +49,9 @@ class CategoryFormSet():
         categories = QuestionCategory.objects.all().order_by(
             'position').filter(question__is_preliminary = True).distinct()
         category = categories[position]
+        questions = Question.objects.all().filter(category=category, is_preliminary= True)
         question_form = questionFormset()
         question_form.forms = []
-        questions = Question.objects.all().filter(category=category, is_preliminary= True)
         for question in questions:
             question_form.forms.append(QuestionForm(question=question))
         return question_form
@@ -89,7 +89,11 @@ class ContactForm(forms.Form):
                 'contact_lastname' : request.user.last_name,
                 'contact_firstname' : request.user.first_name,
                 'contact_email' : request.user.email,
-                'contact_telephone' : request.user.phone_number
+                'contact_telephone' : request.user.phone_number,
+                'technical_lastname' : request.user.last_name,
+                'technical_firstname' : request.user.first_name,
+                'technical_email' : request.user.email,
+                'technical_telephone' : request.user.phone_number
             }
 
 # prepare an array of sector and services        
@@ -115,14 +119,14 @@ class ImpactedServicesForm(forms.Form):
             choices_rt.append([choice.id, choice])
 
     regulation = forms.MultipleChoiceField(
-        required = True,
+        required = False,
         choices = choices_rt,
         widget=forms.CheckboxSelectMultiple(
             attrs={"class": "multiple-selection"}
         ),
     )
     affected_services = forms.MultipleChoiceField(
-        required = True,
+        required = False,
         choices = choices_serv,
         widget=forms.CheckboxSelectMultiple(
             attrs={"class": "multiple-selection"}
