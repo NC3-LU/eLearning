@@ -1,9 +1,9 @@
-# Incident Notification Platform
+# E-Learning Platform
 
 
 ## Description
 
-- portal for the Notification Incident Platform;
+- NC3 E-learning Platform;
 
 
 

@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "nisinp"
+name = "elearning"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 license = "AGPL-3.0-or-later"
 readme = "README.md"
 
-homepage = "https://github.com/informed-governance-project/NISINP"
-repository = "https://github.com/informed-governance-project/NISINP"
+homepage = "https://github.com/NC3-LU/eLearning"
+repository = "https://github.com/NC3-LU/eLearning"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -22,7 +22,9 @@ django-otp = "^1.1.6"
 django-formtools = "^2.4"
 django-two-factor-auth = "^1.15.2"
 phonenumbers = "^8.13.11"
+django-import-export = "^3.2.0"
 parler = "^1.0.1"
+django-parler = "^2.3"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -1,5 +1,5 @@
 """
-URL configuration for nisinp project.
+URL configuration for E-learning project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.2/topics/http/urls/
@@ -18,13 +18,13 @@ from django.urls import include, path
 from django.views.i18n import set_language
 from two_factor.urls import urlpatterns as tf_urls
 from two_factor.views import LoginView
-from .views import FormWizardView, get_form_list
+
+from elearning import views
+
+from .admin import admin_site
 from .forms import ContactForm, PreliminaryNotificationForm
-
-from nisinp.admin import admin_site
-
-from nisinp import views
-from nisinp.settings import DEBUG, REGULATOR_CONTACT, SITE_NAME
+from .settings import DEBUG, REGULATOR_CONTACT, SITE_NAME
+from .views import FormWizardView, get_form_list
 
 urlpatterns = [
     # Root

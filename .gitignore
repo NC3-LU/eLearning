@@ -18,9 +18,9 @@ docker/postgres/data/*
 
 logs/
 
-nisinp/config_prod.py
-nisinp/config.py
-nisinp/static/
+elearning/config_prod.py
+elearning/config.py
+elearning/static/
 
 sent_emails
 
