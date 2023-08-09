@@ -25,3 +25,9 @@ STATUS_LEVEL = [
     (2, "In progress"),
     (3, "Finished"),
 ]
+
+COMPLEXITY_LEVEL = [
+    (1, "Low"),
+    (2, "Medium"),
+    (3, "High"),
+]

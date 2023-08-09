@@ -9,7 +9,16 @@ from .globals import POSITION_CHOICES, QUESTION_TYPES, STATUS_LEVEL
 
 # Levels
 class Level(TranslatableModel):
-    translations = TranslatedFields(name=models.TextField())
+    translations = TranslatedFields(
+        name=models.TextField(),
+        plot=models.TextField(),
+        objectives=models.TextField(),
+        requirements=models.TextField(),
+    )
+    duration = models.IntegerField()
+    complexity = models.CharField(
+        max_length=1, choices=POSITION_CHOICES, default=POSITION_CHOICES[0][0]
+    )
 
     def __str__(self):
         return self.name
@@ -22,6 +31,7 @@ class Level(TranslatableModel):
 # Categories
 class Category(TranslatableModel):
     translations = TranslatedFields(name=models.TextField())
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -39,6 +49,7 @@ class Option(TranslatableModel):
         tooltip=models.TextField(null=False, blank=True, default=""),
     )
     score = models.IntegerField(default=0)
+    is_correct = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -64,24 +75,12 @@ class Media(models.Model):
         verbose_name_plural = _("Medias")
 
 
-# Contexts
-class Context(TranslatableModel):
-    translations = TranslatedFields(name=models.TextField())
-    media = models.ManyToManyField(Media)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = _("Context")
-        verbose_name_plural = _("Contexts")
-
-
 # Questions
 class Question(TranslatableModel):
     index = models.IntegerField(unique=True)
     translations = TranslatedFields(
         name=models.TextField(),
+        explication=models.TextField(),
         tooltip=models.TextField(null=False, blank=True, default=""),
     )
     q_type = models.CharField(
@@ -91,7 +90,6 @@ class Question(TranslatableModel):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     options = models.ManyToManyField(Option)
     media = models.ManyToManyField(Media)
-    context = models.ForeignKey(Context, on_delete=models.CASCADE)
     max_score = models.IntegerField(default=100)
 
     def __str__(self):
@@ -102,8 +100,23 @@ class Question(TranslatableModel):
         verbose_name_plural = _("Questions")
 
 
+# Contexts
+class Context(TranslatableModel):
+    translations = TranslatedFields(name=models.TextField())
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    page = models.SmallIntegerField(null=False, default=1)
+    media = models.ManyToManyField(Media)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _("Context")
+        verbose_name_plural = _("Contexts")
+
+
 # Learners
-class learner(models.Model):
+class Learner(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
     current_level = models.ForeignKey(Level, on_delete=models.CASCADE)
     current_question = models.ForeignKey(Question, on_delete=models.CASCADE)
@@ -119,8 +132,8 @@ class learner(models.Model):
 
 
 # Answers
-class answer(models.Model):
-    learner = models.ForeignKey(learner, on_delete=models.CASCADE)
+class Answer(models.Model):
+    learner = models.ForeignKey(Learner, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     option = models.ManyToManyField(Option)
 
@@ -130,3 +143,33 @@ class answer(models.Model):
     class Meta:
         verbose_name = _("Answer")
         verbose_name_plural = _("Answers")
+
+
+# Ressources
+class Ressource(TranslatableModel):
+    translations = TranslatedFields(
+        name=models.TextField(),
+    )
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.option)
+
+    class Meta:
+        verbose_name = _("Ressource")
+        verbose_name_plural = _("Ressources")
+
+
+# Challenges
+class Challenge(TranslatableModel):
+    translations = TranslatedFields(
+        description=models.TextField(),
+    )
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.option)
+
+    class Meta:
+        verbose_name = _("Challenge")
+        verbose_name_plural = _("Challenges")
