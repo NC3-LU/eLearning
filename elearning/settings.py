@@ -81,10 +81,6 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",  # required for Django collectstatic discovery
     "corsheaders",
     "django_bootstrap5",
-    "django_otp",
-    "django_otp.plugins.otp_totp",
-    "django_otp.plugins.otp_static",
-    "two_factor",
     "import_export",
     "parler",
     "formtools",
@@ -106,7 +102,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
-    "django_otp.middleware.OTPMiddleware",
 ]
 
 INTERNAL_IPS = [

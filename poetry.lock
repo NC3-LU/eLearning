@@ -503,23 +503,6 @@ Django = ">=3.2"
 tablib = {version = ">=3.4.0", extras = ["html", "ods", "xls", "xlsx", "yaml"]}
 
 [[package]]
-name = "django-otp"
-version = "1.2.2"
-description = "A pluggable framework for adding two-factor authentication to Django using one-time passwords."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "django_otp-1.2.2-py3-none-any.whl", hash = "sha256:90765d5dac238a719f9550ac05681dd6307f513a81a10b6adb879b4abc6bc1a3"},
-    {file = "django_otp-1.2.2.tar.gz", hash = "sha256:007a6354dabb3a1a54574bf73abf045ebbde0bb8734a38e2ed7845ba450f345e"},
-]
-
-[package.dependencies]
-django = ">=3.2"
-
-[package.extras]
-qrcode = ["qrcode"]
-
-[[package]]
 name = "django-parler"
 version = "2.3"
 description = "Simple Django model translations without nasty hacks, featuring nice admin integration."
@@ -532,50 +515,6 @@ files = [
 
 [package.dependencies]
 Django = ">=2.2"
-
-[[package]]
-name = "django-phonenumber-field"
-version = "6.4.0"
-description = "An international phone number field for django models."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "django-phonenumber-field-6.4.0.tar.gz", hash = "sha256:72a3e7a3e7493bf2a12c07a3bc77ce89813acc16592bf04d0eee3b5a452097ed"},
-    {file = "django_phonenumber_field-6.4.0-py3-none-any.whl", hash = "sha256:a31b4f05ac0ff898661516c84940f83adb5cdcf0ae4b9b1d31bb8ad3ff345b58"},
-]
-
-[package.dependencies]
-Django = ">=3.2"
-
-[package.extras]
-phonenumbers = ["phonenumbers (>=7.0.2)"]
-phonenumberslite = ["phonenumberslite (>=7.0.2)"]
-
-[[package]]
-name = "django-two-factor-auth"
-version = "1.15.3"
-description = "Complete Two-Factor Authentication for Django"
-optional = false
-python-versions = "*"
-files = [
-    {file = "django-two-factor-auth-1.15.3.tar.gz", hash = "sha256:311b7f0c5ee47ae5c3734f7810f90c9390b3aef556f58a767b0d80d6b54013fb"},
-    {file = "django_two_factor_auth-1.15.3-py3-none-any.whl", hash = "sha256:a5752732225304ba0461ec6f5347def517bdde98685e90bb7879aa066c91f3a4"},
-]
-
-[package.dependencies]
-Django = ">=3.2"
-django-formtools = "*"
-django-otp = ">=0.8.0"
-django-phonenumber-field = ">=1.1.0,<7"
-qrcode = ">=4.0.0,<7.99"
-
-[package.extras]
-call = ["twilio (>=6.0)"]
-phonenumbers = ["phonenumbers (>=7.0.9,<8.99)"]
-phonenumberslite = ["phonenumberslite (>=7.0.9,<8.99)"]
-sms = ["twilio (>=6.0)"]
-webauthn = ["pydantic (>=1.9.0,<1.99)", "webauthn (>=1.6.0,<1.99)"]
-yubikey = ["django-otp-yubikey"]
 
 [[package]]
 name = "djangorestframework"
@@ -1063,17 +1002,6 @@ files = [
 ]
 
 [[package]]
-name = "phonenumbers"
-version = "8.13.18"
-description = "Python version of Google's common library for parsing, formatting, storing and validating international phone numbers."
-optional = false
-python-versions = "*"
-files = [
-    {file = "phonenumbers-8.13.18-py2.py3-none-any.whl", hash = "sha256:3d802739a22592e4127139349937753dee9b6a20bdd5d56847cd885bdc766b1f"},
-    {file = "phonenumbers-8.13.18.tar.gz", hash = "sha256:b360c756252805d44b447b5bca6d250cf6bd6c69b6f0f4258f3bfe5ab81bef69"},
-]
-
-[[package]]
 name = "pip"
 version = "23.2.1"
 description = "The PyPA recommended tool for installing Python packages."
@@ -1323,17 +1251,6 @@ files = [
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
-name = "pypng"
-version = "0.20220715.0"
-description = "Pure Python library for saving and loading PNG images"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pypng-0.20220715.0-py3-none-any.whl", hash = "sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c"},
-    {file = "pypng-0.20220715.0.tar.gz", hash = "sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1"},
-]
-
-[[package]]
 name = "pytz"
 version = "2023.3"
 description = "World timezone definitions, modern and historical"
@@ -1406,29 +1323,6 @@ files = [
     {file = "PyYAML-6.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:510c9deebc5c0225e8c96813043e62b680ba2f9c50a08d3724c7f28a747d1486"},
     {file = "PyYAML-6.0.1.tar.gz", hash = "sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43"},
 ]
-
-[[package]]
-name = "qrcode"
-version = "7.4.2"
-description = "QR Code image generator"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "qrcode-7.4.2-py3-none-any.whl", hash = "sha256:581dca7a029bcb2deef5d01068e39093e80ef00b4a61098a2182eac59d01643a"},
-    {file = "qrcode-7.4.2.tar.gz", hash = "sha256:9dd969454827e127dbd93696b20747239e6d540e082937c90f14ac95b30f5845"},
-]
-
-[package.dependencies]
-colorama = {version = "*", markers = "platform_system == \"Windows\""}
-pypng = "*"
-typing-extensions = "*"
-
-[package.extras]
-all = ["pillow (>=9.1.0)", "pytest", "pytest-cov", "tox", "zest.releaser[recommended]"]
-dev = ["pytest", "pytest-cov", "tox"]
-maintainer = ["zest.releaser[recommended]"]
-pil = ["pillow (>=9.1.0)"]
-test = ["coverage", "pytest"]
 
 [[package]]
 name = "referencing"
@@ -1842,4 +1736,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "614e37a4189f14e13c730629993ff9c6c185e0c2668e73db9205644c15f88cce"
+content-hash = "da7efa06f0c21addfe83fd56f4a19be44a9b88e998695d18a7f7e28f07f75ad3"

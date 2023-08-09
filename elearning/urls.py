@@ -16,28 +16,15 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.views.i18n import set_language
-from two_factor.urls import urlpatterns as tf_urls
-from two_factor.views import LoginView
 
 from elearning import views
 
 from .admin import admin_site
-from .settings import DEBUG, HOST_CONTACT, SITE_NAME
+from .settings import DEBUG
 
 urlpatterns = [
     # Root
     path("", views.index, name="index"),
-    # Accounts
-    path("account/", include("django.contrib.auth.urls")),
-    path("", include(tf_urls)),
-    path(
-        "account/login",
-        LoginView.as_view(
-            extra_context={"site_name": SITE_NAME, "host_contact": HOST_CONTACT},
-            template_name="registration/login.html",
-        ),
-        name="login",
-    ),
     # Admin
     path("admin/", admin_site.urls),
     # Logout
