@@ -2,7 +2,7 @@ import os
 
 PUBLIC_URL = ""
 ALLOWED_HOSTS = ["127.0.0.1", locals().get("PUBLIC_URL", "")]
-REGULATOR_CONTACT = {
+HOST_CONTACT = {
     "name": "Organization Name",
     "street": "Organization Street",
     "zip_code": "Organization Zip Code",

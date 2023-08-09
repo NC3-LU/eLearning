@@ -22,9 +22,7 @@ from two_factor.views import LoginView
 from elearning import views
 
 from .admin import admin_site
-from .forms import ContactForm, PreliminaryNotificationForm
-from .settings import DEBUG, REGULATOR_CONTACT, SITE_NAME
-from .views import FormWizardView, get_form_list
+from .settings import DEBUG, HOST_CONTACT, SITE_NAME
 
 urlpatterns = [
     # Root
@@ -35,7 +33,7 @@ urlpatterns = [
     path(
         "account/login",
         LoginView.as_view(
-            extra_context={"site_name": SITE_NAME, "regulator": REGULATOR_CONTACT},
+            extra_context={"site_name": SITE_NAME, "host_contact": HOST_CONTACT},
             template_name="registration/login.html",
         ),
         name="login",
@@ -50,12 +48,6 @@ urlpatterns = [
     path("privacy/", views.privacy, name="privacy"),
     # Language Selector
     path("set-language/", set_language, name="set_language"),
-    # Notifications
-    path("notifications/", views.notifications, name="notification"),
-    # incident declaration
-    path("notifications/declaration", get_form_list, name="declaration"),
-    # incident list
-    path("notifications/incident_list", views.incident_list, name="incident_list"),
 ]
 
 if DEBUG:
