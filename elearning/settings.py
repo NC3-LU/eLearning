@@ -42,6 +42,9 @@ try:
 
     EMAIL_HOST = config.EMAIL_HOST
     EMAIL_PORT = config.EMAIL_PORT
+
+    # Medias
+    MEDIA_DIR = os.path.join(BASE_DIR, config.MEDIA_DIR)
 except AttributeError as e:
     print("Please check you configuration file for the missing configuration variable:")
     print(f"  {e}")
@@ -84,6 +87,7 @@ INSTALLED_APPS = [
     "import_export",
     "parler",
     "formtools",
+    "django_extensions",
 ]
 
 context_processors = [
@@ -188,7 +192,7 @@ SITE_ID = 1
 LANGUAGES = [
     ("en", "English"),
     ("fr", "Français"),
-    ("nl", "Dutch"),
+    ("de", "German"),
 ]
 
 
@@ -285,17 +289,17 @@ PARLER_DEFAULT_LANGUAGE_CODE = "en"
 PARLER_LANGUAGES = {
     1: (
         {
-            "code": "en",
-        },  # English
-        {
             "code": "fr",
         },  # French
         {
-            "code": "nl",
-        },  # Dutch
+            "code": "en",
+        },  # English
+        {
+            "code": "de",
+        },  # German
     ),
     "default": {
-        "fallbacks": ["en"],
+        "fallbacks": ["fr"],
         "hide_untranslated": False,
     },
 }

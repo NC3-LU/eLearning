@@ -21,13 +21,19 @@ QUESTION_TYPES = [
 ]
 
 STATUS_LEVEL = [
-    (1, "Not started"),
-    (2, "In progress"),
-    (3, "Finished"),
+    ("1", "Not started"),
+    ("2", "In progress"),
+    ("3", "Finished"),
 ]
 
 COMPLEXITY_LEVEL = [
-    (1, "Low"),
-    (2, "Medium"),
-    (3, "High"),
+    ("1", "Low"),
+    ("2", "Medium"),
+    ("3", "High"),
+]
+
+MEDIA_TYPE = [
+    ("1", "Image"),
+    ("2", "Video"),
+    ("3", "Audio"),
 ]

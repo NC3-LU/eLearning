@@ -23,6 +23,8 @@ SECRET_KEY = "django-insecure-1*nt5exfgm+po13ngrz7fm5sitfvi24f!13t=z*l5zz*w9zic$
 
 HASH_KEY = b"#StandWithtUkraineHP-TmGv-4z7h-1xaQp0RYuY20="
 
+MEDIA_DIR = "theme/static/"
+
 DEBUG = True
 
 DATABASES = {
