@@ -17,8 +17,9 @@ from .globals import (
 
 # Levels
 class Level(TranslatableModel):
+    index = models.IntegerField()
     translations = TranslatedFields(
-        name=models.CharField(max_length=100),
+        name=models.CharField(max_length=100, verbose_name="label"),
         plot=models.TextField(),
         objectives=models.TextField(),
         requirements=models.TextField(),
@@ -39,7 +40,9 @@ class Level(TranslatableModel):
 # Categories
 class Category(TranslatableModel):
     index = models.IntegerField()
-    translations = TranslatedFields(name=models.CharField(max_length=100))
+    translations = TranslatedFields(
+        name=models.CharField(max_length=100, verbose_name="label")
+    )
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -54,8 +57,8 @@ class Category(TranslatableModel):
 class Option(TranslatableModel):
     index = models.IntegerField()
     translations = TranslatedFields(
-        name=models.TextField(),
-        tooltip=models.TextField(null=False, blank=True, default=""),
+        name=models.TextField(verbose_name="label"),
+        tooltip=models.TextField(blank=True, default=None, null=True),
     )
     score = models.IntegerField(default=0)
     is_correct = models.BooleanField(default=False)
@@ -70,7 +73,7 @@ class Option(TranslatableModel):
 
 # Medias
 class Media(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, verbose_name="label")
     path = models.FilePathField(path=settings.MEDIA_DIR, recursive=True)
     m_type = models.CharField(
         max_length=1, choices=MEDIA_TYPE, default=MEDIA_TYPE[0][0], verbose_name="type"
@@ -88,9 +91,9 @@ class Media(models.Model):
 class Question(TranslatableModel):
     index = models.IntegerField(unique=True)
     translations = TranslatedFields(
-        name=models.TextField(),
+        name=models.TextField(verbose_name="label"),
         explanation=models.TextField(),
-        tooltip=models.TextField(null=False, blank=True, default=""),
+        tooltip=models.TextField(blank=True, default=None, null=True),
     )
     q_type = models.CharField(
         max_length=2,
@@ -101,7 +104,7 @@ class Question(TranslatableModel):
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     options = models.ManyToManyField(Option)
-    media = models.ManyToManyField(Media, through="QuestionMediaTemplate")
+    medias = models.ManyToManyField(Media, through="QuestionMediaTemplate")
     max_score = models.IntegerField(default=100)
 
     def __str__(self):
@@ -115,7 +118,7 @@ class Question(TranslatableModel):
 # Contexts
 class Context(TranslatableModel):
     index = models.IntegerField()
-    translations = TranslatedFields(name=models.TextField())
+    translations = TranslatedFields(name=models.TextField(verbose_name="Title"))
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     medias = models.ManyToManyField(Media, through="ContextMediaTemplate")
 
@@ -160,7 +163,7 @@ class Answer(models.Model):
 # Resources
 class Resource(TranslatableModel):
     translations = TranslatedFields(
-        name=models.CharField(max_length=100),
+        name=models.CharField(max_length=100, verbose_name="label"),
     )
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
 
@@ -175,7 +178,7 @@ class Resource(TranslatableModel):
 # Challenges
 class Challenge(TranslatableModel):
     translations = TranslatedFields(
-        name=models.TextField(),
+        name=models.TextField(verbose_name="description"),
     )
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
 
