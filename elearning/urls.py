@@ -27,12 +27,6 @@ urlpatterns = [
     path("", views.index, name="index"),
     # Admin
     path("admin/", admin.site.urls),
-    # Logout
-    path("logout", views.logout_view, name="logout"),
-    # Terms of Service
-    path("terms/", views.terms, name="terms"),
-    # Privacy Policy
-    path("privacy/", views.privacy, name="privacy"),
     # Language Selector
     path("set-language/", set_language, name="set_language"),
 ]
