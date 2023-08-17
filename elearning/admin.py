@@ -5,18 +5,20 @@ from import_export.widgets import ManyToManyWidget, Widget
 from parler.admin import TranslatableAdmin
 from parler.models import TranslationDoesNotExist
 
-from .globals import COMPLEXITY_LEVEL, MEDIA_TYPE, QUESTION_TYPES
+from .globals import COMPLEXITY_LEVEL, MEDIA_TYPE, QUESTION_TYPES, TEXT_TYPE
 from .models import (
+    AnswerChoice,
     Category,
     Challenge,
     Context,
     ContextMediaTemplate,
+    ContextTextTemplate,
     Level,
     Media,
-    Option,
     Question,
     QuestionMediaTemplate,
     Resource,
+    Text,
 )
 from .settings import LANGUAGES
 
@@ -143,7 +145,7 @@ class CategoryAdmin(ImportExportModelAdmin, TranslatableAdmin):
     ordering = ["level__index", "index"]
 
 
-class OptionsResource(resources.ModelResource):
+class AnswerChoicesResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="name", attribute="name")
@@ -152,15 +154,15 @@ class OptionsResource(resources.ModelResource):
     tooltip = fields.Field(column_name="tooltip", attribute="tooltip")
 
     class Meta:
-        model = Option
+        model = AnswerChoice
 
 
-@admin.register(Option)
-class OptionAdmin(ImportExportModelAdmin, TranslatableAdmin):
+@admin.register(AnswerChoice)
+class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "index", "score", "is_correct")
     list_filter = ("is_correct",)
     fields = ("index", "name", "is_correct", "score", "tooltip")
-    resource_class = OptionsResource
+    resource_class = AnswerChoicesResource
 
 
 class MediasResource(resources.ModelResource):
@@ -183,6 +185,27 @@ class MediaAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     resource_class = MediasResource
 
 
+class TextsResource(resources.ModelResource):
+    id = fields.Field(column_name="id", attribute="id", readonly=True)
+    name = fields.Field(column_name="name", attribute="name")
+    t_type = fields.Field(
+        column_name="type", attribute="m_type", widget=ChoicesWidget(TEXT_TYPE)
+    )
+    description = fields.Field(column_name="description", attribute="description")
+    hyperlink = fields.Field(column_name="hyperlink", attribute="hyperlink")
+
+    class Meta:
+        model = Text
+
+
+@admin.register(Text)
+class TextAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ("name", "t_type")
+    search_fields = ("name", "t_type")
+    fields = ("name", "t_type", "description", "hyperlink")
+    resource_class = TextsResource
+
+
 class QuestionsResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     index = fields.Field(column_name="index", attribute="index")
@@ -203,10 +226,10 @@ class QuestionsResource(resources.ModelResource):
     max_score = fields.Field(column_name="max_score", attribute="max_score")
     explanation = fields.Field(column_name="explanation", attribute="explanation")
     tooltip = fields.Field(column_name="tooltip", attribute="tooltip")
-    options = fields.Field(
-        column_name="options",
-        attribute="options",
-        widget=TranslatedNameM2MWidget(Option, field="name", separator="\n"),
+    answer_choices = fields.Field(
+        column_name="answer choices",
+        attribute="answer_choices",
+        widget=TranslatedNameM2MWidget(AnswerChoice, field="name", separator="\n"),
     )
     medias = fields.Field(
         column_name="medias",
@@ -218,10 +241,10 @@ class QuestionsResource(resources.ModelResource):
         model = Question
 
 
-class questionOptionsInline(admin.TabularInline):
-    model = Question.options.through
-    verbose_name = "Option"
-    verbose_name_plural = "Options"
+class questionAnswerChoicesInline(admin.TabularInline):
+    model = Question.answer_choices.through
+    verbose_name = "Answer choice"
+    verbose_name_plural = "Answer choices"
     extra = 0
 
 
@@ -254,7 +277,10 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
         "explanation",
         "tooltip",
     )
-    inlines = (questionOptionsInline, questionMediaInline)
+    inlines = (
+        questionAnswerChoicesInline,
+        questionMediaInline,
+    )
     resource_class = QuestionsResource
 
     ordering = ["level__index", "category__index", "index"]
@@ -286,12 +312,19 @@ class contextMediaInline(admin.TabularInline):
     extra = 0
 
 
+class contextTextInline(admin.TabularInline):
+    model = ContextTextTemplate
+    verbose_name = "Text"
+    verbose_name_plural = "Texts"
+    extra = 0
+
+
 @admin.register(Context)
 class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("index", "question", "name")
     list_filter = ("question",)
     fields = ("index", "question", "name")
-    inlines = (contextMediaInline,)
+    inlines = (contextMediaInline, contextTextInline)
     resource_class = ContextsResource
 
 

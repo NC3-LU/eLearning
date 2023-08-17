@@ -37,3 +37,11 @@ MEDIA_TYPE = [
     ("2", "Video"),
     ("3", "Audio"),
 ]
+
+
+TEXT_TYPE = [
+    ("1", "Paragraph"),
+    ("2", "Title"),
+    ("3", "Hyperlink"),
+    ("4", "List"),
+]
