@@ -6,13 +6,15 @@
   "dependencies": {
     "bootstrap": "^5.2.3",
     "bootstrap-icons": "^1.10.4",
-    "jquery": "^3.6.4"
+    "jquery": "^3.6.4",
+    "sass": "^1.66.1"
   },
   "engines": {
     "node": "16.x",
     "npm": "8.19.2"
   },
   "scripts": {
-    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/'), 'static/npm_components', 'junction') } catch (e) { }\""
+    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/'), 'static/npm_components', 'junction') } catch (e) { }\"",
+    "compile-scss": "sass theme/static/scss/custom.scss theme/static/css/custom.css"
   }
 }
