@@ -29,6 +29,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Language Selector
     path("set-language/", set_language, name="set_language"),
+    # course
+    path("course", views.course, name="course"),
 ]
 
 if DEBUG:
