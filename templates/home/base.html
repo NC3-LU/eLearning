@@ -9,6 +9,7 @@
 {% block bootstrap5_extra_head %}
     <meta name="description" content="{{ site_name }}" />
     <link rel="stylesheet" type="text/css" href="{% static 'npm_components/bootstrap-icons/font/bootstrap-icons.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom.css' %}" />
 {% endblock %}
 
 {% block bootstrap5_title %}
@@ -16,9 +17,6 @@
 {% endblock %}
 
 {% block bootstrap5_before_content %}
-    <header>
-        {% include "parts/header.html" %}
-    </header>
 {% endblock %}
 
 {% block bootstrap5_content %}
@@ -31,5 +29,4 @@
 {% endblock %}
 
 {% block bootstrap5_after_content %}
-    {% include "parts/footer.html" %}
 {% endblock %}
