@@ -87,7 +87,6 @@ INSTALLED_APPS = [
     "import_export",
     "parler",
     "formtools",
-    "django_extensions",
 ]
 
 context_processors = [
