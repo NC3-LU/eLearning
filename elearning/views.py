@@ -9,6 +9,6 @@ def index(request):
 
 def course(request):
     context = {
-        "levels": Level.objects.all(),
+        "levels": Level.objects.order_by("index"),
     }
     return render(request, "course.html", context=context)
