@@ -16,6 +16,6 @@ def course(request):
 
 def resources(request):
     context = {
-        "resources": Resource.objects.order_by("level"),
+        "resources": Resource.objects.order_by("level__index", "category__index"),
     }
     return render(request, "resources.html", context=context)
