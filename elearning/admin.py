@@ -20,7 +20,15 @@ from .models import (
     Resource,
     Text,
 )
-from .settings import LANGUAGES
+from .settings import LANGUAGES, SITE_NAME
+
+
+class CustomAdminSite(admin.AdminSite):
+    site_header = SITE_NAME + " " + "Administration"
+    site_title = SITE_NAME
+
+
+admin_site = CustomAdminSite()
 
 
 # Widget that uses choice display values in place of database values
@@ -100,7 +108,7 @@ class LevelsResource(resources.ModelResource):
         model = Level
 
 
-@admin.register(Level)
+@admin.register(Level, site=admin_site)
 class LevelAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("index", "name", "complexity", "duration")
     list_display_links = ["index", "name"]
@@ -131,7 +139,7 @@ class CategoriesResource(resources.ModelResource):
         model = Category
 
 
-@admin.register(Category)
+@admin.register(Category, site=admin_site)
 class CategoryAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = (
         "index",
@@ -157,7 +165,7 @@ class AnswerChoicesResource(resources.ModelResource):
         model = AnswerChoice
 
 
-@admin.register(AnswerChoice)
+@admin.register(AnswerChoice, site=admin_site)
 class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "index", "score", "is_correct")
     list_filter = ("is_correct",)
@@ -177,7 +185,7 @@ class MediasResource(resources.ModelResource):
         model = Media
 
 
-@admin.register(Media)
+@admin.register(Media, site=admin_site)
 class MediaAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ("name", "path", "m_type")
     search_fields = ("name", "m_type")
@@ -198,7 +206,7 @@ class TextsResource(resources.ModelResource):
         model = Text
 
 
-@admin.register(Text)
+@admin.register(Text, site=admin_site)
 class TextAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "t_type")
     search_fields = ("name", "t_type")
@@ -255,7 +263,7 @@ class questionMediaInline(admin.TabularInline):
     extra = 0
 
 
-@admin.register(Question)
+@admin.register(Question, site=admin_site)
 class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = (
         "index",
@@ -319,7 +327,7 @@ class contextTextInline(admin.TabularInline):
     extra = 0
 
 
-@admin.register(Context)
+@admin.register(Context, site=admin_site)
 class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("index", "question", "name")
     list_filter = ("question",)
@@ -331,20 +339,26 @@ class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin):
 class ResourcesResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
+    description = fields.Field(column_name="description", attribute="description")
     level = fields.Field(
         column_name="level",
         attribute="level",
         widget=TranslatedNameWidget(Level, field="name"),
+    )
+    category = fields.Field(
+        column_name="category",
+        attribute="category",
+        widget=TranslatedNameWidget(Category, field="name"),
     )
 
     class Meta:
         model = Resource
 
 
-@admin.register(Resource)
+@admin.register(Resource, site=admin_site)
 class ResourceAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name", "level")
-    list_filter = ("level",)
+    list_display = ("name", "level", "description")
+    list_filter = ("level", "category")
 
 
 class ChallengesResource(resources.ModelResource):
@@ -360,7 +374,7 @@ class ChallengesResource(resources.ModelResource):
         model = Challenge
 
 
-@admin.register(Challenge)
+@admin.register(Challenge, site=admin_site)
 class ChallengeAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "level")
     list_filter = ("level",)
