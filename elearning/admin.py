@@ -359,6 +359,8 @@ class ResourcesResource(resources.ModelResource):
 class ResourceAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "level", "description")
     list_filter = ("level", "category")
+    resource_class = ResourcesResource
+    ordering = ["level__index", "category__index"]
 
 
 class ChallengesResource(resources.ModelResource):
