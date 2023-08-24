@@ -41,9 +41,7 @@ class Level(TranslatableModel):
 # Categories
 class Category(TranslatableModel):
     index = models.IntegerField()
-    translations = TranslatedFields(
-        name=models.CharField(max_length=100, verbose_name="label")
-    )
+    translations = TranslatedFields(name=models.CharField(max_length=100))
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -140,7 +138,12 @@ class Question(TranslatableModel):
 class Context(TranslatableModel):
     index = models.IntegerField()
     translations = TranslatedFields(name=models.TextField(verbose_name="Title"))
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(
+        Question,
+        models.SET_NULL,
+        blank=True,
+        null=True,
+    )
     medias = models.ManyToManyField(Media, through="ContextMediaTemplate")
     texts = models.ManyToManyField(Text, through="ContextTextTemplate")
 
@@ -185,16 +188,29 @@ class Answer(models.Model):
 # Resources
 class Resource(TranslatableModel):
     translations = TranslatedFields(
-        name=models.CharField(max_length=100, verbose_name="label"),
+        name=models.CharField(max_length=100),
+        description=models.TextField(blank=True, default=None, null=True),
     )
-    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+    level = models.ForeignKey(
+        Level,
+        models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    category = models.ForeignKey(
+        Category,
+        models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    path = models.FilePathField(path=settings.MEDIA_DIR, recursive=True)
 
     def __str__(self):
         return str(self.name)
 
     class Meta:
-        verbose_name = _("Ressource")
-        verbose_name_plural = _("Ressources")
+        verbose_name = _("Resource")
+        verbose_name_plural = _("Resources")
 
 
 # Challenges
@@ -202,7 +218,12 @@ class Challenge(TranslatableModel):
     translations = TranslatedFields(
         name=models.TextField(verbose_name="description"),
     )
-    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+    level = models.ForeignKey(
+        Level,
+        models.SET_NULL,
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return str(self.name)
