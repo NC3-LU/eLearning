@@ -1,0 +1,143 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-12 11:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: elearning/models.py:30
+msgid "Level"
+msgstr ""
+
+#: elearning/models.py:31
+msgid "Levels"
+msgstr ""
+
+#: elearning/models.py:44
+msgid "Category"
+msgstr ""
+
+#: elearning/models.py:45
+msgid "Categories"
+msgstr ""
+
+#: elearning/models.py:64
+msgid "Answer choice"
+msgstr ""
+
+#: elearning/models.py:65
+msgid "Answer choices"
+msgstr ""
+
+#: elearning/models.py:80
+msgid "Media"
+msgstr ""
+
+#: elearning/models.py:81
+msgid "Medias"
+msgstr ""
+
+#: elearning/models.py:98
+msgid "Text"
+msgstr ""
+
+#: elearning/models.py:99
+msgid "Texts"
+msgstr ""
+
+#: elearning/models.py:126
+msgid "Question"
+msgstr ""
+
+#: elearning/models.py:127
+msgid "Questions"
+msgstr ""
+
+#: elearning/models.py:147
+msgid "Context"
+msgstr ""
+
+#: elearning/models.py:148
+msgid "Contexts"
+msgstr ""
+
+#: elearning/models.py:163 elearning/models.py:164
+msgid "Users"
+msgstr ""
+
+#: elearning/models.py:177
+msgid "Answer"
+msgstr ""
+
+#: elearning/models.py:178
+msgid "Answers"
+msgstr ""
+
+#: elearning/models.py:205
+msgid "Resource"
+msgstr ""
+
+#: elearning/models.py:206
+msgid "Resources"
+msgstr ""
+
+#: elearning/models.py:225
+msgid "Challenge"
+msgstr ""
+
+#: elearning/models.py:226
+msgid "Challenges"
+msgstr ""
+
+#: elearning/models.py:238 elearning/models.py:270
+msgid "Media Template"
+msgstr ""
+
+#: elearning/models.py:239 elearning/models.py:271
+msgid "Media Templates"
+msgstr ""
+
+#: elearning/models.py:254
+msgid "Text Template"
+msgstr ""
+
+#: elearning/models.py:255
+msgid "Text Templates"
+msgstr ""
+
+#: templates/admin/base_site.html:8
+msgid "Django administration"
+msgstr ""
+
+#: templates/home/privacy_policy.html:87
+msgid "Name"
+msgstr ""
+
+#: templates/home/privacy_policy.html:88
+msgid "Description"
+msgstr ""
+
+#: templates/home/privacy_policy.html:89
+msgid "Content"
+msgstr ""
+
+#: templates/home/privacy_policy.html:90
+msgid "Maximum term"
+msgstr ""
+
+#: templates/registration/base.html:13
+msgid "Log in"
+msgstr ""
