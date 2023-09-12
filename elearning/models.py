@@ -7,7 +7,6 @@ from django.utils.translation import gettext_lazy as _
 from parler.models import TranslatableModel, TranslatedFields
 
 from .globals import (
-    COMPLEXITY_LEVEL,
     MEDIA_TYPE,
     POSITION_CHOICES,
     QUESTION_TYPES,
@@ -21,13 +20,7 @@ class Level(TranslatableModel):
     index = models.IntegerField()
     translations = TranslatedFields(
         name=models.CharField(max_length=100, verbose_name="label"),
-        plot=models.TextField(),
-        objectives=models.TextField(),
-        requirements=models.TextField(),
-    )
-    duration = models.IntegerField()
-    complexity = models.CharField(
-        max_length=1, choices=COMPLEXITY_LEVEL, default=COMPLEXITY_LEVEL[0][0]
+        description=models.TextField(),
     )
 
     def __str__(self):

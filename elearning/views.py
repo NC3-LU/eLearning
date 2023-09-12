@@ -4,12 +4,21 @@ from .models import Level, Resource
 
 
 def index(request):
-    return render(request, "index.html")
+    levels = Level.objects.order_by("index")
+    for level in levels:
+        level.description_lines = level.description.split("\n")
+    context = {
+        "levels": levels,
+    }
+    return render(request, "index.html", context=context)
 
 
 def course(request):
+    levels = Level.objects.order_by("index")
+    for level in levels:
+        level.description_lines = level.description.split("\n")
     context = {
-        "levels": Level.objects.order_by("index"),
+        "levels": levels,
     }
     return render(request, "course.html", context=context)
 

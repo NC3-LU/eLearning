@@ -26,12 +26,6 @@ STATUS_LEVEL = [
     ("3", "Finished"),
 ]
 
-COMPLEXITY_LEVEL = [
-    ("1", "Low"),
-    ("2", "Medium"),
-    ("3", "High"),
-]
-
 MEDIA_TYPE = [
     ("1", "Image"),
     ("2", "Video"),

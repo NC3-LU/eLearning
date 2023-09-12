@@ -5,7 +5,7 @@ from import_export.widgets import ManyToManyWidget, Widget
 from parler.admin import TranslatableAdmin
 from parler.models import TranslationDoesNotExist
 
-from .globals import COMPLEXITY_LEVEL, MEDIA_TYPE, QUESTION_TYPES, TEXT_TYPE
+from .globals import MEDIA_TYPE, QUESTION_TYPES, TEXT_TYPE
 from .models import (
     AnswerChoice,
     Category,
@@ -94,15 +94,7 @@ class LevelsResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="name", attribute="name")
-    complexity = fields.Field(
-        column_name="complexity",
-        attribute="complexity",
-        widget=ChoicesWidget(COMPLEXITY_LEVEL),
-    )
-    duration = fields.Field(column_name="duration", attribute="duration")
-    plot = fields.Field(column_name="plot", attribute="plot")
-    objectives = fields.Field(column_name="objectives", attribute="objectives")
-    requirements = fields.Field(column_name="requirements", attribute="requirements")
+    description = fields.Field(column_name="description", attribute="description")
 
     class Meta:
         model = Level
@@ -110,16 +102,12 @@ class LevelsResource(resources.ModelResource):
 
 @admin.register(Level, site=admin_site)
 class LevelAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("index", "name", "complexity", "duration")
+    list_display = ("index", "name", "description")
     list_display_links = ["index", "name"]
     fields = (
         "index",
         "name",
-        "complexity",
-        "duration",
-        "plot",
-        "objectives",
-        "requirements",
+        "description",
     )
     resource_class = LevelsResource
     ordering = ["index"]
