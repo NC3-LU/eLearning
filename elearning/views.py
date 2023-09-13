@@ -17,6 +17,8 @@ def course(request):
     levels = Level.objects.order_by("index")
     for level in levels:
         level.description_lines = level.description.split("\n")
+        # TODO: calculate the actual completion when it will be possible
+        level.completion = (5 - level.id) * 25
     context = {
         "levels": levels,
     }
