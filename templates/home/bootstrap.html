@@ -9,6 +9,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+
     <!-- Page title -->
     <title>{% block bootstrap5_title %}{% endblock %}</title>
 
@@ -24,7 +25,7 @@
 
 </head>
 
-<body class="d-flex flex-column h-100">
+<body>
 {% block bootstrap5_before_content %}{% endblock %}
 {% block bootstrap5_content %} CONTENT {% endblock %}
 {% block bootstrap5_after_content %}{% endblock %}
@@ -34,7 +35,9 @@
     {% bootstrap_javascript %}
 {% endif %}
 
-{% block bootstrap5_extra_script %}{% endblock %}
+{% block bootstrap5_extra_script %}
+
+{% endblock %}
 
 </body>
 

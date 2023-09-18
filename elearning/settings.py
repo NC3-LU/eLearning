@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 
+from django.utils.translation import gettext_lazy as _
+
 try:
     from elearning import config  # type: ignore
 except ImportError:  # pragma: no cover
@@ -20,6 +22,46 @@ except ImportError:  # pragma: no cover
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+
+# Cookie Banner settings
+COOKIEBANNER = {
+    "title": _("Cookie settings"),
+    "groups": [
+        {
+            "id": "essential",
+            "name": _("Essential"),
+            "description": _(
+                "This website uses cookies and other similar technologies strictly necessary \
+                for its operation, without the use of personal data."
+            ),
+            "cookies": [
+                {
+                    "pattern": "cookiebanner",
+                    "description": _("Meta cookie for the cookies that are set."),
+                    "content": _("Accepted cookies"),
+                    "max_age": _("1 year"),
+                },
+                {
+                    "pattern": "csrftoken",
+                    "description": _(
+                        "This cookie prevents Cross-Site-Request-Forgery attacks."
+                    ),
+                    "content": _("Token"),
+                    "max_age": _("1 year"),
+                },
+                {
+                    "pattern": "sessionid",
+                    "description": _(
+                        "This cookie is necessary for the language options, for example."
+                    ),
+                    "content": _("session ID"),
+                    "max_age": _("15 days"),
+                },
+            ],
+        }
+    ],
+}
 
 try:
     # SECURITY WARNING: keep the secret key used in production secret!
@@ -87,6 +129,7 @@ INSTALLED_APPS = [
     "import_export",
     "parler",
     "formtools",
+    "cookiebanner",
 ]
 
 context_processors = [
