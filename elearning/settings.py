@@ -43,6 +43,12 @@ COOKIEBANNER = {
                     "max_age": _("1 year"),
                 },
                 {
+                    "pattern": "django_language",
+                    "description": _("Meta cookie for user language settings"),
+                    "content": _("Accepted cookies"),
+                    "max_age": _("Session"),
+                },
+                {
                     "pattern": "csrftoken",
                     "description": _(
                         "This cookie prevents Cross-Site-Request-Forgery attacks."
@@ -52,9 +58,7 @@ COOKIEBANNER = {
                 },
                 {
                     "pattern": "sessionid",
-                    "description": _(
-                        "This cookie is necessary for the language options, for example."
-                    ),
+                    "description": _("This cookie is necessary for user options"),
                     "content": _("session ID"),
                     "max_age": _("15 days"),
                 },
