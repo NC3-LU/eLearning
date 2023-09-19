@@ -2,12 +2,9 @@
 
 {% load django_bootstrap5 %}
 {% load static %}
-{% load cookiebanner %}
-
 
 {% bootstrap_css %}
 {% bootstrap_javascript %}
-
 
 {% block bootstrap5_extra_head %}
     <meta name="description" content="{{ site_name }}" />
@@ -23,7 +20,6 @@
 {% endblock %}
 
 {% block bootstrap5_content %}
-    {% cookiebanner_modal 'bootstrap5' %}
     {% autoescape off %}{% bootstrap_messages %}{% endautoescape %}
     <main class="flex-shrink-0 w-100 py-5 my-5">
         <div>
