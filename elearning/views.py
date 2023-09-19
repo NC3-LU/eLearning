@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 from .models import Level, Resource
+from .settings import COOKIEBANNER
 
 
 def index(request):
@@ -10,7 +11,11 @@ def index(request):
     context = {
         "levels": levels,
     }
-    return render(request, "index.html", context=context)
+    return render(request, "landing.html", context=context)
+
+
+def privacy_policy(request):
+    return render(request, "privacy_policy.html", context=COOKIEBANNER)
 
 
 def course(request):
