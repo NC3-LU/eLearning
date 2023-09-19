@@ -331,7 +331,7 @@ BOOTSTRAP5 = {
 }
 
 # Multinlingual DB parameter
-PARLER_DEFAULT_LANGUAGE_CODE = "en"
+PARLER_DEFAULT_LANGUAGE_CODE = "fr"
 PARLER_LANGUAGES = {
     1: (
         {
