@@ -31,6 +31,14 @@ urlpatterns = [
     path("set-language/", set_language, name="set_language"),
     # Privacy Policy
     path("privacy/", views.privacy_policy, name="privacy"),
+    # Cookies
+    path("cookies/", views.cookies, name="cookies"),
+    # Terms of Service
+    path("tos/", views.tos, name="tos"),
+    # Legal
+    path("legal/", views.legal, name="legal"),
+    # Accessibility
+    path("accessibility/", views.accessibility, name="accessibility"),
     # Course
     path("course", views.course, name="course"),
     #   Resources

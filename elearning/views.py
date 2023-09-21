@@ -15,7 +15,23 @@ def index(request):
 
 
 def privacy_policy(request):
-    return render(request, "privacy_policy.html", context=COOKIEBANNER)
+    return render(request, "privacy_policy.html")
+
+
+def cookies(request):
+    return render(request, "cookies.html", context=COOKIEBANNER)
+
+
+def tos(request):
+    return render(request, "tos.html")
+
+
+def legal(request):
+    return render(request, "legal.html")
+
+
+def accessibility(request):
+    return render(request, "accessibility.html")
 
 
 def course(request):
