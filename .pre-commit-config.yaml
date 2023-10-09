@@ -2,12 +2,12 @@ ci:
   autoupdate_schedule: monthly
 repos:
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: 1.14.0
+    rev: 1.15.0
     hooks:
       - id: django-upgrade
         args: [--target-version, '4.2']
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.10.1
+    rev: v3.15.0
     hooks:
       - id: pyupgrade
         args: ["--py37-plus"]
@@ -16,11 +16,11 @@ repos:
     hooks:
       - id: isort
   - repo: https://github.com/psf/black
-    rev: 23.7.0
+    rev: 23.9.1
     hooks:
       - id: black
   - repo: https://github.com/asottile/blacken-docs
-    rev: 1.15.0
+    rev: 1.16.0
     hooks:
       - id: blacken-docs
   - repo: https://github.com/PyCQA/flake8
@@ -32,7 +32,7 @@ repos:
           - flake8-implicit-str-concat
         args: ["--max-line-length=125"]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: fix-byte-order-marker
       - id: trailing-whitespace

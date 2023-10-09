@@ -34,7 +34,7 @@ def accessibility(request):
     return render(request, "accessibility.html")
 
 
-def course(request):
+def dashboard(request):
     levels = Level.objects.order_by("index")
     for level in levels:
         level.description_lines = level.description.split("\n")
@@ -43,7 +43,11 @@ def course(request):
     context = {
         "levels": levels,
     }
-    return render(request, "course.html", context=context)
+    return render(request, "dashboard.html", context=context)
+
+
+def course(request):
+    return render(request, "course.html")
 
 
 def resources(request):

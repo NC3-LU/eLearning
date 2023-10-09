@@ -39,6 +39,8 @@ urlpatterns = [
     path("legal/", views.legal, name="legal"),
     # Accessibility
     path("accessibility/", views.accessibility, name="accessibility"),
+    # Dashboard
+    path("dashboard", views.dashboard, name="dashboard"),
     # Course
     path("course", views.course, name="course"),
     #   Resources
