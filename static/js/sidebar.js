@@ -3,6 +3,7 @@ $(document).ready(function () {
 
     $('#sidebarToggle').click(function () {
         $('#sidebar .d-none').toggleClass('d-sm-inline');
+        $('#sidebar .d-inline').toggleClass('d-sm-none');
         $('#logo_small, #open_sidebar').toggleClass('d-sm-none');
         if (sidebarState === 'expanded') {
             $('#sidebar').addClass('minimized');
