@@ -39,7 +39,7 @@ def dashboard(request):
     for level in levels:
         level.description_lines = level.description.split("\n")
         # TODO: calculate the actual completion when it will be possible
-        level.completion = (5 - level.id) * 25
+        level.progress = f"{(5 - level.index) * 0.25:.0%}"
     context = {
         "levels": levels,
     }
