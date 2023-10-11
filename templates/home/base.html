@@ -22,12 +22,8 @@
 
 {% block bootstrap5_content %}
     {% autoescape off %}{% bootstrap_messages %}{% endautoescape %}
-    <main class="flex-shrink-0 w-100 py-5 my-5">
-        <div>
-            {% block content %}
-            {% endblock %}
-        </div>
-    </main>
+        {% block content %}
+        {% endblock %}
 {% endblock %}
 
 {% block bootstrap5_after_content %}
