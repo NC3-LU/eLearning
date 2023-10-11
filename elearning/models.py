@@ -178,6 +178,21 @@ class Answer(models.Model):
         verbose_name_plural = _("Answers")
 
 
+# Resources Types
+class ResourceType(TranslatableModel):
+    index = models.PositiveIntegerField()
+    translations = TranslatedFields(
+        name=models.CharField(max_length=100),
+    )
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = _("Resource Type")
+        verbose_name_plural = _("Resource Types")
+
+
 # Resources
 class Resource(TranslatableModel):
     translations = TranslatedFields(
@@ -196,6 +211,11 @@ class Resource(TranslatableModel):
         blank=True,
         null=True,
     )
+
+    resourceType = models.ForeignKey(
+        ResourceType, models.SET_NULL, blank=True, null=True, verbose_name="type"
+    )
+
     path = models.FilePathField(path=settings.MEDIA_DIR, recursive=True)
 
     def __str__(self):

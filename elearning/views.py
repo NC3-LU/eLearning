@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from .models import Level, Resource
+from .models import Level, Resource, ResourceType
 from .settings import COOKIEBANNER
 
 
@@ -37,7 +37,6 @@ def accessibility(request):
 def dashboard(request):
     levels = Level.objects.order_by("index")
     for level in levels:
-        level.description_lines = level.description.split("\n")
         # TODO: calculate the actual completion when it will be possible
         level.progress = f"{(5 - level.index) * 0.25:.0%}"
     context = {
@@ -51,7 +50,13 @@ def course(request):
 
 
 def resources(request):
+    levels = Level.objects.order_by("index")
+    resourcesType = ResourceType.objects.order_by("index")
+    resources = Resource.objects.all()
     context = {
-        "resources": Resource.objects.order_by("level__index", "category__index"),
+        "levels": levels,
+        "resources": resources,
+        "resourcesType": resourcesType,
     }
+
     return render(request, "resources.html", context=context)

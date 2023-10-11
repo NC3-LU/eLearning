@@ -18,6 +18,7 @@ from .models import (
     Question,
     QuestionMediaTemplate,
     Resource,
+    ResourceType,
     Text,
 )
 from .settings import LANGUAGES, SITE_NAME
@@ -345,10 +346,26 @@ class ResourcesResource(resources.ModelResource):
 
 @admin.register(Resource, site=admin_site)
 class ResourceAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name", "level", "description")
-    list_filter = ("level", "category")
+    list_display = ("name", "level", "resourceType", "description")
+    list_filter = ("level", "category", "resourceType")
     resource_class = ResourcesResource
     ordering = ["level__index", "category__index"]
+
+
+class ResourcesResourceType(resources.ModelResource):
+    id = fields.Field(column_name="id", attribute="id", readonly=True)
+    name = fields.Field(column_name="name", attribute="name")
+
+    class Meta:
+        model = ResourceType
+
+
+@admin.register(ResourceType, site=admin_site)
+class ResourceTypeAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ("index", "name")
+    list_display_links = ["index", "name"]
+    ordering = ["index"]
+    resource_class = ResourcesResourceType
 
 
 class ChallengesResource(resources.ModelResource):
