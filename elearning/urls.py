@@ -45,6 +45,8 @@ urlpatterns = [
     path("course", views.course, name="course"),
     #   Resources
     path("resources", views.resources, name="resources"),
+    #   ResourcesDownload
+    path("resources_download/", views.resources_download, name="resources_download"),
 ]
 
 if DEBUG:
