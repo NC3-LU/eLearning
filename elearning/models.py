@@ -151,8 +151,8 @@ class Context(TranslatableModel):
 # Users
 class User(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
-    current_level = models.ForeignKey(Level, on_delete=models.CASCADE)
-    current_question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    current_level = models.ForeignKey(Level, null=True, on_delete=models.CASCADE)
+    current_question = models.ForeignKey(Question, null=True, on_delete=models.CASCADE)
     status_level = models.CharField(
         max_length=1, choices=STATUS_LEVEL, default=STATUS_LEVEL[0][0]
     )
