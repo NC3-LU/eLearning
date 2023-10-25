@@ -43,12 +43,43 @@ def accessibility(request):
 
 
 def dashboard(request):
-    levels = Level.objects.order_by("index")
+    levels = Level.objects.all().order_by("index")
+    # TODO: Get criteria values from querysets
+    criteria = {
+        "labels": [
+            "Procédures",
+            "Formation",
+            "Traitement",
+            "Sous-traitance",
+            "Information",
+            "Risques",
+            "Violation de données",
+            "Documentation",
+            "Transfers",
+        ],
+        "data": [1, 0, 0.33, 0.5, 0.2, 0.3, 0.1, 0.15, 0.6],
+    }
+    levels_json = []
     for level in levels:
         # TODO: calculate the actual completion when it will be possible
+        # level.progress = f"{4 * 0.25:.0%}"
         level.progress = f"{(5 - level.index) * 0.25:.0%}"
+        # level.score = 80
+        level.score = (5 - level.index) * 20
+        levels_json.append(
+            {
+                "id": level.id,
+                "index": level.index,
+                "name": level.name,
+                "description": level.description,
+                "progress": (5 - level.index) * 25,
+            }
+        )
+
     context = {
         "levels": levels,
+        "levels_json": levels_json,
+        "criteria": criteria,
     }
     return render(request, "dashboard.html", context=context)
 
