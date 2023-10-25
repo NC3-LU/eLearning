@@ -8,7 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
 from .forms import ResourceDownloadForm
-from .models import Level, Resource, ResourceType
+from .models import Level, Resource, ResourceType, User
 from .settings import COOKIEBANNER
 
 
@@ -20,6 +20,13 @@ def index(request):
         "levels": levels,
     }
     return render(request, "landing.html", context=context)
+
+
+def new_user(request):
+    user = User()
+    # user.save()
+    request.session["user_uuid"] = str(user.uuid)
+    return render(request, "modals/new_user.html")
 
 
 def privacy_policy(request):

@@ -1,6 +1,8 @@
 
+var user_uuid = document.getElementById("user_uuid").textContent.trim();
+
 var qrcode = new QRCode(document.getElementById("id-qrcode"), {
-  text: window.location + "?id=ce053a70-5baf-419d-8976-757c59746081",
+  text: window.location + "?id=" + user_uuid,
   width: 128,
   height: 128,
   colorDark : "#0099ff",
@@ -14,13 +16,13 @@ function enableValidation() {
 }
 
 function copyToClipboard() {
-  navigator.clipboard.writeText("ce053a70-5baf-419d-8976-757c59746081");
+  navigator.clipboard.writeText(user_uuid);
   enableValidation();
 }
 
 function downloadTextFile() {
   var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent("ce053a70-5baf-419d-8976-757c59746081"));
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(user_uuid));
   element.setAttribute('download', "DAAZ - id.txt");
 
   element.style.display = 'none';

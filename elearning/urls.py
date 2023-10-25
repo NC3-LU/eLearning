@@ -29,6 +29,8 @@ urlpatterns = [
     path("admin/", admin_site.urls),
     # Language Selector
     path("set-language/", set_language, name="set_language"),
+    #   New User
+    path("new_user/", views.new_user, name="new_user"),
     # Privacy Policy
     path("privacy/", views.privacy_policy, name="privacy"),
     # Cookies
