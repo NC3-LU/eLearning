@@ -2,7 +2,7 @@
 var user_uuid = document.getElementById("user_uuid").textContent.trim();
 
 var qrcode = new QRCode(document.getElementById("id-qrcode"), {
-  text: window.location + "?id=" + user_uuid,
+  text: window.location + "?user_uuid=" + user_uuid,
   width: 128,
   height: 128,
   colorDark : "#0099ff",

@@ -7,12 +7,19 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
+from .decorators import user_uuid_required
 from .forms import ResourceDownloadForm
 from .models import Level, Resource, ResourceType, User
 from .settings import COOKIEBANNER
+from .viewLogic import find_user_by_uuid
 
 
 def index(request):
+    user_uuid_param = request.GET.get("user_uuid", None)
+    if user_uuid_param:
+        request.session["user_uuid"] = user_uuid_param
+        return HttpResponseRedirect("/dashboard")
+
     levels = Level.objects.order_by("index")
     for level in levels:
         level.description_lines = level.description.split("\n")
@@ -24,7 +31,7 @@ def index(request):
 
 def new_user(request):
     user = User()
-    # user.save()
+    user.save()
     request.session["user_uuid"] = str(user.uuid)
     return render(request, "modals/new_user.html")
 
@@ -49,7 +56,11 @@ def accessibility(request):
     return render(request, "accessibility.html")
 
 
+@user_uuid_required
 def dashboard(request):
+    user_uuid = request.session.get("user_uuid")
+    user = find_user_by_uuid(user_uuid)
+
     levels = Level.objects.all().order_by("index")
     # TODO: Get criteria values from querysets
     criteria = {
@@ -84,6 +95,7 @@ def dashboard(request):
         )
 
     context = {
+        "user": user,
         "levels": levels,
         "levels_json": levels_json,
         "criteria": criteria,
@@ -91,10 +103,12 @@ def dashboard(request):
     return render(request, "dashboard.html", context=context)
 
 
+@user_uuid_required
 def course(request):
     return render(request, "course.html")
 
 
+@user_uuid_required
 def resources(request):
     levels = Level.objects.order_by("index")
     resourcesType = ResourceType.objects.order_by("index")
@@ -108,6 +122,7 @@ def resources(request):
     return render(request, "resources.html", context=context)
 
 
+@user_uuid_required
 def resources_download(request):
     resource_type_id = request.GET.get("resource_type")
     level_id = request.GET.get("level")
