@@ -29,7 +29,9 @@ urlpatterns = [
     path("admin/", admin_site.urls),
     # Language Selector
     path("set-language/", set_language, name="set_language"),
-    #   New User
+    #   Start Modal
+    path("start/", views.start, name="start"),
+    #   New User Modal
     path("new_user/", views.new_user, name="new_user"),
     # Privacy Policy
     path("privacy/", views.privacy_policy, name="privacy"),
@@ -47,7 +49,7 @@ urlpatterns = [
     path("course", views.course, name="course"),
     #   Resources
     path("resources", views.resources, name="resources"),
-    #   ResourcesDownload
+    #   ResourcesDownload Modal
     path("resources_download/", views.resources_download, name="resources_download"),
 ]
 

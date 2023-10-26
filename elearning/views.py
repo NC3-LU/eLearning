@@ -3,18 +3,20 @@ import mimetypes
 import os
 import zipfile
 
+from django.contrib import messages
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
 from .decorators import user_uuid_required
-from .forms import ResourceDownloadForm
+from .forms import ResourceDownloadForm, inputUserUUIDForm
 from .models import Level, Resource, ResourceType, User
 from .settings import COOKIEBANNER
 from .viewLogic import find_user_by_uuid
 
 
 def index(request):
+    request.session.clear()
     user_uuid_param = request.GET.get("user_uuid", None)
     if user_uuid_param:
         request.session["user_uuid"] = user_uuid_param
@@ -27,6 +29,21 @@ def index(request):
         "levels": levels,
     }
     return render(request, "landing.html", context=context)
+
+
+def start(request):
+    if request.method == "POST":
+        form = inputUserUUIDForm(request.POST)
+        if form.is_valid():
+            user_uuid = form.cleaned_data["user_uuid"]
+            request.session["user_uuid"] = str(user_uuid)
+            return HttpResponseRedirect("/dashboard")
+        else:
+            messages.error(request, form.errors["user_uuid"])
+            return HttpResponseRedirect("/")
+    else:
+        form = inputUserUUIDForm()
+    return render(request, "modals/start.html", {"form": form})
 
 
 def new_user(request):
