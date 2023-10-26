@@ -246,6 +246,35 @@ class Challenge(TranslatableModel):
         verbose_name_plural = _("Challenges")
 
 
+# Scores
+class Score(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+    score = models.DecimalField(default=0, max_digits=3, decimal_places=2)
+    progress = models.DecimalField(default=0, max_digits=3, decimal_places=2)
+
+    def __str__(self):
+        return str(self.score)
+
+    class Meta:
+        verbose_name = _("Score")
+        verbose_name_plural = _("Scores")
+
+
+# Knowledges
+class Knowledge(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    progress = models.DecimalField(default=0, max_digits=3, decimal_places=2)
+
+    def __str__(self):
+        return str(self.progress)
+
+    class Meta:
+        verbose_name = _("Knowledge")
+        verbose_name_plural = _("Knowledge")
+
+
 class ContextMediaTemplate(models.Model):
     context = models.ForeignKey(Context, on_delete=models.CASCADE)
     media = models.ForeignKey(Media, on_delete=models.CASCADE)

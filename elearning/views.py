@@ -10,7 +10,7 @@ from django.shortcuts import render
 
 from .decorators import user_uuid_required
 from .forms import ResourceDownloadForm, inputUserUUIDForm
-from .models import Level, Resource, ResourceType, User
+from .models import Category, Knowledge, Level, Resource, ResourceType, Score, User
 from .settings import COOKIEBANNER
 from .viewLogic import find_user_by_uuid
 
@@ -23,8 +23,6 @@ def index(request):
         return HttpResponseRedirect("/dashboard")
 
     levels = Level.objects.order_by("index")
-    for level in levels:
-        level.description_lines = level.description.split("\n")
     context = {
         "levels": levels,
     }
@@ -47,8 +45,22 @@ def start(request):
 
 
 def new_user(request):
+    levels = Level.objects.order_by("index")
+    categories = Category.objects.order_by("index")
     user = User()
     user.save()
+    for level in levels:
+        score = Score()
+        score.user = user
+        score.level = level
+        score.save()
+
+    for category in categories:
+        knowledge = Knowledge()
+        knowledge.user = user
+        knowledge.category = category
+        knowledge.save()
+
     request.session["user_uuid"] = str(user.uuid)
     return render(request, "modals/new_user.html")
 
@@ -77,44 +89,23 @@ def accessibility(request):
 def dashboard(request):
     user_uuid = request.session.get("user_uuid")
     user = find_user_by_uuid(user_uuid)
+    knowledge = Knowledge.objects.filter(user=user).order_by("category__index")
+    scores = Score.objects.filter(user=user).order_by("level__index")
 
-    levels = Level.objects.all().order_by("index")
-    # TODO: Get criteria values from querysets
     criteria = {
-        "labels": [
-            "Procédures",
-            "Formation",
-            "Traitement",
-            "Sous-traitance",
-            "Information",
-            "Risques",
-            "Violation de données",
-            "Documentation",
-            "Transfers",
-        ],
-        "data": [1, 0, 0.33, 0.5, 0.2, 0.3, 0.1, 0.15, 0.6],
+        "labels": list(
+            knowledge.values_list("category__translations__name", flat=True)
+        ),
+        "data": list(knowledge.values_list("progress", flat=True)),
     }
-    levels_json = []
-    for level in levels:
-        # TODO: calculate the actual completion when it will be possible
-        # level.progress = f"{4 * 0.25:.0%}"
-        level.progress = f"{(5 - level.index) * 0.25:.0%}"
-        # level.score = 80
-        level.score = (5 - level.index) * 20
-        levels_json.append(
-            {
-                "id": level.id,
-                "index": level.index,
-                "name": level.name,
-                "description": level.description,
-                "progress": (5 - level.index) * 25,
-            }
-        )
+    progress_json = [
+        {"index": score.level.index, "progress": score.progress} for score in scores
+    ]
 
     context = {
         "user": user,
-        "levels": levels,
-        "levels_json": levels_json,
+        "scores": scores,
+        "progress_json": progress_json,
         "criteria": criteria,
     }
     return render(request, "dashboard.html", context=context)
