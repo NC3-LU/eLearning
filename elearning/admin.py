@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
 from import_export import fields, resources, widgets
 from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ManyToManyWidget, Widget
@@ -14,6 +15,7 @@ from .models import (
     ContextMediaTemplate,
     ContextTextTemplate,
     Level,
+    LevelSequence,
     Media,
     Question,
     QuestionMediaTemplate,
@@ -255,6 +257,7 @@ class questionMediaInline(admin.TabularInline):
 @admin.register(Question, site=admin_site)
 class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = (
+        "id",
         "index",
         "name",
         "q_type",
@@ -263,7 +266,7 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
         "max_score",
     )
     list_filter = ("level", "category", "q_type")
-    list_display_links = ["index", "name"]
+    list_display_links = ["id", "index", "name"]
     fields = (
         "index",
         "name",
@@ -385,3 +388,24 @@ class ChallengesResource(resources.ModelResource):
 class ChallengeAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "level")
     list_filter = ("level",)
+
+
+@admin.register(LevelSequence, site=admin_site)
+class LevelSequenceAdmin(admin.ModelAdmin):
+    list_display = ("level", "position", "get_content_type_name", "content_object_str")
+    list_filter = ("level",)
+    ordering = ["level__index", "position"]
+
+    @admin.display(description="Content Type")
+    def get_content_type_name(self, obj):
+        return obj.content_type.model
+
+    @admin.display(description="Content")
+    def content_object_str(self, obj):
+        return str(obj.content_object)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "content_type":
+            allowed_models = ["context", "question", "challenge"]
+            kwargs["queryset"] = ContentType.objects.filter(model__in=allowed_models)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

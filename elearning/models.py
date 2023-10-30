@@ -1,6 +1,8 @@
 import uuid
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -273,6 +275,18 @@ class Knowledge(models.Model):
     class Meta:
         verbose_name = _("Knowledge")
         verbose_name_plural = _("Knowledge")
+
+
+# Level Sequence
+class LevelSequence(models.Model):
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+    position = models.PositiveSmallIntegerField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+
+    class Meta:
+        unique_together = ("level", "position")
 
 
 class ContextMediaTemplate(models.Model):
