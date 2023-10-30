@@ -2,6 +2,7 @@ import io
 import mimetypes
 import os
 import zipfile
+from uuid import UUID
 
 from django.contrib import messages
 from django.forms.formsets import formset_factory
@@ -87,7 +88,7 @@ def accessibility(request):
 
 @user_uuid_required
 def dashboard(request):
-    user_uuid = request.session.get("user_uuid")
+    user_uuid = UUID(request.session.get("user_uuid"))
     user = find_user_by_uuid(user_uuid)
     knowledge = Knowledge.objects.filter(user=user).order_by("category__index")
     scores = Score.objects.filter(user=user).order_by("level__index")

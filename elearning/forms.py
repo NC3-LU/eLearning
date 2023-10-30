@@ -1,4 +1,4 @@
-import uuid
+from uuid import UUID
 
 from django import forms
 
@@ -34,7 +34,7 @@ class inputUserUUIDForm(forms.Form):
         user_uuid = self.cleaned_data.get("user_uuid")
         if user_uuid:
             try:
-                uuid.UUID(str(user_uuid))
+                UUID(str(user_uuid))
             except ValueError:
                 raise forms.ValidationError("Invalid UUID format.")
         return user_uuid

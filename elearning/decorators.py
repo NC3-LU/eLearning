@@ -1,4 +1,5 @@
 from functools import wraps
+from uuid import UUID
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -15,7 +16,7 @@ def user_uuid_required(view_func):
         if user_uuid is None:
             return HttpResponseRedirect("/")
         try:
-            User.objects.get(uuid=user_uuid)
+            User.objects.get(uuid=UUID(user_uuid))
         except ValidationError as e:
             messages.error(request, e.messages[0])
             return HttpResponseRedirect("/")
