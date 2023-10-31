@@ -20,12 +20,6 @@ QUESTION_TYPES = [
     ("CL", "Countries list"),
 ]
 
-STATUS_LEVEL = [
-    ("1", "Not started"),
-    ("2", "In progress"),
-    ("3", "Finished"),
-]
-
 MEDIA_TYPE = [
     ("1", "Image"),
     ("2", "Video"),

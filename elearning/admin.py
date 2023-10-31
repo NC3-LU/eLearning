@@ -1,5 +1,7 @@
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import OuterRef, Subquery
 from import_export import fields, resources, widgets
 from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ManyToManyWidget, Widget
@@ -103,6 +105,13 @@ class LevelsResource(resources.ModelResource):
         model = Level
 
 
+# Generic Relation Level Sequence Inline Field
+class levelSequenceInline(GenericTabularInline):
+    model = LevelSequence
+    extra = 0
+    max_num = 1
+
+
 @admin.register(Level, site=admin_site)
 class LevelAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("index", "name", "description")
@@ -120,11 +129,6 @@ class CategoriesResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="name", attribute="name")
-    level = fields.Field(
-        column_name="level",
-        attribute="level",
-        widget=TranslatedNameWidget(Level, field="name"),
-    )
 
     class Meta:
         model = Category
@@ -135,13 +139,11 @@ class CategoryAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = (
         "index",
         "name",
-        "level",
     )
-    list_filter = ("level",)
-    fields = ["index", "name", "level"]
+    fields = ["index", "name"]
     list_display_links = ["index", "name"]
     resource_class = CategoriesResource
-    ordering = ["level__index", "index"]
+    ordering = ["index"]
 
 
 class AnswerChoicesResource(resources.ModelResource):
@@ -207,20 +209,14 @@ class TextAdmin(ImportExportModelAdmin, TranslatableAdmin):
 
 class QuestionsResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
-    index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="label", attribute="name")
     q_type = fields.Field(
         column_name="type", attribute="q_type", widget=ChoicesWidget(QUESTION_TYPES)
     )
-    level = fields.Field(
-        column_name="level",
-        attribute="level",
-        widget=TranslatedNameWidget(Level, field="name"),
-    )
     category = fields.Field(
         column_name="category",
         attribute="category",
-        widget=TranslatedNameWidget(Category, field="name"),
+        widget=TranslatedNameM2MWidget(Category, field="name", separator="\n"),
     )
     max_score = fields.Field(column_name="max_score", attribute="max_score")
     explanation = fields.Field(column_name="explanation", attribute="explanation")
@@ -257,44 +253,66 @@ class questionMediaInline(admin.TabularInline):
 @admin.register(Question, site=admin_site)
 class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = (
-        "id",
-        "index",
         "name",
         "q_type",
-        "level",
-        "category",
         "max_score",
+        "level_sequence_level",
+        "level_sequence_position",
+        "display_categories",
     )
-    list_filter = ("level", "category", "q_type")
-    list_display_links = ["id", "index", "name"]
+    list_filter = ("q_type",)
+    list_display_links = ["name"]
     fields = (
-        "index",
         "name",
         "q_type",
-        "level",
-        "category",
         "max_score",
         "explanation",
         "tooltip",
+        "categories",
     )
+    filter_horizontal = ["categories"]
     inlines = (
         questionAnswerChoicesInline,
         questionMediaInline,
+        levelSequenceInline,
     )
     resource_class = QuestionsResource
 
-    ordering = ["level__index", "category__index", "index"]
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        levelSequences = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=OuterRef("id"),
+        ).order_by()
+        level_sequence_levels = levelSequences.values("level")[:1]
+        level_sequence_positions = levelSequences.values("position")[:1]
+        return queryset.annotate(
+            level_sequence_level=Subquery(level_sequence_levels),
+            level_sequence_position=Subquery(level_sequence_positions),
+        )
+
+    @admin.display(description="Categories")
+    def display_categories(self, obj):
+        return "\n".join([category.name for category in obj.categories.all()])
+
+    @admin.display(description="Level", ordering="level_sequence_level")
+    def level_sequence_level(self, obj):
+        level_sequence = LevelSequence.objects.filter(object_id=obj.id).first()
+        if level_sequence:
+            return level_sequence.level
+        return None
+
+    @admin.display(description="Position", ordering="level_sequence_position")
+    def level_sequence_position(self, obj):
+        level_sequence = LevelSequence.objects.filter(object_id=obj.id).first()
+        if level_sequence:
+            return level_sequence.position
+        return None
 
 
 class ContextsResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
-    index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="name", attribute="name")
-    question = fields.Field(
-        column_name="question",
-        attribute="question",
-        widget=TranslatedNameWidget(Question, field="name"),
-    )
     medias = fields.Field(
         column_name="medias",
         attribute="medias",
@@ -321,10 +339,9 @@ class contextTextInline(admin.TabularInline):
 
 @admin.register(Context, site=admin_site)
 class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("index", "question", "name")
-    list_filter = ("question",)
-    fields = ("index", "question", "name")
-    inlines = (contextMediaInline, contextTextInline)
+    list_display = ("name",)
+    fields = ("name",)
+    inlines = (contextMediaInline, contextTextInline, levelSequenceInline)
     resource_class = ContextsResource
 
 
@@ -337,11 +354,6 @@ class ResourcesResource(resources.ModelResource):
         attribute="level",
         widget=TranslatedNameWidget(Level, field="name"),
     )
-    category = fields.Field(
-        column_name="category",
-        attribute="category",
-        widget=TranslatedNameWidget(Category, field="name"),
-    )
 
     class Meta:
         model = Resource
@@ -350,9 +362,9 @@ class ResourcesResource(resources.ModelResource):
 @admin.register(Resource, site=admin_site)
 class ResourceAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "level", "resourceType", "description")
-    list_filter = ("level", "category", "resourceType")
+    list_filter = ("level", "resourceType")
     resource_class = ResourcesResource
-    ordering = ["level__index", "category__index"]
+    ordering = ["level__index"]
 
 
 class ResourcesResourceType(resources.ModelResource):
@@ -374,11 +386,6 @@ class ResourceTypeAdmin(ImportExportModelAdmin, TranslatableAdmin):
 class ChallengesResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
-    level = fields.Field(
-        column_name="level",
-        attribute="level",
-        widget=TranslatedNameWidget(Level, field="name"),
-    )
 
     class Meta:
         model = Challenge
@@ -386,8 +393,8 @@ class ChallengesResource(resources.ModelResource):
 
 @admin.register(Challenge, site=admin_site)
 class ChallengeAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name", "level")
-    list_filter = ("level",)
+    list_display = ("name",)
+    inlines = (levelSequenceInline,)
 
 
 @admin.register(LevelSequence, site=admin_site)

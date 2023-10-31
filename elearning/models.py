@@ -4,17 +4,12 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from parler.models import TranslatableModel, TranslatedFields
 
-from .globals import (
-    MEDIA_TYPE,
-    POSITION_CHOICES,
-    QUESTION_TYPES,
-    STATUS_LEVEL,
-    TEXT_TYPE,
-)
+from .globals import MEDIA_TYPE, POSITION_CHOICES, QUESTION_TYPES, TEXT_TYPE
 
 
 # Levels
@@ -24,6 +19,12 @@ class Level(TranslatableModel):
         name=models.CharField(max_length=100, verbose_name="label"),
         description=models.TextField(),
     )
+
+    def get_first_level_position(self):
+        first_level_sequence = self.levelsequence_set.order_by("position").first()
+        if first_level_sequence:
+            return first_level_sequence.position
+        return None
 
     def __str__(self):
         return self.name
@@ -37,7 +38,6 @@ class Level(TranslatableModel):
 class Category(TranslatableModel):
     index = models.IntegerField()
     translations = TranslatedFields(name=models.CharField(max_length=100))
-    level = models.ForeignKey(Level, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -103,7 +103,6 @@ class Text(TranslatableModel):
 
 # Questions
 class Question(TranslatableModel):
-    index = models.IntegerField(unique=True)
     translations = TranslatedFields(
         name=models.TextField(verbose_name="label"),
         explanation=models.TextField(),
@@ -115,8 +114,7 @@ class Question(TranslatableModel):
         default=QUESTION_TYPES[0][0],
         verbose_name="type",
     )
-    level = models.ForeignKey(Level, on_delete=models.CASCADE)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    categories = models.ManyToManyField(Category)
     answer_choices = models.ManyToManyField(AnswerChoice)
     medias = models.ManyToManyField(Media, through="QuestionMediaTemplate")
     max_score = models.IntegerField(default=100)
@@ -131,14 +129,7 @@ class Question(TranslatableModel):
 
 # Contexts
 class Context(TranslatableModel):
-    index = models.IntegerField()
     translations = TranslatedFields(name=models.TextField(verbose_name="Title"))
-    question = models.ForeignKey(
-        Question,
-        models.SET_NULL,
-        blank=True,
-        null=True,
-    )
     medias = models.ManyToManyField(Media, through="ContextMediaTemplate")
     texts = models.ManyToManyField(Text, through="ContextTextTemplate")
 
@@ -154,12 +145,16 @@ class Context(TranslatableModel):
 class User(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
     current_level = models.ForeignKey(Level, null=True, on_delete=models.CASCADE)
-    current_question = models.ForeignKey(Question, null=True, on_delete=models.CASCADE)
-    status_level = models.CharField(
-        max_length=1, choices=STATUS_LEVEL, default=STATUS_LEVEL[0][0]
-    )
+    current_position = models.PositiveSmallIntegerField(null=True)
     created_at = models.DateField(auto_now_add=True, blank=True)
     updated_at = models.DateField(auto_now=True, blank=True)
+
+    def get_level_progress(self):
+        return (
+            self.score_set.filter(level=self.current_level)
+            .values_list("progress", flat=True)
+            .first()
+        )
 
     class Meta:
         verbose_name = _("Users")
@@ -207,13 +202,6 @@ class Resource(TranslatableModel):
         blank=True,
         null=True,
     )
-    category = models.ForeignKey(
-        Category,
-        models.SET_NULL,
-        blank=True,
-        null=True,
-    )
-
     resourceType = models.ForeignKey(
         ResourceType, models.SET_NULL, blank=True, null=True, verbose_name="type"
     )
@@ -233,12 +221,6 @@ class Challenge(TranslatableModel):
     translations = TranslatedFields(
         name=models.TextField(verbose_name="description"),
     )
-    level = models.ForeignKey(
-        Level,
-        models.SET_NULL,
-        blank=True,
-        null=True,
-    )
 
     def __str__(self):
         return str(self.name)
@@ -252,8 +234,10 @@ class Challenge(TranslatableModel):
 class Score(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
-    score = models.DecimalField(default=0, max_digits=3, decimal_places=2)
-    progress = models.DecimalField(default=0, max_digits=3, decimal_places=2)
+    score = models.PositiveSmallIntegerField(default=0)
+    progress = models.PositiveSmallIntegerField(
+        default=0, validators=[MaxValueValidator(100)]
+    )
 
     def __str__(self):
         return str(self.score)
@@ -283,9 +267,12 @@ class LevelSequence(models.Model):
     position = models.PositiveSmallIntegerField()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey("content_type", "object_id")
+    content_object = GenericForeignKey()
 
     class Meta:
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]),
+        ]
         unique_together = ("level", "position")
 
 
