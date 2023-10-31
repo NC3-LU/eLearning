@@ -8,12 +8,13 @@ from django.contrib import messages
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.utils.translation import gettext_lazy as _
 
 from .decorators import user_uuid_required
 from .forms import ResourceDownloadForm, inputUserUUIDForm
 from .models import Category, Knowledge, Level, Resource, ResourceType, Score, User
 from .settings import COOKIEBANNER
-from .viewLogic import find_user_by_uuid
+from .viewLogic import find_user_by_uuid, set_next_level_user
 
 
 def index(request):
@@ -48,8 +49,18 @@ def start(request):
 def new_user(request):
     levels = Level.objects.order_by("index")
     categories = Category.objects.order_by("index")
+    first_level = Level.objects.order_by("index").first()
+
     user = User()
+
+    if first_level:
+        user.current_level = first_level
+        first_level_position = user.current_level.get_first_level_position()
+        if first_level_position:
+            user.current_position = first_level_position
+
     user.save()
+
     for level in levels:
         score = Score()
         score.user = user
@@ -99,14 +110,12 @@ def dashboard(request):
         ),
         "data": list(knowledge.values_list("progress", flat=True)),
     }
-    progress_json = [
-        {"index": score.level.index, "progress": score.progress} for score in scores
-    ]
+    progress = list(scores.values_list("progress", flat=True))
 
     context = {
         "user": user,
         "scores": scores,
-        "progress_json": progress_json,
+        "progress": progress,
         "criteria": criteria,
     }
     return render(request, "dashboard.html", context=context)
@@ -114,6 +123,19 @@ def dashboard(request):
 
 @user_uuid_required
 def course(request):
+    user_uuid = request.session["user_uuid"]
+    user = find_user_by_uuid(user_uuid)
+
+    if user.get_level_progress() == 100:
+        set_next_level_user(request, user)
+
+    if user.current_level and user.current_position:
+        # TODO: Get questions forms
+        print()
+    else:
+        messages.warning(request, _("No data available to start the level"))
+        return HttpResponseRedirect("/dashboard")
+
     return render(request, "course.html")
 
 
