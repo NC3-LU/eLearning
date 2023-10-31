@@ -213,9 +213,9 @@ class QuestionsResource(resources.ModelResource):
     q_type = fields.Field(
         column_name="type", attribute="q_type", widget=ChoicesWidget(QUESTION_TYPES)
     )
-    category = fields.Field(
-        column_name="category",
-        attribute="category",
+    categories = fields.Field(
+        column_name="categories",
+        attribute="categories",
         widget=TranslatedNameM2MWidget(Category, field="name", separator="\n"),
     )
     max_score = fields.Field(column_name="max_score", attribute="max_score")
@@ -353,6 +353,11 @@ class ResourcesResource(resources.ModelResource):
         column_name="level",
         attribute="level",
         widget=TranslatedNameWidget(Level, field="name"),
+    )
+    resourceType = fields.Field(
+        column_name="resourceType",
+        attribute="resourceType",
+        widget=TranslatedNameWidget(ResourceType, field="name"),
     )
 
     class Meta:
