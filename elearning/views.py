@@ -55,9 +55,6 @@ def new_user(request):
 
     if first_level:
         user.current_level = first_level
-        first_level_position = user.current_level.get_first_level_position()
-        if first_level_position:
-            user.current_position = first_level_position
 
     user.save()
 
@@ -128,6 +125,12 @@ def course(request):
 
     if user.get_level_progress() == 100:
         set_next_level_user(request, user)
+
+    if not user.current_position:
+        first_level_position = user.current_level.get_first_level_position()
+        if first_level_position:
+            user.current_position = first_level_position
+            user.save()
 
     if user.current_level and user.current_position:
         # TODO: Get questions forms

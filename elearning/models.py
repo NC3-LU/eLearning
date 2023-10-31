@@ -20,7 +20,7 @@ class Level(TranslatableModel):
         description=models.TextField(),
     )
 
-    def get_first_level_position(self):
+    def get_first_level_position(self) -> int:
         first_level_sequence = self.levelsequence_set.order_by("position").first()
         if first_level_sequence:
             return first_level_sequence.position
@@ -149,7 +149,7 @@ class User(models.Model):
     created_at = models.DateField(auto_now_add=True, blank=True)
     updated_at = models.DateField(auto_now=True, blank=True)
 
-    def get_level_progress(self):
+    def get_level_progress(self) -> int:
         return (
             self.score_set.filter(level=self.current_level)
             .values_list("progress", flat=True)
