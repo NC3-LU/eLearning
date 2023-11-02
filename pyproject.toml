@@ -11,6 +11,7 @@ repository = "https://github.com/NC3-LU/eLearning"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pip = "^23.3.1"
 django = "^4.2"
 psycopg2-binary = "^2.8.4"
 cryptography = "^39.0.1"
@@ -26,6 +27,7 @@ django-cookiebanner = "^0.2.7"
 
 
 [tool.poetry.group.dev.dependencies]
+pip = "^23.3.1"
 flake8 = "^5.0.4"
 pre-commit = "^2.20.0"
 black = "^22.10.0"

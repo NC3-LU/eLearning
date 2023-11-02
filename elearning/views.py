@@ -8,7 +8,6 @@ from django.contrib import messages
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.utils.translation import gettext_lazy as _
 
 from .decorators import user_uuid_required
 from .forms import ResourceDownloadForm, inputUserUUIDForm
@@ -132,12 +131,12 @@ def course(request):
             user.current_position = first_level_position
             user.save()
 
-    if user.current_level and user.current_position:
-        # TODO: Get questions forms
-        print()
-    else:
-        messages.warning(request, _("No data available to start the level"))
-        return HttpResponseRedirect("/dashboard")
+    # if user.current_level and user.current_position:
+    #     # TODO: Get questions forms
+    #     print()
+    # else:
+    #     messages.warning(request, _("No data available to start the level"))
+    #     return HttpResponseRedirect("/dashboard")
 
     return render(request, "course.html")
 
