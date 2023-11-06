@@ -3,6 +3,21 @@ from uuid import UUID
 from django import forms
 
 
+class AnswerForm(forms.Form):
+    answer = forms.ModelMultipleChoiceField(
+        queryset=None,
+        required=True,
+    )
+
+    def __init__(self, *args, **kwargs):
+        question = kwargs.pop("question", None)
+        super().__init__(*args, **kwargs)
+        if question:
+            self.fields["answer"].widget = forms.CheckboxSelectMultiple()
+            self.fields["answer"].label = question.name
+            self.fields["answer"].queryset = question.answer_choices.all()
+
+
 class ResourceDownloadForm(forms.Form):
     resource = forms.BooleanField(
         widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),

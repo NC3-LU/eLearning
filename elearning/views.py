@@ -5,14 +5,27 @@ import zipfile
 from uuid import UUID
 
 from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
 
 from .decorators import user_uuid_required
-from .forms import ResourceDownloadForm, inputUserUUIDForm
-from .models import Category, Knowledge, Level, Resource, ResourceType, Score, User
+from .forms import AnswerForm, ResourceDownloadForm, inputUserUUIDForm
+from .models import (
+    Category,
+    Challenge,
+    Context,
+    Knowledge,
+    Level,
+    LevelSequence,
+    Question,
+    Resource,
+    ResourceType,
+    Score,
+    User,
+)
 from .settings import COOKIEBANNER
 from .viewLogic import find_user_by_uuid, set_next_level_user
 
@@ -133,13 +146,27 @@ def course(request):
             user.save()
 
     if user.current_level and user.current_position:
-        # TODO: Get questions forms
-        print()
+        forms = {}
+        level_sequence = LevelSequence.objects.filter(
+            level=user.current_level
+        ).order_by("position")
+        for sequence in level_sequence:
+            if sequence.content_type == ContentType.objects.get_for_model(Context):
+                print("Context")
+                print(sequence.object_id)
+            if sequence.content_type == ContentType.objects.get_for_model(Question):
+                question = Question.objects.get(pk=sequence.object_id)
+                forms[sequence.position] = AnswerForm(question=question)
+
+            if sequence.content_type == ContentType.objects.get_for_model(Challenge):
+                print("Challenge")
+                print(sequence.object_id)
+
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect("/dashboard")
 
-    return render(request, "course.html")
+    return render(request, "course.html", context={"forms": forms})
 
 
 @user_uuid_required
