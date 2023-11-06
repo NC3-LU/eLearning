@@ -153,20 +153,20 @@ def course(request):
         for sequence in level_sequence:
             if sequence.content_type == ContentType.objects.get_for_model(Context):
                 print("Context")
-                print(sequence.object_id)
             if sequence.content_type == ContentType.objects.get_for_model(Question):
                 question = Question.objects.get(pk=sequence.object_id)
                 forms[sequence.position] = AnswerForm(question=question)
 
             if sequence.content_type == ContentType.objects.get_for_model(Challenge):
                 print("Challenge")
-                print(sequence.object_id)
 
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect("/dashboard")
 
-    return render(request, "course.html", context={"forms": forms})
+    context = {"level": user.current_level, "forms": forms}
+
+    return render(request, "course.html", context=context)
 
 
 @user_uuid_required
