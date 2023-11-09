@@ -13,9 +13,33 @@ class AnswerForm(forms.Form):
         question = kwargs.pop("question", None)
         super().__init__(*args, **kwargs)
         if question:
-            self.fields["answer"].widget = forms.CheckboxSelectMultiple()
+            match question.q_type:
+                case "S":
+                    self.fields["answer"].widget = forms.RadioSelect()
+                case "M":
+                    self.fields["answer"].widget = forms.CheckboxSelectMultiple()
+                case "SO":
+                    self.fields["answer"].widget = forms.Select()
+                case "T":
+                    self.fields["answer"] = forms.CharField(
+                        required=True,
+                        widget=forms.Textarea(
+                            attrs={
+                                "autofocus": True,
+                                "placeholder": "",
+                                "rows": 5,
+                            }
+                        ),
+                    )
+
+                case _:
+                    self.fields["answer"].widget = forms.MultipleHiddenInput()
+
             self.fields["answer"].label = question.name
-            self.fields["answer"].queryset = question.answer_choices.all()
+            self.fields["answer"].widget.attrs["class"] = "d-grid gap-2 ps-3 mb-5"
+            self.fields["answer"].queryset = question.answer_choices.all().order_by(
+                "index"
+            )
 
 
 class ResourceDownloadForm(forms.Form):

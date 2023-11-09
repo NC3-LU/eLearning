@@ -12,11 +12,9 @@ from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
 
 from .decorators import user_uuid_required
-from .forms import AnswerForm, ResourceDownloadForm, inputUserUUIDForm
+from .forms import ResourceDownloadForm, inputUserUUIDForm
 from .models import (
     Category,
-    Challenge,
-    Context,
     Knowledge,
     Level,
     LevelSequence,
@@ -27,7 +25,12 @@ from .models import (
     User,
 )
 from .settings import COOKIEBANNER
-from .viewLogic import find_user_by_uuid, set_next_level_user
+from .viewLogic import (
+    find_user_by_uuid,
+    get_slides_content,
+    set_next_level_user,
+    set_next_position_user,
+)
 
 
 def index(request):
@@ -135,6 +138,7 @@ def dashboard(request):
 def course(request):
     user_uuid = request.session["user_uuid"]
     user = find_user_by_uuid(user_uuid)
+    next_control_enable = True
 
     if user.get_level_progress() == 100:
         set_next_level_user(request, user)
@@ -146,27 +150,63 @@ def course(request):
             user.save()
 
     if user.current_level and user.current_position:
-        forms = {}
-        level_sequence = LevelSequence.objects.filter(
-            level=user.current_level
-        ).order_by("position")
-        for sequence in level_sequence:
-            if sequence.content_type == ContentType.objects.get_for_model(Context):
-                print("Context")
-            if sequence.content_type == ContentType.objects.get_for_model(Question):
-                question = Question.objects.get(pk=sequence.object_id)
-                forms[sequence.position] = AnswerForm(question=question)
+        if request.method == "POST":
+            set_next_position_user(request, user)
 
-            if sequence.content_type == ContentType.objects.get_for_model(Challenge):
-                print("Challenge")
-
+        slides = get_slides_content(user)
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect("/dashboard")
 
-    context = {"level": user.current_level, "forms": forms}
+    if LevelSequence.objects.get(
+        level=user.current_level, position=user.current_position
+    ).content_type == ContentType.objects.get_for_model(Question):
+        next_control_enable = False
+
+    context = {
+        "next_control_enable": next_control_enable,
+        "progress": user.score_set.get(level=user.current_level).progress,
+        "level": user.current_level,
+        "slides": slides,
+    }
 
     return render(request, "course.html", context=context)
+
+
+@user_uuid_required
+def update_progress_bar(request):
+    user_uuid = request.session["user_uuid"]
+    user = find_user_by_uuid(user_uuid)
+    context = {
+        "progress": user.score_set.get(level=user.current_level).progress,
+    }
+    return render(request, "parts/course_progress_bar.html", context=context)
+
+
+@user_uuid_required
+def next_slide(request):
+    user_uuid = request.session["user_uuid"]
+    user = find_user_by_uuid(user_uuid)
+    next_control_enable = True
+
+    if user.current_level and user.current_position:
+        set_next_position_user(request, user)
+        slides = get_slides_content(user)
+    else:
+        messages.warning(request, _("No data available to start the level"))
+        return HttpResponseRedirect("/dashboard")
+
+    if LevelSequence.objects.get(
+        level=user.current_level, position=user.current_position
+    ).content_type == ContentType.objects.get_for_model(Question):
+        next_control_enable = False
+
+    context = {
+        "next_control_enable": next_control_enable,
+        "slides": slides,
+    }
+
+    return render(request, "course_carousel.html", context=context)
 
 
 @user_uuid_required

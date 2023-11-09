@@ -47,6 +47,8 @@ urlpatterns = [
     path("dashboard", views.dashboard, name="dashboard"),
     # Course
     path("course", views.course, name="course"),
+    path("next_slide/", views.next_slide, name="next_slide"),
+    path("update_progress_bar/", views.update_progress_bar, name="update_progress_bar"),
     #   Resources
     path("resources", views.resources, name="resources"),
     #   ResourcesDownload Modal
