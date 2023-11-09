@@ -5,7 +5,6 @@ import zipfile
 from uuid import UUID
 
 from django.contrib import messages
-from django.contrib.contenttypes.models import ContentType
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -13,23 +12,16 @@ from django.utils.translation import gettext_lazy as _
 
 from .decorators import user_uuid_required
 from .forms import ResourceDownloadForm, inputUserUUIDForm
-from .models import (
-    Category,
-    Knowledge,
-    Level,
-    LevelSequence,
-    Question,
-    Resource,
-    ResourceType,
-    Score,
-    User,
-)
+from .models import Category, Knowledge, Level, Resource, ResourceType, Score, User
 from .settings import COOKIEBANNER
 from .viewLogic import (
     find_user_by_uuid,
     get_slides_content,
     set_next_level_user,
     set_next_position_user,
+    set_previous_position_user,
+    set_progress_course,
+    set_status_carousel_controls,
 )
 
 
@@ -138,7 +130,6 @@ def dashboard(request):
 def course(request):
     user_uuid = request.session["user_uuid"]
     user = find_user_by_uuid(user_uuid)
-    next_control_enable = True
 
     if user.get_level_progress() == 100:
         set_next_level_user(request, user)
@@ -150,20 +141,20 @@ def course(request):
             user.save()
 
     if user.current_level and user.current_position:
+        set_progress_course(user)
         if request.method == "POST":
-            set_next_position_user(request, user)
+            set_next_position_user(user)
+            set_progress_course(user)
 
         slides = get_slides_content(user)
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect("/dashboard")
 
-    if LevelSequence.objects.get(
-        level=user.current_level, position=user.current_position
-    ).content_type == ContentType.objects.get_for_model(Question):
-        next_control_enable = False
+    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
 
     context = {
+        "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
         "progress": user.score_set.get(level=user.current_level).progress,
         "level": user.current_level,
@@ -184,24 +175,46 @@ def update_progress_bar(request):
 
 
 @user_uuid_required
-def next_slide(request):
+def previous_slide(request):
     user_uuid = request.session["user_uuid"]
     user = find_user_by_uuid(user_uuid)
-    next_control_enable = True
 
     if user.current_level and user.current_position:
-        set_next_position_user(request, user)
+        set_previous_position_user(user)
+        set_progress_course(user)
         slides = get_slides_content(user)
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect("/dashboard")
 
-    if LevelSequence.objects.get(
-        level=user.current_level, position=user.current_position
-    ).content_type == ContentType.objects.get_for_model(Question):
-        next_control_enable = False
+    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
 
     context = {
+        "previous_control_enable": previous_control_enable,
+        "next_control_enable": next_control_enable,
+        "slides": slides,
+    }
+
+    return render(request, "course_carousel.html", context=context)
+
+
+@user_uuid_required
+def next_slide(request):
+    user_uuid = request.session["user_uuid"]
+    user = find_user_by_uuid(user_uuid)
+
+    if user.current_level and user.current_position:
+        set_next_position_user(user)
+        set_progress_course(user)
+        slides = get_slides_content(user)
+    else:
+        messages.warning(request, _("No data available to start the level"))
+        return HttpResponseRedirect("/dashboard")
+
+    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
+
+    context = {
+        "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
         "slides": slides,
     }

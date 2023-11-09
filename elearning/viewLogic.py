@@ -43,9 +43,8 @@ def set_next_level_user(request: HttpRequest, user: User) -> None:
         return HttpResponseRedirect("/dashboard")
 
 
-def set_next_position_user(request: HttpRequest, user: User) -> None:
+def set_next_position_user(user: User) -> None:
     level_sequence = LevelSequence.objects.filter(level=user.current_level)
-    index = level_sequence.filter(position__lte=user.current_position).count()
 
     if level_sequence:
         next_position = (
@@ -57,22 +56,33 @@ def set_next_position_user(request: HttpRequest, user: User) -> None:
         if next_position:
             user.current_position = next_position.position
             user.save()
-            index = level_sequence.filter(position__lt=user.current_position).count()
 
-        progress = index / level_sequence.count() * 100
 
-        user_score = user.score_set.filter(level=user.current_level).first()
+def set_previous_position_user(user: User) -> None:
+    level_sequence = LevelSequence.objects.filter(level=user.current_level)
 
-        if user_score:
-            user_score.progress = progress
-            user_score.save()
+    if level_sequence:
+        previous_position = (
+            level_sequence.filter(position__lt=user.current_position)
+            .order_by("position")
+            .last()
+        )
 
-    # else:
-    #     messages.success(
-    #         request,
-    #         _("Congratulations! You have completed all available levels.!"),
-    #     )
-    #     return HttpResponseRedirect("/dashboard")
+        if previous_position:
+            user.current_position = previous_position.position
+            user.save()
+
+
+def set_progress_course(user: User):
+    level_sequence = LevelSequence.objects.filter(level=user.current_level)
+    index = level_sequence.filter(position__lte=user.current_position).count()
+    progress = index / level_sequence.count() * 100
+
+    user_score = user.score_set.filter(level=user.current_level).first()
+
+    if user_score:
+        user_score.progress = progress
+        user_score.save()
 
 
 def get_slides_content(user: User) -> []:
@@ -112,3 +122,43 @@ def get_question_index(position: int) -> int:
     )
     index = questions.filter(position__lt=position).count()
     return index
+
+
+def set_status_carousel_controls(user: User) -> [bool, bool]:
+    try:
+        current_sequence = LevelSequence.objects.get(
+            level=user.current_level, position=user.current_position
+        )
+
+        sequence_before = (
+            LevelSequence.objects.filter(
+                level=user.current_level, position__lt=user.current_position
+            )
+            .order_by("position")
+            .last()
+        )
+
+        sequence_after = (
+            LevelSequence.objects.filter(
+                level=user.current_level, position__gt=user.current_position
+            )
+            .order_by("position")
+            .first()
+        )
+
+        previous_control_enable = bool(
+            sequence_before
+            and sequence_before.content_type
+            != ContentType.objects.get_for_model(Question)
+        )
+        next_control_enable = bool(
+            sequence_after
+            and current_sequence.content_type
+            != ContentType.objects.get_for_model(Question)
+        )
+
+    except LevelSequence.DoesNotExist:
+        previous_control_enable = False
+        next_control_enable = False
+
+    return [previous_control_enable, next_control_enable]
