@@ -216,6 +216,7 @@ def next_slide(request):
     context = {
         "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
+        "level": user.current_level,
         "slides": slides,
     }
 
