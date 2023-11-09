@@ -18,6 +18,8 @@ QUESTION_TYPES = [
     ("MT", "Multiple Choice + Free Text"),
     ("ST", "Single Choice + Free Text"),
     ("CL", "Countries list"),
+    ("CA", "Categorisation"),
+    ("MA", "Matching"),
 ]
 
 MEDIA_TYPE = [

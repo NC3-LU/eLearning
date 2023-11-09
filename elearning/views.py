@@ -165,6 +165,9 @@ def course(request):
         return HttpResponseRedirect("/dashboard")
 
     context = {"level": user.current_level, "forms": forms}
+    print("INFOOOO")
+    print(context)
+    print(vars(context["level"]))
 
     return render(request, "course.html", context=context)
 

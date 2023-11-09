@@ -4,18 +4,41 @@ from django import forms
 
 
 class AnswerForm(forms.Form):
-    answer = forms.ModelMultipleChoiceField(
-        queryset=None,
-        required=True,
-    )
+    answer = None
 
     def __init__(self, *args, **kwargs):
         question = kwargs.pop("question", None)
+        print("QUESTION")
+        print(vars(question))
         super().__init__(*args, **kwargs)
         if question:
-            self.fields["answer"].widget = forms.CheckboxSelectMultiple()
-            self.fields["answer"].label = question.name
-            self.fields["answer"].queryset = question.answer_choices.all()
+            if question.q_type == "M":
+                answer = forms.ModelMultipleChoiceField(
+                    queryset=None,
+                    required=True,
+                )
+                answer.label = question.name
+                answer.widget = forms.CheckboxSelectMultiple()
+                answer.queryset = question.answer_choices.all()
+            elif question.q_type == "S":
+                self.fields["answer"].widget = forms.RadioSelect()
+                self.fields["answer"].queryset = question.answer_choices.all()
+            elif question.q_type == "SO":
+                self.fields["answer"].widget = forms.CheckboxSelectMultiple()
+                self.fields["answer"].queryset = question.answer_choices.all()
+            elif question.q_type == "T":
+                self.fields["answer"].widget = forms.TextInput()
+            elif question.q_type == "MT":
+                self.fields["answer"].widget = forms.TextInput()
+            elif question.q_type == "ST":
+                self.fields["answer"].widget = forms.TextInput()
+            elif question.q_type == "CL":
+                self.fields["answer"].widget = forms.Select()
+                self.fields["answer"].queryset = question.answer_choices.all()
+            elif question.q_type == "CA":
+                pass
+            elif question.q_type == "MA":
+                pass
 
 
 class ResourceDownloadForm(forms.Form):
