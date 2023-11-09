@@ -391,6 +391,7 @@ class ResourceTypeAdmin(ImportExportModelAdmin, TranslatableAdmin):
 class ChallengesResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
+    description = fields.Field(column_name="description", attribute="description")
 
     class Meta:
         model = Challenge
@@ -398,7 +399,10 @@ class ChallengesResource(resources.ModelResource):
 
 @admin.register(Challenge, site=admin_site)
 class ChallengeAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name",)
+    list_display = (
+        "name",
+        "description",
+    )
     inlines = (levelSequenceInline,)
 
 
