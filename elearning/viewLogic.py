@@ -75,10 +75,11 @@ def set_previous_position_user(user: User) -> None:
 
 def set_progress_course(user: User):
     level_sequence = LevelSequence.objects.filter(level=user.current_level)
-    index = level_sequence.filter(position__lte=user.current_position).count()
-    progress = index / level_sequence.count() * 100
-
     user_score = user.score_set.filter(level=user.current_level).first()
+
+    if level_sequence:
+        index = level_sequence.filter(position__lte=user.current_position).count()
+        progress = index / level_sequence.count() * 100
 
     if user_score:
         user_score.progress = progress
