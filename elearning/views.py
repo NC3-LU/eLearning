@@ -158,6 +158,7 @@ def course(request):
         "next_control_enable": next_control_enable,
         "progress": user.score_set.get(level=user.current_level).progress,
         "level": user.current_level,
+        "score": user.score_set.get(level=user.current_level).score,
         "slides": slides,
     }
 
@@ -192,6 +193,8 @@ def previous_slide(request):
     context = {
         "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
+        "level": user.current_level,
+        "score": user.score_set.get(level=user.current_level).score,
         "slides": slides,
     }
 
@@ -217,6 +220,7 @@ def next_slide(request):
         "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
         "level": user.current_level,
+        "score": user.score_set.get(level=user.current_level).score,
         "slides": slides,
     }
 
