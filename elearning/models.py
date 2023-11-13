@@ -219,7 +219,8 @@ class Resource(TranslatableModel):
 # Challenges
 class Challenge(TranslatableModel):
     translations = TranslatedFields(
-        name=models.TextField(verbose_name="description"),
+        name=models.TextField(),
+        description=models.TextField(blank=True, default=None, null=True),
     )
 
     def __str__(self):
@@ -282,7 +283,7 @@ class ContextMediaTemplate(models.Model):
     position = models.CharField(
         max_length=2, choices=POSITION_CHOICES, default=POSITION_CHOICES[0][0]
     )
-    css_classes = ArrayField(models.CharField(max_length=50, blank=True), default=list)
+    css_classes = ArrayField(models.CharField(), default=list, blank=True)
 
     class Meta:
         verbose_name = _("Media Template")
@@ -298,7 +299,7 @@ class ContextTextTemplate(models.Model):
     position = models.CharField(
         max_length=2, choices=POSITION_CHOICES, default=POSITION_CHOICES[0][0]
     )
-    css_classes = ArrayField(models.CharField(max_length=50, blank=True), default=list)
+    css_classes = ArrayField(models.CharField(), default=list, blank=True)
 
     class Meta:
         verbose_name = _("Text Template")
@@ -314,7 +315,7 @@ class QuestionMediaTemplate(models.Model):
     position = models.CharField(
         max_length=2, choices=POSITION_CHOICES, default=POSITION_CHOICES[0][0]
     )
-    css_classes = ArrayField(models.CharField(max_length=50, blank=True), default=list)
+    css_classes = ArrayField(models.CharField(), default=list, blank=True)
 
     class Meta:
         verbose_name = _("Media Template")

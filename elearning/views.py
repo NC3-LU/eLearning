@@ -5,29 +5,24 @@ import zipfile
 from uuid import UUID
 
 from django.contrib import messages
-from django.contrib.contenttypes.models import ContentType
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
 
 from .decorators import user_uuid_required
-from .forms import AnswerForm, ResourceDownloadForm, inputUserUUIDForm
-from .models import (
-    Category,
-    Challenge,
-    Context,
-    Knowledge,
-    Level,
-    LevelSequence,
-    Question,
-    Resource,
-    ResourceType,
-    Score,
-    User,
-)
+from .forms import ResourceDownloadForm, inputUserUUIDForm
+from .models import Category, Knowledge, Level, Resource, ResourceType, Score, User
 from .settings import COOKIEBANNER
-from .viewLogic import find_user_by_uuid, set_next_level_user
+from .viewLogic import (
+    find_user_by_uuid,
+    get_slides_content,
+    set_next_level_user,
+    set_next_position_user,
+    set_previous_position_user,
+    set_progress_course,
+    set_status_carousel_controls,
+)
 
 
 def index(request):
@@ -146,30 +141,90 @@ def course(request):
             user.save()
 
     if user.current_level and user.current_position:
-        forms = {}
-        level_sequence = LevelSequence.objects.filter(
-            level=user.current_level
-        ).order_by("position")
-        for sequence in level_sequence:
-            if sequence.content_type == ContentType.objects.get_for_model(Context):
-                print("Context")
-            if sequence.content_type == ContentType.objects.get_for_model(Question):
-                question = Question.objects.get(pk=sequence.object_id)
-                forms[sequence.position] = AnswerForm(question=question)
+        set_progress_course(user)
+        if request.method == "POST":
+            set_next_position_user(user)
+            set_progress_course(user)
 
-            if sequence.content_type == ContentType.objects.get_for_model(Challenge):
-                print("Challenge")
-
+        slides = get_slides_content(user)
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect("/dashboard")
 
-    context = {"level": user.current_level, "forms": forms}
-    print("INFOOOO")
-    print(context)
-    print(vars(context["level"]))
+    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
+
+    context = {
+        "previous_control_enable": previous_control_enable,
+        "next_control_enable": next_control_enable,
+        "progress": user.score_set.get(level=user.current_level).progress,
+        "level": user.current_level,
+        "score": user.score_set.get(level=user.current_level).score,
+        "slides": slides,
+    }
 
     return render(request, "course.html", context=context)
+
+
+@user_uuid_required
+def update_progress_bar(request):
+    user_uuid = request.session["user_uuid"]
+    user = find_user_by_uuid(user_uuid)
+    context = {
+        "progress": user.score_set.get(level=user.current_level).progress,
+    }
+    return render(request, "parts/course_progress_bar.html", context=context)
+
+
+@user_uuid_required
+def previous_slide(request):
+    user_uuid = request.session["user_uuid"]
+    user = find_user_by_uuid(user_uuid)
+
+    if user.current_level and user.current_position:
+        set_previous_position_user(user)
+        set_progress_course(user)
+        slides = get_slides_content(user)
+    else:
+        messages.warning(request, _("No data available to start the level"))
+        return HttpResponseRedirect("/dashboard")
+
+    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
+
+    context = {
+        "previous_control_enable": previous_control_enable,
+        "next_control_enable": next_control_enable,
+        "level": user.current_level,
+        "score": user.score_set.get(level=user.current_level).score,
+        "slides": slides,
+    }
+
+    return render(request, "course_carousel.html", context=context)
+
+
+@user_uuid_required
+def next_slide(request):
+    user_uuid = request.session["user_uuid"]
+    user = find_user_by_uuid(user_uuid)
+
+    if user.current_level and user.current_position:
+        set_next_position_user(user)
+        set_progress_course(user)
+        slides = get_slides_content(user)
+    else:
+        messages.warning(request, _("No data available to start the level"))
+        return HttpResponseRedirect("/dashboard")
+
+    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
+
+    context = {
+        "previous_control_enable": previous_control_enable,
+        "next_control_enable": next_control_enable,
+        "level": user.current_level,
+        "score": user.score_set.get(level=user.current_level).score,
+        "slides": slides,
+    }
+
+    return render(request, "course_carousel.html", context=context)
 
 
 @user_uuid_required

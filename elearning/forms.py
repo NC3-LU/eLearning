@@ -5,40 +5,42 @@ from django import forms
 
 class AnswerForm(forms.Form):
     answer = None
+    answer = forms.ModelMultipleChoiceField(
+        queryset=None,
+        required=True,
+    )
 
     def __init__(self, *args, **kwargs):
         question = kwargs.pop("question", None)
-        print("QUESTION")
-        print(vars(question))
         super().__init__(*args, **kwargs)
         if question:
-            if question.q_type == "M":
-                answer = forms.ModelMultipleChoiceField(
-                    queryset=None,
-                    required=True,
-                )
-                answer.label = question.name
-                answer.widget = forms.CheckboxSelectMultiple()
-                answer.queryset = question.answer_choices.all()
-            elif question.q_type == "S":
-                self.fields["answer"].widget = forms.RadioSelect()
-                self.fields["answer"].queryset = question.answer_choices.all()
-            elif question.q_type == "SO":
-                self.fields["answer"].widget = forms.CheckboxSelectMultiple()
-                self.fields["answer"].queryset = question.answer_choices.all()
-            elif question.q_type == "T":
-                self.fields["answer"].widget = forms.TextInput()
-            elif question.q_type == "MT":
-                self.fields["answer"].widget = forms.TextInput()
-            elif question.q_type == "ST":
-                self.fields["answer"].widget = forms.TextInput()
-            elif question.q_type == "CL":
-                self.fields["answer"].widget = forms.Select()
-                self.fields["answer"].queryset = question.answer_choices.all()
-            elif question.q_type == "CA":
-                pass
-            elif question.q_type == "MA":
-                pass
+            match question.q_type:
+                case "S":
+                    self.fields["answer"].widget = forms.RadioSelect()
+                case "M":
+                    self.fields["answer"].widget = forms.CheckboxSelectMultiple()
+                case "SO":
+                    self.fields["answer"].widget = forms.Select()
+                case "T":
+                    self.fields["answer"] = forms.CharField(
+                        required=True,
+                        widget=forms.Textarea(
+                            attrs={
+                                "autofocus": True,
+                                "placeholder": "",
+                                "rows": 5,
+                            }
+                        ),
+                    )
+
+                case _:
+                    self.fields["answer"].widget = forms.MultipleHiddenInput()
+
+            self.fields["answer"].label = question.name
+            self.fields["answer"].widget.attrs["class"] = "d-grid gap-2 ps-3 mb-5"
+            self.fields["answer"].queryset = question.answer_choices.all().order_by(
+                "index"
+            )
 
 
 class ResourceDownloadForm(forms.Form):

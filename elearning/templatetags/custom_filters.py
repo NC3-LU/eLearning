@@ -1,4 +1,7 @@
+import os
+
 from django import template
+from django.conf import settings
 
 register = template.Library()
 
@@ -20,7 +23,6 @@ def split(value, key):
     return value.split(key)
 
 
-@register.inclusion_tag("parts/course_progress_bar.html")
-def course_progress_bar(value):
-    value = max(0, min(value, 100))
-    return {"value": value}
+@register.filter(name="extract_static")
+def extract_static_part(file_path):
+    return os.path.relpath(file_path, settings.STATIC_THEME_DIR)
