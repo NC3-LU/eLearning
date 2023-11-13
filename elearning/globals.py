@@ -19,7 +19,8 @@ QUESTION_TYPES = [
     ("ST", "Single Choice + Free Text"),
     ("CL", "Countries list"),
     ("CA", "Categorisation"),
-    ("MA", "Matching"),
+    ("SR", "Sorting"),
+    ("LI", "Linking"),
 ]
 
 MEDIA_TYPE = [

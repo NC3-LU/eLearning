@@ -2,9 +2,12 @@ from uuid import UUID
 
 from django import forms
 
+from elearning.fields.categorization_field import CategorizationField
+from elearning.fields.linking_field import LinkingField
+from elearning.fields.sorting_field import SortingField
+
 
 class AnswerForm(forms.Form):
-    answer = None
     answer = forms.ModelMultipleChoiceField(
         queryset=None,
         required=True,
@@ -32,7 +35,20 @@ class AnswerForm(forms.Form):
                             }
                         ),
                     )
-
+                case "CA":
+                    self.fields["answer"] = CategorizationField(
+                        choices=["1", "2", "3"],
+                        categories=["Odd", "Even"],
+                    )
+                case "SR":
+                    self.fields["answer"] = SortingField(
+                        choices=["1", "2", "3"],
+                    )
+                case "LI":
+                    self.fields["answer"] = LinkingField(
+                        left_choices=["1", "2", "3"],
+                        right_choices=["Odd", "Even"],
+                    )
                 case _:
                     self.fields["answer"].widget = forms.MultipleHiddenInput()
 
