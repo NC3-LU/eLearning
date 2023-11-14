@@ -7,22 +7,19 @@ class SortingWidget(forms.Widget):
         js = (
             "npm_components/jquery/dist/jquery.min.js",
             "https://code.jquery.com/ui/1.12.1/jquery-ui.js",
-            "js/drag-drop.js",
+            "js/sortable.js",
         )
 
     choices = None
-    categories = None
 
-    def __init__(self, choices, categories, *args, **kwargs):
+    def __init__(self, choices, *args, **kwargs):
         self.choices = choices
-        self.categories = categories
 
     def render(self, name, value, attrs=None, renderer=None):
         rendered_html = f"""
             <div class="row h-100">
                 <div class="col-md-12">
-                    <h4>Answers</h4>
-                    <div id="sortable" class="sortable">
+                    <div class="sortable">
                         {self.get_choice_template(self.choices)}
                     </div>
                 </div>
@@ -34,14 +31,14 @@ class SortingWidget(forms.Widget):
     def get_choice_template(self, choices):
         html = ""
 
-        for c in choices:
+        for i, c in enumerate(choices):
             html += f"""
                 <div
                     class="draggable-item d-flex w-100 border border-primary p-2"
                     data-answer="odd"
                 >
-                    <div class="flex-grow-0">{ c }</div>
-                    <div class="flex-grow-1">Answer 1</div>
+                    <div class="flex-grow-0">{ i + 1 }.&nbsp;</div>
+                    <div class="flex-grow-1">{ c }</div>
                     <div class="flex-grow-0"><i class="bi bi-grip-vertical"></i></div>
                 </div>
             """
@@ -59,13 +56,10 @@ class SortingField(forms.Field):
     id_for_label = _
 
     def __init__(self, *args, **kwargs):
-        print("eee")
-        print(args, kwargs)
         super().__init__()
-        self.widget = SortingWidget(kwargs["choices"], kwargs["categories"])
+        self.widget = SortingWidget(kwargs["choices"])
         self.widget.attrs = self.widget_attrs(self.widget)
         self.choices = kwargs["choices"]
-        self.categories = kwargs["categories"]
 
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)

@@ -35,19 +35,20 @@ class AnswerForm(forms.Form):
                             }
                         ),
                     )
+
                 case "CA":
                     self.fields["answer"] = CategorizationField(
-                        choices=["1", "2", "3"],
+                        choices=["Answer 1", "Answer 2", "Other"],
                         categories=["Odd", "Even"],
                     )
                 case "SR":
                     self.fields["answer"] = SortingField(
-                        choices=["1", "2", "3"],
+                        choices=["Answer 1", "Answer 2", "Other"],
                     )
                 case "LI":
                     self.fields["answer"] = LinkingField(
-                        left_choices=["1", "2", "3"],
-                        right_choices=["Odd", "Even"],
+                        left_choices=["Answer 1", "Answer 2", "Other"],
+                        right_choices=["Answer 3", "Answer 4", "AAAAAA"],
                     )
                 case _:
                     self.fields["answer"].widget = forms.MultipleHiddenInput()

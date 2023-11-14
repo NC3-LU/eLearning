@@ -21,8 +21,7 @@ class CategorizationWidget(forms.Widget):
         rendered_html = f"""
             <div class="row h-100">
                 <div class="col-md-6">
-                    <h4>Answers</h4>
-                    <div id="sortable" class="sortable">
+                    <div>
                         {self.get_choice_template(self.choices)}
                     </div>
                 </div>
@@ -40,14 +39,14 @@ class CategorizationWidget(forms.Widget):
     def get_choice_template(self, choices):
         html = ""
 
-        for c in choices:
+        for i, c in enumerate(choices):
             html += f"""
                 <div
                     class="draggable-item d-flex w-100 border border-primary p-2"
                     data-answer="odd"
                 >
-                    <div class="flex-grow-0">{ c }</div>
-                    <div class="flex-grow-1">Answer 1</div>
+                    <div class="flex-grow-0">{ i + 1 }.&nbsp;</div>
+                    <div class="flex-grow-1">{ c }</div>
                     <div class="flex-grow-0"><i class="bi bi-grip-vertical"></i></div>
                 </div>
             """
@@ -79,8 +78,6 @@ class CategorizationField(forms.Field):
     id_for_label = _
 
     def __init__(self, *args, **kwargs):
-        print("eee")
-        print(args, kwargs)
         super().__init__()
         self.widget = CategorizationWidget(kwargs["choices"], kwargs["categories"])
         self.widget.attrs = self.widget_attrs(self.widget)
