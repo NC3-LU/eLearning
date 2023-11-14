@@ -9,6 +9,7 @@ from django.db.models import BooleanField, Case, Value, When
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from .decorators import user_uuid_required
@@ -45,10 +46,10 @@ def start(request):
         if form.is_valid():
             user_uuid = form.cleaned_data["user_uuid"]
             request.session["user_uuid"] = str(user_uuid)
-            return HttpResponseRedirect("/dashboard")
+            return HttpResponseRedirect(reverse("dashboard"))
         else:
             messages.error(request, form.errors["user_uuid"])
-            return HttpResponseRedirect("/")
+            return HttpResponseRedirect(reverse("index"))
     else:
         form = inputUserUUIDForm()
     return render(request, "modals/start.html", {"form": form})
@@ -149,7 +150,7 @@ def course(request):
         slides = get_slides_content(user)
     else:
         messages.warning(request, _("No data available to start the level"))
-        return HttpResponseRedirect("/dashboard")
+        return HttpResponseRedirect(reverse("dashboard"))
 
     [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
 
@@ -176,43 +177,18 @@ def update_progress_bar(request):
 
 
 @user_uuid_required
-def previous_slide(request):
+def change_slide(request):
     user_uuid = request.session["user_uuid"]
     user = find_user_by_uuid(user_uuid)
+    direction = request.GET.get("direction", None)
 
     if user.current_level and user.current_position:
-        set_position_user(user, direction="previous")
+        set_position_user(user, direction=direction)
         set_progress_course(user)
         slides = get_slides_content(user)
     else:
         messages.warning(request, _("No data available to start the level"))
-        return HttpResponseRedirect("/dashboard")
-
-    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
-
-    context = {
-        "previous_control_enable": previous_control_enable,
-        "next_control_enable": next_control_enable,
-        "level": user.current_level,
-        "score": user.score_set.get(level=user.current_level).score,
-        "slides": slides,
-    }
-
-    return render(request, "course_carousel.html", context=context)
-
-
-@user_uuid_required
-def next_slide(request):
-    user_uuid = request.session["user_uuid"]
-    user = find_user_by_uuid(user_uuid)
-
-    if user.current_level and user.current_position:
-        set_position_user(user, direction="next")
-        set_progress_course(user)
-        slides = get_slides_content(user)
-    else:
-        messages.warning(request, _("No data available to start the level"))
-        return HttpResponseRedirect("/dashboard")
+        return HttpResponseRedirect(reverse("dashboard"))
 
     [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
 
@@ -305,7 +281,7 @@ def resources_download(request):
                 response["Content-Disposition"] = f'attachment; filename="{file_name}"'
 
         else:
-            return HttpResponseRedirect("/resources")
+            return HttpResponseRedirect(reverse("resources"))
 
         return response
 
