@@ -5,6 +5,7 @@ import zipfile
 from uuid import UUID
 
 from django.contrib import messages
+from django.db.models import BooleanField, Case, Value, When
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -243,6 +244,9 @@ def resources(request):
 
 @user_uuid_required
 def resources_download(request):
+    user_uuid = request.session["user_uuid"]
+    user = find_user_by_uuid(user_uuid)
+
     resource_type_id = request.GET.get("resource_type")
     level_id = request.GET.get("level")
     resources = Resource.objects.all().order_by("level", "resourceType")
@@ -252,6 +256,14 @@ def resources_download(request):
 
     if level_id:
         resources = resources.filter(level=level_id)
+
+    resources = resources.annotate(
+        disabled=Case(
+            When(level__index__gt=user.current_level.index, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField(),
+        )
+    )
 
     ResourceFormSet = formset_factory(ResourceDownloadForm, extra=0)
 
