@@ -42,7 +42,7 @@ class CategorizationWidget(forms.Widget):
         for i, c in enumerate(choices):
             html += f"""
                 <div
-                    class="draggable-item d-flex w-100 border border-primary p-2"
+                    class="position-relative draggable-item d-flex w-100 border border-primary p-2"
                     data-answer="odd"
                 >
                     <div class="flex-grow-0">{ i + 1 }.&nbsp;</div>
