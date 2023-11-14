@@ -1,87 +1,71 @@
-import logging
 from uuid import UUID
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from .forms import AnswerForm
 from .models import Challenge, Context, Level, LevelSequence, Question, User
 
-# Get an instance of a logger
-logger = logging.getLogger(__name__)
-
 
 def find_user_by_uuid(user_uuid: UUID) -> User:
-    """Get a user by its UUID."""
-    try:
-        return User.objects.get(uuid=user_uuid)
-    except User.DoesNotExist as e:
-        logger.error("User does not exist.")
-        raise e
+    return get_object_or_404(User, uuid=user_uuid)
 
 
 def set_next_level_user(request: HttpRequest, user: User) -> None:
     current_index = user.current_level.index
     next_level = Level.objects.filter(index__gt=current_index).order_by("index").first()
 
-    if next_level:
-        user.current_level = next_level
-        first_level_position = user.current_level.get_first_level_position()
-        if first_level_position:
-            user.current_position = first_level_position
-        else:
-            user.current_position = None
-        user.save()
-    else:
+    if not next_level:
         messages.success(
             request,
-            _("Congratulations! You have completed all available levels.!"),
+            _("Congratulations! You have completed all available levels."),
         )
-        return HttpResponseRedirect("/dashboard")
+        return HttpResponseRedirect(reverse("dashboard"))
+
+    user.current_level = next_level
+    first_level_position = user.current_level.get_first_level_position()
+    user.current_position = first_level_position if first_level_position else None
+    user.save()
 
 
-def set_next_position_user(user: User) -> None:
+def set_position_user(user: User, direction: str) -> None:
     level_sequence = LevelSequence.objects.filter(level=user.current_level)
 
-    if level_sequence:
-        next_position = (
-            level_sequence.filter(position__gt=user.current_position)
-            .order_by("position")
-            .first()
+    if not level_sequence:
+        return
+
+    order_by_field = "position" if direction == "next" else "-position"
+    filter_condition = "gt" if direction == "next" else "lt"
+
+    position = (
+        level_sequence.filter(
+            **{f"position__{filter_condition}": user.current_position}
         )
+        .order_by(order_by_field)
+        .first()
+    )
 
-        if next_position:
-            user.current_position = next_position.position
-            user.save()
-
-
-def set_previous_position_user(user: User) -> None:
-    level_sequence = LevelSequence.objects.filter(level=user.current_level)
-
-    if level_sequence:
-        previous_position = (
-            level_sequence.filter(position__lt=user.current_position)
-            .order_by("position")
-            .last()
-        )
-
-        if previous_position:
-            user.current_position = previous_position.position
-            user.save()
+    if position:
+        user.current_position = position.position
+        user.save()
 
 
-def set_progress_course(user: User):
+def set_progress_course(user: User) -> None:
     level_sequence = LevelSequence.objects.filter(level=user.current_level)
     user_score = user.score_set.filter(level=user.current_level).first()
 
-    if level_sequence:
-        index = level_sequence.filter(position__lte=user.current_position).count()
-        progress = index / level_sequence.count() * 100
+    if not level_sequence or not user_score:
+        return
 
-    if user_score:
+    index = level_sequence.filter(position__lte=user.current_position).count()
+    total_positions = level_sequence.count()
+
+    if total_positions > 0:
+        progress = (index / total_positions) * 100
         user_score.progress = progress
         user_score.save()
 
@@ -108,7 +92,7 @@ def get_slides_content(user: User) -> []:
         elif content_type == ContentType.objects.get_for_model(Question):
             question = get_object_or_404(Question, pk=object_id)
             form = AnswerForm(question=question)
-            form.question_index = get_question_index(sequence.position)
+            form.question_index = get_question_index(user, sequence.position)
             slides.append({"question": form})
         elif content_type == ContentType.objects.get_for_model(Challenge):
             challenge = get_object_or_404(Challenge, pk=object_id)
@@ -117,11 +101,12 @@ def get_slides_content(user: User) -> []:
     return slides
 
 
-def get_question_index(position: int) -> int:
+def get_question_index(user: User, position: int) -> int:
     questions = LevelSequence.objects.filter(
-        content_type=ContentType.objects.get_for_model(Question)
-    )
-    index = questions.filter(position__lt=position).count()
+        level=user.current_level,
+        content_type=ContentType.objects.get_for_model(Question),
+    ).order_by("position")
+    index = questions.filter(position__lte=position).count()
     return index
 
 

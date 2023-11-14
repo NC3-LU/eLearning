@@ -19,8 +19,7 @@ from .viewLogic import (
     find_user_by_uuid,
     get_slides_content,
     set_next_level_user,
-    set_next_position_user,
-    set_previous_position_user,
+    set_position_user,
     set_progress_course,
     set_status_carousel_controls,
 )
@@ -144,7 +143,7 @@ def course(request):
     if user.current_level and user.current_position:
         set_progress_course(user)
         if request.method == "POST":
-            set_next_position_user(user)
+            set_position_user(user, direction="next")
             set_progress_course(user)
 
         slides = get_slides_content(user)
@@ -182,7 +181,7 @@ def previous_slide(request):
     user = find_user_by_uuid(user_uuid)
 
     if user.current_level and user.current_position:
-        set_previous_position_user(user)
+        set_position_user(user, direction="previous")
         set_progress_course(user)
         slides = get_slides_content(user)
     else:
@@ -208,7 +207,7 @@ def next_slide(request):
     user = find_user_by_uuid(user_uuid)
 
     if user.current_level and user.current_position:
-        set_next_position_user(user)
+        set_position_user(user, direction="next")
         set_progress_course(user)
         slides = get_slides_content(user)
     else:
