@@ -74,6 +74,7 @@ class ResourceDownloadForm(forms.Form):
             self.resource_type = initial["resource"].resourceType
             self.fields["resource"].label = initial["resource"].name
             self.fields["resource"].widget.attrs["value"] = initial["resource"].id
+            self.fields["resource"].disabled = initial["resource"].disabled
 
 
 class inputUserUUIDForm(forms.Form):
