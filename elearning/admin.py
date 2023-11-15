@@ -11,6 +11,7 @@ from parler.models import TranslationDoesNotExist
 from .globals import MEDIA_TYPE, QUESTION_TYPES, TEXT_TYPE
 from .models import (
     AnswerChoice,
+    AnswerChoiceCategory,
     Category,
     Challenge,
     Context,
@@ -153,17 +154,53 @@ class AnswerChoicesResource(resources.ModelResource):
     is_correct = fields.Field(column_name="is_correct", attribute="is_correct")
     score = fields.Field(column_name="score", attribute="score")
     tooltip = fields.Field(column_name="tooltip", attribute="tooltip")
+    answer_text = fields.Field(column_name="answer_text", attribute="answer_text")
+    answer_choice_category = fields.Field(
+        column_name="answer_choice_category",
+        attribute="answer_choice_category",
+        widget=TranslatedNameWidget(AnswerChoiceCategory, field="name"),
+    )
 
     class Meta:
-        model = AnswerChoice
+        model = AnswerChoiceCategory
 
 
 @admin.register(AnswerChoice, site=admin_site)
 class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name", "index", "score", "is_correct")
+    list_display = (
+        "name",
+        "index",
+        "score",
+        "is_correct",
+        "answer_text",
+        "answer_choice_category",
+    )
     list_filter = ("is_correct",)
-    fields = ("index", "name", "is_correct", "score", "tooltip")
+    fields = (
+        "index",
+        "name",
+        "is_correct",
+        "score",
+        "tooltip",
+        "answer_text",
+        "answer_choice_category",
+    )
     resource_class = AnswerChoicesResource
+
+
+class AnswerChoiceCategoriesResource(resources.ModelResource):
+    id = fields.Field(column_name="id", attribute="id", readonly=True)
+    name = fields.Field(column_name="name", attribute="name")
+
+    class Meta:
+        model = AnswerChoiceCategory
+
+
+@admin.register(AnswerChoiceCategory, site=admin_site)
+class AnswerChoiceCategoriesAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ("name",)
+    fields = ("name",)
+    resource_class = AnswerChoiceCategoriesResource
 
 
 class MediasResource(resources.ModelResource):

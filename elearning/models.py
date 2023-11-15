@@ -47,6 +47,20 @@ class Category(TranslatableModel):
         verbose_name_plural = _("Categories")
 
 
+# Answer choice categories
+class AnswerChoiceCategory(TranslatableModel):
+    translations = TranslatedFields(
+        name=models.CharField(verbose_name="label", max_length=100),
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _("Answer choice category")
+        verbose_name_plural = _("Answer choice categories")
+
+
 # Answer choices
 class AnswerChoice(TranslatableModel):
     index = models.IntegerField()
@@ -57,6 +71,10 @@ class AnswerChoice(TranslatableModel):
     score = models.IntegerField(default=0)
     is_correct = models.BooleanField(
         verbose_name="Is it the correct answer ?", default=False
+    )
+    answer_text = models.CharField(max_length=100, blank=True, default=None, null=True)
+    answer_choice_category = models.ForeignKey(
+        AnswerChoiceCategory, null=True, on_delete=models.CASCADE
     )
 
     def __str__(self):
