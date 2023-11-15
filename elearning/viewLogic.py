@@ -15,6 +15,12 @@ def find_user_by_uuid(user_uuid: UUID) -> User:
     return get_object_or_404(User, uuid=user_uuid)
 
 
+def get_user_from_request(request: HttpRequest) -> User:
+    user_uuid = request.session["user_uuid"]
+    user = find_user_by_uuid(user_uuid)
+    return user
+
+
 def set_next_level_user(request: HttpRequest, user: User) -> None:
     current_index = user.current_level.index
     next_level = Level.objects.filter(index__gt=current_index).order_by("index").first()

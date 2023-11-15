@@ -2,7 +2,6 @@ import io
 import mimetypes
 import os
 import zipfile
-from uuid import UUID
 
 from django.contrib import messages
 from django.db.models import BooleanField, Case, Value, When
@@ -17,8 +16,8 @@ from .forms import ResourceDownloadForm, inputUserUUIDForm
 from .models import Category, Knowledge, Level, Resource, ResourceType, Score, User
 from .settings import COOKIEBANNER
 from .viewLogic import (
-    find_user_by_uuid,
     get_slides_content,
+    get_user_from_request,
     set_next_level_user,
     set_position_user,
     set_progress_course,
@@ -105,8 +104,7 @@ def accessibility(request):
 
 @user_uuid_required
 def dashboard(request):
-    user_uuid = UUID(request.session.get("user_uuid"))
-    user = find_user_by_uuid(user_uuid)
+    user = get_user_from_request(request)
     knowledge = Knowledge.objects.filter(user=user).order_by("category__index")
     scores = Score.objects.filter(user=user).order_by("level__index")
 
@@ -129,8 +127,7 @@ def dashboard(request):
 
 @user_uuid_required
 def course(request):
-    user_uuid = request.session["user_uuid"]
-    user = find_user_by_uuid(user_uuid)
+    user = get_user_from_request(request)
 
     if user.get_level_progress() == 100:
         set_next_level_user(request, user)
@@ -168,8 +165,7 @@ def course(request):
 
 @user_uuid_required
 def update_progress_bar(request):
-    user_uuid = request.session["user_uuid"]
-    user = find_user_by_uuid(user_uuid)
+    user = get_user_from_request(request)
     context = {
         "progress": user.score_set.get(level=user.current_level).progress,
     }
@@ -178,8 +174,7 @@ def update_progress_bar(request):
 
 @user_uuid_required
 def change_slide(request):
-    user_uuid = request.session["user_uuid"]
-    user = find_user_by_uuid(user_uuid)
+    user = get_user_from_request(request)
     direction = request.GET.get("direction", None)
 
     if user.current_level and user.current_position:
@@ -219,8 +214,7 @@ def resources(request):
 
 @user_uuid_required
 def resources_download(request):
-    user_uuid = request.session["user_uuid"]
-    user = find_user_by_uuid(user_uuid)
+    user = get_user_from_request(request)
 
     resource_type_id = request.GET.get("resource_type")
     level_id = request.GET.get("level")
