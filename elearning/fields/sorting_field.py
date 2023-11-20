@@ -5,8 +5,7 @@ from django.utils.html import format_html
 class SortingWidget(forms.Widget):
     class Media:
         js = (
-            "npm_components/jquery/dist/jquery.min.js",
-            "https://code.jquery.com/ui/1.12.1/jquery-ui.js",
+            "npm_components/jquery-ui/dist/jquery-ui.min.js",
             "js/sortable.js",
         )
 
@@ -17,12 +16,8 @@ class SortingWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, renderer=None):
         rendered_html = f"""
-            <div class="row h-100">
-                <div class="col-md-12">
-                    <div class="sortable">
-                        {self.get_choice_template(self.choices)}
-                    </div>
-                </div>
+            <div class="sortable d-grid gap-2 px-3 mx-sm-2">
+                {self.get_choice_template(self.choices)}
             </div>
         """
 
@@ -33,13 +28,14 @@ class SortingWidget(forms.Widget):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div
-                    class="draggable-item d-flex w-100 border border-primary p-2"
-                    data-answer="odd"
-                >
-                    <div class="flex-grow-0">{ i + 1 }.&nbsp;</div>
-                    <div class="flex-grow-1">{ c }</div>
-                    <div class="flex-grow-0"><i class="bi bi-grip-vertical"></i></div>
+                <div class="row draggable-item border border-primary py-1 rounded-3">
+                    <div class="col-1 h4 align-self-center text-primary text-nowrap text-center px-0 m-0">
+                        { i + 1 }.
+                    </div>
+                    <div class="col-10 align-self-center px-1">{ c }</div>
+                    <div class="col-1 h2 align-self-center text-primary text-center px-0 m-0">
+                        <i class="bi bi-grip-horizontal"></i>
+                    </div>
                 </div>
             """
 

@@ -5,8 +5,7 @@ from django.utils.html import format_html
 class CategorizationWidget(forms.Widget):
     class Media:
         js = (
-            "npm_components/jquery/dist/jquery.min.js",
-            "https://code.jquery.com/ui/1.12.1/jquery-ui.js",
+            "npm_components/jquery-ui/dist/jquery-ui.min.js",
             "js/drag-drop.js",
         )
 
