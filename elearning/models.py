@@ -74,7 +74,7 @@ class AnswerChoice(TranslatableModel):
     )
     answer_text = models.CharField(max_length=100, blank=True, default=None, null=True)
     answer_choice_category = models.ForeignKey(
-        AnswerChoiceCategory, null=True, on_delete=models.CASCADE
+        AnswerChoiceCategory, blank=True, null=True, on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -123,7 +123,7 @@ class Text(TranslatableModel):
 class Question(TranslatableModel):
     translations = TranslatedFields(
         name=models.TextField(verbose_name="label"),
-        explanation=models.TextField(),
+        explanation=models.TextField(blank=True, default=None, null=True),
         tooltip=models.TextField(blank=True, default=None, null=True),
     )
     q_type = models.CharField(
@@ -132,7 +132,7 @@ class Question(TranslatableModel):
         default=QUESTION_TYPES[0][0],
         verbose_name="type",
     )
-    categories = models.ManyToManyField(Category)
+    categories = models.ManyToManyField(Category, blank=True, default=None)
     answer_choices = models.ManyToManyField(AnswerChoice)
     medias = models.ManyToManyField(Media, through="QuestionMediaTemplate")
     max_score = models.IntegerField(default=100)
