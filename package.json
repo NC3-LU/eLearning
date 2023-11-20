@@ -10,6 +10,7 @@
     "davidshimjs-qrcodejs": "^0.0.2",
     "flip": "github:nnattawat/flip",
     "jquery": "^3.6.4",
+    "jquery-ui": "^1.13.2",
     "sass": "^1.66.1"
   },
   "engines": {
