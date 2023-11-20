@@ -43,7 +43,7 @@ class AnswerForm(forms.Form):
                     )
                 case "SR":
                     self.fields["answer"] = SortingField(
-                        choices=["Answer 1", "Answer 2", "Other"],
+                        choices=question.answer_choices.all().order_by("?"),
                     )
                 case "LI":
                     self.fields["answer"] = LinkingField(
