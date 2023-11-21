@@ -15,6 +15,8 @@ class AnswerForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         question = kwargs.pop("question", None)
+        answer_choices = question.answer_choices.all().order_by("index")
+
         super().__init__(*args, **kwargs)
         if question:
             match question.q_type:
@@ -37,27 +39,49 @@ class AnswerForm(forms.Form):
                     )
 
                 case "CA":
+                    categories = [
+                        c.answer_choice_category
+                        for c in answer_choices
+                        if c is not None
+                    ]
+                    categories.sort(key=lambda x: x.id)
+                    categories = [
+                        c
+                        for i, c in enumerate(categories)
+                        if i == 0 or c.id != categories[i - 1].id
+                    ]
+
                     self.fields["answer"] = CategorizationField(
-                        choices=["Answer 1", "Answer 2", "Other"],
-                        categories=["Odd", "Even"],
+                        choices=answer_choices,
+                        categories=categories,
                     )
                 case "SR":
                     self.fields["answer"] = SortingField(
-                        choices=question.answer_choices.all().order_by("?"),
+                        choices=answer_choices,
                     )
                 case "LI":
+                    categories = [
+                        c.answer_choice_category
+                        for c in answer_choices
+                        if c is not None
+                    ]
+                    categories.sort(key=lambda x: x.id)
+                    categories = [
+                        c
+                        for i, c in enumerate(categories)
+                        if i == 0 or c.id != categories[i - 1].id
+                    ]
+
                     self.fields["answer"] = LinkingField(
-                        left_choices=["Answer 1", "Answer 2", "Other"],
-                        right_choices=["Answer 3", "Answer 4", "AAAAAA"],
+                        choices=answer_choices,
+                        categories=categories,
                     )
                 case _:
                     self.fields["answer"].widget = forms.MultipleHiddenInput()
 
             self.fields["answer"].label = question.name
             self.fields["answer"].widget.attrs["class"] = "d-grid gap-2 ps-3 mb-5"
-            self.fields["answer"].queryset = question.answer_choices.all().order_by(
-                "index"
-            )
+            self.fields["answer"].queryset = answer_choices
 
 
 class ResourceDownloadForm(forms.Form):

@@ -40,13 +40,14 @@ class CategorizationWidget(forms.Widget):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div
-                    class="position-relative draggable-item d-flex w-100 border border-primary p-2"
-                    data-answer="odd"
-                >
-                    <div class="flex-grow-0">{ i + 1 }.&nbsp;</div>
-                    <div class="flex-grow-1">{ c }</div>
-                    <div class="flex-grow-0"><i class="bi bi-grip-vertical"></i></div>
+                <div class="row draggable-item border border-primary py-1 rounded-3">
+                    <div class="col-1 h4 align-self-center text-primary text-nowrap text-center px-0 m-0">
+                        { i + 1 }.
+                    </div>
+                    <div class="col-10 align-self-center px-1">{ c.name }</div>
+                    <div class="col-1 h2 align-self-center text-primary text-center px-0 m-0">
+                        <i class="bi bi-grip-horizontal"></i>
+                    </div>
                 </div>
             """
 
@@ -59,7 +60,7 @@ class CategorizationWidget(forms.Widget):
             html += f"""
                 <div class="col-md-12 flex-fill">
                     <div id="even" class="droppable border border-secondary bg-secondary h-100">
-                        <h4>{ c }</h4>
+                        <h4>{ c.name }</h4>
                     </div>
                 </div>
             """

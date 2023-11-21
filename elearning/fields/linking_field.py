@@ -10,19 +10,19 @@ class LinkingWidget(forms.Widget):
             "js/connector.js",
         )
 
-    left_choices = None
-    right_choices = None
+    choices = None
+    categories = None
 
-    def __init__(self, left_choices, right_choices, *args, **kwargs):
-        self.left_choices = left_choices
-        self.right_choices = right_choices
+    def __init__(self, choices, categories, *args, **kwargs):
+        self.choices = choices
+        self.categories = categories
 
     def render(self, name, value, attrs=None, renderer=None):
         rendered_html = f"""
             <div class="row h-100">
               <div class="col-5">
                 <div>
-                  {self.get_left_choice_template(self.left_choices)}
+                  {self.get_left_choice_template(self.choices)}
                 </div>
               </div>
 
@@ -31,7 +31,7 @@ class LinkingWidget(forms.Widget):
 
               <div class="col-5">
                 <div>
-                  {self.get_right_choice_template(self.right_choices)}
+                  {self.get_right_choice_template(self.categories)}
                 </div>
               </div>
             </div>
