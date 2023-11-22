@@ -2,13 +2,13 @@ from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import OuterRef, Subquery
-from import_export import fields, resources, widgets
+from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
-from import_export.widgets import ManyToManyWidget, Widget
+from import_export.widgets import ManyToManyWidget
 from parler.admin import TranslatableAdmin
-from parler.models import TranslationDoesNotExist
 
 from .globals import MEDIA_TYPE, QUESTION_TYPES, TEXT_TYPE
+from .mixins import TranslationImportMixin
 from .models import (
     AnswerChoice,
     AnswerChoiceCategory,
@@ -26,7 +26,8 @@ from .models import (
     ResourceType,
     Text,
 )
-from .settings import LANGUAGES, SITE_NAME
+from .settings import SITE_NAME
+from .widgets import ChoicesWidget, TranslatedNameM2MWidget, TranslatedNameWidget
 
 
 class CustomAdminSite(admin.AdminSite):
@@ -37,66 +38,7 @@ class CustomAdminSite(admin.AdminSite):
 admin_site = CustomAdminSite()
 
 
-# Widget that uses choice display values in place of database values
-class ChoicesWidget(Widget):
-    def __init__(self, choices, *args, **kwargs):
-        self.choices = dict(choices)
-        self.revert_choices = {v: k for k, v in self.choices.items()}
-
-    def clean(self, value, row=None, *args, **kwargs):
-        return self.revert_choices.get(value, value) if value else None
-
-    def render(self, value, obj=None):
-        return self.choices.get(value, "")
-
-
-# Custom widget to handle translated M2M relationships
-class TranslatedNameM2MWidget(widgets.ManyToManyWidget):
-    def clean(self, value, row=None, *args, **kwargs):
-        if not value:
-            return self.model.objects.none()
-
-        names = value.split(self.separator)
-        languages = [lang[0] for lang in LANGUAGES]
-
-        instances = []
-        for name in names:
-            for lang_code in languages:
-                try:
-                    instance = self.model._parler_meta.root_model.objects.get(
-                        name=name.strip(),
-                        language_code=lang_code,
-                    )
-                    instances.append(instance.master_id)
-                    break
-                except (self.model.DoesNotExist, TranslationDoesNotExist):
-                    pass
-
-        return instances
-
-
-# Custom widget to handle translated ForeignKey relationships
-class TranslatedNameWidget(widgets.ForeignKeyWidget):
-    def clean(self, value, row=None, *args, **kwargs):
-        if not value:
-            return self.model.objects.none()
-
-        languages = [lang[0] for lang in LANGUAGES]
-
-        for lang_code in languages:
-            try:
-                instance = self.model._parler_meta.root_model.objects.get(
-                    name=value.strip(),
-                    language_code=lang_code,
-                )
-                return instance.master
-            except (self.model.DoesNotExist, TranslationDoesNotExist):
-                pass
-
-        return
-
-
-class LevelsResource(resources.ModelResource):
+class LevelsResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="name", attribute="name")
@@ -126,7 +68,7 @@ class LevelAdmin(ImportExportModelAdmin, TranslatableAdmin):
     ordering = ["index"]
 
 
-class CategoriesResource(resources.ModelResource):
+class CategoriesResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="name", attribute="name")
@@ -147,7 +89,7 @@ class CategoryAdmin(ImportExportModelAdmin, TranslatableAdmin):
     ordering = ["index"]
 
 
-class AnswerChoicesResource(resources.ModelResource):
+class AnswerChoicesResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="name", attribute="name")
@@ -158,6 +100,8 @@ class AnswerChoicesResource(resources.ModelResource):
     answer_choice_category = fields.Field(
         column_name="answer_choice_category",
         attribute="answer_choice_category",
+        saves_null_values=False,
+        default=None,
         widget=TranslatedNameWidget(AnswerChoiceCategory, field="name"),
     )
 
@@ -188,7 +132,7 @@ class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin):
     resource_class = AnswerChoicesResource
 
 
-class AnswerChoiceCategoriesResource(resources.ModelResource):
+class AnswerChoiceCategoriesResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
 
@@ -223,7 +167,7 @@ class MediaAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     resource_class = MediasResource
 
 
-class TextsResource(resources.ModelResource):
+class TextsResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
     t_type = fields.Field(
@@ -244,7 +188,7 @@ class TextAdmin(ImportExportModelAdmin, TranslatableAdmin):
     resource_class = TextsResource
 
 
-class QuestionsResource(resources.ModelResource):
+class QuestionsResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="label", attribute="name")
     q_type = fields.Field(
@@ -347,7 +291,7 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
         return None
 
 
-class ContextsResource(resources.ModelResource):
+class ContextsResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
     medias = fields.Field(
@@ -382,7 +326,7 @@ class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin):
     resource_class = ContextsResource
 
 
-class ResourcesResource(resources.ModelResource):
+class ResourcesResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
     description = fields.Field(column_name="description", attribute="description")
@@ -409,7 +353,7 @@ class ResourceAdmin(ImportExportModelAdmin, TranslatableAdmin):
     ordering = ["level__index"]
 
 
-class ResourcesResourceType(resources.ModelResource):
+class ResourcesResourceType(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
 
@@ -425,7 +369,7 @@ class ResourceTypeAdmin(ImportExportModelAdmin, TranslatableAdmin):
     resource_class = ResourcesResourceType
 
 
-class ChallengesResource(resources.ModelResource):
+class ChallengesResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
     description = fields.Field(column_name="description", attribute="description")
