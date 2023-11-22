@@ -6,6 +6,7 @@ class SortingWidget(forms.Widget):
     class Media:
         js = (
             "npm_components/jquery-ui/dist/jquery-ui.min.js",
+            "npm_components/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js",
             "js/sortable.js",
         )
 

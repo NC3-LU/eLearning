@@ -11,6 +11,7 @@
     "flip": "github:nnattawat/flip",
     "jquery": "^3.6.4",
     "jquery-ui": "^1.13.2",
+    "jquery-ui-touch-punch": "^0.2.3",
     "sass": "^1.66.1"
   },
   "engines": {
