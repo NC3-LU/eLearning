@@ -162,7 +162,7 @@ class AnswerChoicesResource(resources.ModelResource):
     )
 
     class Meta:
-        model = AnswerChoiceCategory
+        model = AnswerChoice
 
 
 @admin.register(AnswerChoice, site=admin_site)
