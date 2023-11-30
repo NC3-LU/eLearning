@@ -22,7 +22,7 @@ class LinkingWidget(forms.Widget):
             <div class="row h-100">
               <div class="col-5">
                 <div>
-                  {self.get_left_choice_template(self.choices)}
+                  {self.get_choice_template(self.choices)}
                 </div>
               </div>
 
@@ -31,7 +31,7 @@ class LinkingWidget(forms.Widget):
 
               <div class="col-5">
                 <div>
-                  {self.get_right_choice_template(self.categories)}
+                  {self.get_category_template(self.categories)}
                 </div>
               </div>
             </div>
@@ -39,46 +39,60 @@ class LinkingWidget(forms.Widget):
 
         return format_html(rendered_html)
 
-    def get_left_choice_template(self, choices):
+    def get_choice_template(self, choices):
         html = ""
 
         for i, c in enumerate(choices):
             html += f"""
-                <div
-                    class="d-flex w-100 border border-primary p-2"
-                    data-answer="odd"
-                >
-                    <div class="flex-grow-0">{ i + 1 }.&nbsp;</div>
-                    <div class="flex-grow-1">{ c }</div>
-                    <div class="flex-grow-0">
-                        <div id="left-dot-{ i + 1 }" class="position-absolute left-dot">
+                <div class="d-flex py-1">
+                    <div class="flex-fill align-self-center px-1 border border-primary py-1 rounded-3">
+                        <div class="d-flex">
+                            <div class="flex-fill text-end align-self-center">
+                                { c.name }
+                            </div>
+                            <div class="flex-grow-0 h4 align-self-center text-primary text-nowrap text-center px-2 m-0">
+                                { i + 1 }.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-grow-0 text-primary text-center p-2 m-0">
+                       <div id="left-dot-{ i + 1 }" class="position-absolute left-dot align-self-center">
                             <i class="bi bi-circle-fill" style="color: black;">{ i + 1 }</i>
                         </div>
                         <div id="right-dot-{ i + 1 }" class="position-absolute draggable-item right-dot">
-                            <i class="bi bi-circle-fill" style="color: blue;">{ i + 1 }</i>
+                            <i class="bi bi-circle-fill primary-color" style="cursor: pointer">{ i + 1 }</i>
                         </div>
                     </div>
+
                     <!-- <div id="connector-{ i + 1 }" class="connector" data-value="{ i + 1 }"></div> -->
                 </div>
             """
 
         return html
 
-    def get_right_choice_template(self, choices):
+    def get_category_template(self, choices):
         html = ""
 
         for i, c in enumerate(choices):
             html += f"""
-                <div
-                    class="d-flex w-100 border border-primary p-2"
-                    data-answer="odd"
-                >
-                    <div class="flex-grow-0">
-                        <div class="droppable" style="background-color: red; width: 50px; height: 10px">
+                <div class="d-flex py-1">
+                    <div class="flex-grow-0 text-primary text-center p-2 m-0">
+                        <div class="position-absolute droppable">
+                            <i class="bi bi-circle-fill" style="color: black;"></i>
                         </div>
                     </div>
-                    <div class="flex-grow-0">{ i + 1 }.&nbsp;</div>
-                    <div class="flex-grow-1">{ c }</div>
+                    <div class="flex-fill align-self-center px-1 border border-primary py-1 rounded-3">
+                        <div class="d-flex">
+                            <div class="flex-grow-0 h4 align-self-center text-primary text-nowrap text-center px-2 m-0">
+                                { chr(i + 1 + 64) }.
+                            </div>
+                            <div class="flex-fill align-self-center">
+                                { c.name }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div id="connector-{ i + 1 }" class="connector" data-value="{ i + 1 }"></div> -->
                 </div>
             """
 
@@ -96,10 +110,10 @@ class LinkingField(forms.Field):
 
     def __init__(self, *args, **kwargs):
         super().__init__()
-        self.widget = LinkingWidget(kwargs["left_choices"], kwargs["right_choices"])
+        self.widget = LinkingWidget(kwargs["choices"], kwargs["categories"])
         self.widget.attrs = self.widget_attrs(self.widget)
-        self.left_choices = kwargs["left_choices"]
-        self.right_choices = kwargs["right_choices"]
+        self.choices = kwargs["choices"]
+        self.categories = kwargs["categories"]
 
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)

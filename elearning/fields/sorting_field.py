@@ -16,7 +16,7 @@ class SortingWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, renderer=None):
         rendered_html = f"""
-            <div class="sortable d-grid gap-2 px-3 mx-sm-2">
+            <div class="sorting_field sortable d-grid gap-2 px-3 mx-sm-2">
                 {self.get_choice_template(self.choices)}
             </div>
         """
@@ -28,12 +28,12 @@ class SortingWidget(forms.Widget):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div class="row draggable-item border border-primary py-1 rounded-3">
-                    <div class="col-1 h4 align-self-center text-primary text-nowrap text-center px-0 m-0">
+                <div class="d-flex draggable-item border border-primary py-1 rounded-3">
+                    <div class="flex-grow-0 h4 align-self-center text-primary text-nowrap text-center px-2 m-0">
                         { i + 1 }.
                     </div>
-                    <div class="col-10 align-self-center px-1">{ c }</div>
-                    <div class="col-1 h2 align-self-center text-primary text-center px-0 m-0">
+                    <div class="flex-fill align-self-center px-1">{ c.name }</div>
+                    <div class="flex-grow-0 h2 align-self-center text-primary text-center px-2 m-0">
                         <i class="bi bi-grip-horizontal"></i>
                     </div>
                 </div>
@@ -56,7 +56,13 @@ class SortingField(forms.Field):
         self.widget = SortingWidget(kwargs["choices"])
         self.widget.attrs = self.widget_attrs(self.widget)
         self.choices = kwargs["choices"]
+        self.validators = [self.validate()]
+        self.null = True
+        self.blank = True
 
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)
         return attrs
+
+    def validate(self):
+        return True

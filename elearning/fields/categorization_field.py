@@ -18,7 +18,7 @@ class CategorizationWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, renderer=None):
         rendered_html = f"""
-            <div class="row h-100">
+            <div class="categorization_field row h-100">
                 <div class="col-md-6">
                     <div>
                         {self.get_choice_template(self.choices)}
@@ -40,12 +40,12 @@ class CategorizationWidget(forms.Widget):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div class="row draggable-item border border-primary py-1 rounded-3">
-                    <div class="col-1 h4 align-self-center text-primary text-nowrap text-center px-0 m-0">
+                <div class="d-flex draggable-item border border-primary py-1 rounded-3">
+                    <div class="flex-grow-0 h4 align-self-center text-primary text-nowrap text-center px-2 m-0">
                         { i + 1 }.
                     </div>
-                    <div class="col-10 align-self-center px-1">{ c.name }</div>
-                    <div class="col-1 h2 align-self-center text-primary text-center px-0 m-0">
+                    <div class="flex-fill align-self-center px-1">{ c.name }</div>
+                    <div class="flex-grow-0 h2 align-self-center text-primary text-center px-2 m-0">
                         <i class="bi bi-grip-horizontal"></i>
                     </div>
                 </div>
@@ -59,8 +59,10 @@ class CategorizationWidget(forms.Widget):
         for c in categories:
             html += f"""
                 <div class="col-md-12 flex-fill">
-                    <div id="even" class="droppable border border-secondary bg-secondary h-100">
-                        <h4>{ c.name }</h4>
+                    <div class="droppable bg-light-blue border border-primary rounded-3 p-3 mb-2">
+                        <div class="pb-2 text-center w-100">
+                            <h4>{ c.name }</h4>
+                        </div>
                     </div>
                 </div>
             """
@@ -83,7 +85,12 @@ class CategorizationField(forms.Field):
         self.widget.attrs = self.widget_attrs(self.widget)
         self.choices = kwargs["choices"]
         self.categories = kwargs["categories"]
+        self.validators = [self.validate]
 
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)
         return attrs
+
+    def validate(self, v):
+        print(v)
+        return True
