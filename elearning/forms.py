@@ -53,8 +53,9 @@ class AnswerForm(forms.Form):
                 case _:
                     self.fields["answer"].widget = forms.MultipleHiddenInput()
 
+            self.id = question.pk
+            self.type = question.q_type
             self.fields["answer"].label = question.name
-            self.fields["answer"].q_type = question.q_type
             self.fields["answer"].widget.attrs["class"] = "d-grid gap-2 ps-3 mb-5"
             self.fields["answer"].queryset = question.answer_choices.all().order_by(
                 "index"

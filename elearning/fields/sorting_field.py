@@ -2,7 +2,7 @@ from django import forms
 from django.utils.html import format_html
 
 
-class SortingWidget(forms.Widget):
+class SortingWidget(forms.SelectMultiple):
     class Media:
         js = (
             "npm_components/jquery-ui/dist/jquery-ui.min.js",
@@ -43,7 +43,7 @@ class SortingWidget(forms.Widget):
         return html
 
 
-class SortingField(forms.Field):
+class SortingField(forms.ModelMultipleChoiceField):
     def _():
         pass
 
@@ -53,7 +53,8 @@ class SortingField(forms.Field):
     id_for_label = _
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        queryset = kwargs.pop("queryset", None)
+        super().__init__(queryset)
         self.widget = SortingWidget(kwargs["choices"])
         self.widget.attrs = self.widget_attrs(self.widget)
         self.choices = kwargs["choices"]
