@@ -4,16 +4,27 @@ import os
 import zipfile
 
 from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import BooleanField, Case, Value, When
 from django.forms.formsets import formset_factory
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from .decorators import user_uuid_required
-from .forms import ResourceDownloadForm, inputUserUUIDForm
-from .models import Category, Knowledge, Level, Resource, ResourceType, Score, User
+from .forms import AnswerForm, ResourceDownloadForm, inputUserUUIDForm
+from .models import (
+    Category,
+    Knowledge,
+    Level,
+    LevelSequence,
+    Question,
+    Resource,
+    ResourceType,
+    Score,
+    User,
+)
 from .settings import COOKIEBANNER
 from .viewLogic import (
     get_slides_content,
@@ -141,8 +152,17 @@ def course(request):
     if user.current_level and user.current_position:
         set_progress_course(user)
         if request.method == "POST":
-            set_position_user(user, direction="next")
-            set_progress_course(user)
+            level_sequence = LevelSequence.objects.get(
+                level=user.current_level, position=user.current_position
+            )
+            if level_sequence.content_type == ContentType.objects.get_for_model(
+                Question
+            ):
+                question = get_object_or_404(Question, pk=level_sequence.object_id)
+                form = AnswerForm(request.POST, question=question)
+                if form.is_valid():
+                    slides = get_slides_content(user)
+                    return JsonResponse({"success": True})
 
         slides = get_slides_content(user)
     else:
