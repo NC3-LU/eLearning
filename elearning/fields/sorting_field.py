@@ -2,10 +2,11 @@ from django import forms
 from django.utils.html import format_html
 
 
-class SortingWidget(forms.Widget):
+class SortingWidget(forms.SelectMultiple):
     class Media:
         js = (
             "npm_components/jquery-ui/dist/jquery-ui.min.js",
+            "npm_components/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js",
             "js/sortable.js",
         )
 
@@ -16,7 +17,7 @@ class SortingWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, renderer=None):
         rendered_html = f"""
-            <div class="sorting_field sortable d-grid gap-2 px-3 mx-sm-2">
+            <div class="sortable d-grid gap-2 px-3 mx-sm-2">
                 {self.get_choice_template(self.choices)}
             </div>
         """
@@ -28,12 +29,12 @@ class SortingWidget(forms.Widget):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div class="d-flex draggable-item border border-primary py-1 rounded-3">
-                    <div class="flex-grow-0 h4 align-self-center text-primary text-nowrap text-center px-2 m-0">
+                <div class="row draggable-item border border-primary py-1 rounded-3" value="{c.pk}">
+                    <div class="col-1 h4 align-self-center text-primary text-nowrap text-center px-0 m-0">
                         { i + 1 }.
                     </div>
-                    <div class="flex-fill align-self-center px-1">{ c.name }</div>
-                    <div class="flex-grow-0 h2 align-self-center text-primary text-center px-2 m-0">
+                    <div class="col-10 align-self-center px-1">{ c }</div>
+                    <div class="col-1 h2 align-self-center text-primary text-center px-0 m-0">
                         <i class="bi bi-grip-horizontal"></i>
                     </div>
                 </div>
@@ -42,7 +43,7 @@ class SortingWidget(forms.Widget):
         return html
 
 
-class SortingField(forms.Field):
+class SortingField(forms.ModelMultipleChoiceField):
     def _():
         pass
 
@@ -52,17 +53,12 @@ class SortingField(forms.Field):
     id_for_label = _
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        queryset = kwargs.pop("queryset", None)
+        super().__init__(queryset)
         self.widget = SortingWidget(kwargs["choices"])
         self.widget.attrs = self.widget_attrs(self.widget)
         self.choices = kwargs["choices"]
-        self.validators = [self.validate()]
-        self.null = True
-        self.blank = True
 
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)
         return attrs
-
-    def validate(self):
-        return True
