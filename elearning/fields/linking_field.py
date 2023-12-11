@@ -44,8 +44,8 @@ class LinkingWidget(forms.Widget):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div class="d-flex py-1">
-                    <div class="flex-fill align-self-center px-1 border border-primary py-1 rounded-3">
+                <div class="d-flex py-2">
+                    <div class="flex-fill align-self-center px-1 border border-1 border-primary py-2 rounded-3">
                         <div class="d-flex">
                             <div class="flex-fill text-end align-self-center">
                                 { c.name }
@@ -75,13 +75,13 @@ class LinkingWidget(forms.Widget):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div class="d-flex py-1">
+                <div class="d-flex py-2">
                     <div class="flex-grow-0 text-primary text-center p-2 m-0">
                         <div class="position-absolute droppable">
                             <i class="bi bi-circle-fill" style="color: black;"></i>
                         </div>
                     </div>
-                    <div class="flex-fill align-self-center px-1 border border-primary py-1 rounded-3">
+                    <div class="flex-fill align-self-center px-1 border border-1 border-primary py-2 rounded-3">
                         <div class="d-flex">
                             <div class="flex-grow-0 h4 align-self-center text-primary text-nowrap text-center px-2 m-0">
                                 { chr(i + 1 + 64) }.

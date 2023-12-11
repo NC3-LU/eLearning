@@ -18,14 +18,14 @@ class CategorizationWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, renderer=None):
         rendered_html = f"""
-            <div class="categorization_field row h-100">
-                <div class="col-md-6">
+            <div class="categorization_field row flex-fill h-100">
+                <div class="col-6">
                     <div>
                         {self.get_choice_template(self.choices)}
                     </div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-6">
                     <div class="row h-100">
                         {self.get_category_template(self.categories)}
                     </div>
@@ -40,8 +40,8 @@ class CategorizationWidget(forms.Widget):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div class="d-flex draggable-item border border-primary py-1 rounded-3">
-                    <div class="flex-grow-0 h4 align-self-center text-primary text-nowrap text-center px-2 m-0">
+                <div class="d-flex draggable-item border border-1 border-primary py-1 mb-2 rounded-3" role=button>
+                    <div class="flex-grow-0 h4 align-self-center text-primary text-nowrap text-center ps-3 pe-2 m-0">
                         { i + 1 }.
                     </div>
                     <div class="flex-fill align-self-center px-1">{ c.name }</div>
@@ -56,10 +56,11 @@ class CategorizationWidget(forms.Widget):
     def get_category_template(self, categories):
         html = ""
 
-        for c in categories:
+        for i, c in enumerate(categories):
             html += f"""
-                <div class="col-md-12 flex-fill">
-                    <div class="droppable bg-light-blue border border-primary rounded-3 p-3 mb-2">
+                <div class="col-md-12 d-flex flex-column">
+                    <div class="droppable align-content-center flex-grow-1 rounded-3 p-3 mb-4 border border-1 \n
+                        {"bg-light-blue border-primary" if i != 1 else "bg-light-green border-green"}">
                         <div class="pb-2 text-center w-100">
                             <h4>{ c.name }</h4>
                         </div>

@@ -29,7 +29,8 @@ class SortingWidget(forms.SelectMultiple):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div class="row draggable-item border border-primary py-1 rounded-3" value="{c.pk}">
+                <div class="row draggable-item border border-1 border-primary py-1 rounded-3" value="{c.pk}"
+                    role="button">
                     <div class="col-1 h4 align-self-center text-primary text-nowrap text-center px-0 m-0">
                         { i + 1 }.
                     </div>
