@@ -109,6 +109,10 @@ def legal(request):
     return render(request, "legal.html")
 
 
+def helping_center(request):
+    return render(request, "helping_center.html")
+
+
 def accessibility(request):
     return render(request, "accessibility.html")
 
@@ -133,6 +137,9 @@ def dashboard(request):
         "progress": progress,
         "criteria": criteria,
     }
+
+    for s in context["scores"]:
+        print(vars(s))
     return render(request, "dashboard.html", context=context)
 
 

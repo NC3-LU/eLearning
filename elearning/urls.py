@@ -41,6 +41,8 @@ urlpatterns = [
     path("tos/", views.tos, name="tos"),
     # Legal
     path("legal/", views.legal, name="legal"),
+    # Help
+    path("helping_center", views.helping_center, name="helping_center"),
     # Accessibility
     path("accessibility/", views.accessibility, name="accessibility"),
     # Dashboard
