@@ -122,13 +122,16 @@ def dashboard(request):
     user = get_user_from_request(request)
     knowledge = Knowledge.objects.filter(user=user).order_by("category__index")
     scores = Score.objects.filter(user=user).order_by("level__index")
-
     criteria = {
-        "labels": list(
-            knowledge.values_list("category__translations__name", flat=True)
-        ),
-        "data": list(knowledge.values_list("progress", flat=True)),
+        "data": [
+            {"label": label, "value": progress}
+            for label, progress in zip(
+                knowledge.values_list("category__translations__name", flat=True),
+                knowledge.values_list("progress", flat=True),
+            )
+        ]
     }
+
     progress = list(scores.values_list("progress", flat=True))
 
     context = {
@@ -138,8 +141,6 @@ def dashboard(request):
         "criteria": criteria,
     }
 
-    for s in context["scores"]:
-        print(vars(s))
     return render(request, "dashboard.html", context=context)
 
 
