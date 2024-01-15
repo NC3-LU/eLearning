@@ -133,10 +133,12 @@ def dashboard(request):
     }
 
     progress = list(scores.values_list("progress", flat=True))
+    success = list(scores.values_list("score", flat=True))
 
     context = {
         "user": user,
         "scores": scores,
+        "success": success,
         "progress": progress,
         "criteria": criteria,
     }
