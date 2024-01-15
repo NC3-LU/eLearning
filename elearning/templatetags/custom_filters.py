@@ -7,15 +7,16 @@ register = template.Library()
 
 
 @register.filter
-def is_sticker_unlocked(score, sticker):
-    if score.progress == 100:
-        if sticker == "1":
-            return True
-        elif sticker == "2" and score.score >= 70:
-            return True
-        elif sticker == "3" and score.score > 90:
-            return True
-    return False
+def is_sticker_unlocked(score):
+    # if score.progress == 100:
+    if score.score == 0:
+        return "1"
+    if score.score < 70:
+        return "2"
+    if score.score >= 70 and score.score < 90:
+        return "3"
+    if score.score > 90:
+        return "4"
 
 
 @register.filter(name="split")
