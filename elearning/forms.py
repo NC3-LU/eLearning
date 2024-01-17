@@ -8,82 +8,96 @@ from elearning.fields.sorting_field import SortingField
 
 
 class AnswerForm(forms.Form):
-    answer = forms.ModelMultipleChoiceField(
-        queryset=None,
-        required=True,
-    )
+    answer = None
 
     def __init__(self, *args, **kwargs):
         question = kwargs.pop("question", None)
+        user = kwargs.pop("user", None) 
         answer_choices = question.answer_choices.all().order_by("index")
 
         super().__init__(*args, **kwargs)
         if question:
-            match question.q_type:
-                case "S":
-                    self.fields["answer"].widget = forms.RadioSelect()
-                case "M":
-                    self.fields["answer"].widget = forms.CheckboxSelectMultiple()
-                case "SO":
-                    self.fields["answer"].widget = forms.Select()
-                case "T":
-                    self.fields["answer"] = forms.CharField(
-                        required=True,
-                        widget=forms.Textarea(
-                            attrs={
-                                "autofocus": True,
-                                "placeholder": "",
-                                "rows": 5,
-                            }
-                        ),
-                    )
+            field_class = (
+                forms.ModelMultipleChoiceField
+                if question.q_type == "M"
+                else forms.ModelChoiceField
+            )
+            self.fields["answer"] = field_class(
+                queryset=answer_choices,
+                widget=forms.CheckboxSelectMultiple() if question.q_type == "M" else forms.RadioSelect(),
+                required=True,
+            )
+            # match question.q_type:
+            #     case "S":
+            #         self.fields["answer"].widget = forms.RadioSelect()
+            #     case "M":
+            #         self.fields["answer"].widget = forms.CheckboxSelectMultiple()
+            #     case "SO":
+            #         self.fields["answer"].widget = forms.Select()
+            #     case "T":
+            #         self.fields["answer"] = forms.CharField(
+            #             required=True,
+            #             widget=forms.Textarea(
+            #                 attrs={
+            #                     "autofocus": True,
+            #                     "placeholder": "",
+            #                     "rows": 5,
+            #                 }
+            #             ),
+            #         )
 
-                case "CA":
-                    categories = [
-                        c.answer_choice_category
-                        for c in answer_choices
-                        if c is not None
-                    ]
-                    categories.sort(key=lambda x: x.id)
-                    categories = [
-                        c
-                        for i, c in enumerate(categories)
-                        if i == 0 or c.id != categories[i - 1].id
-                    ]
+            #     case "CA":
+            #         categories = [
+            #             c.answer_choice_category
+            #             for c in answer_choices
+            #             if c is not None
+            #         ]
+            #         categories.sort(key=lambda x: x.id)
+            #         categories = [
+            #             c
+            #             for i, c in enumerate(categories)
+            #             if i == 0 or c.id != categories[i - 1].id
+            #         ]
 
-                    self.fields["answer"] = CategorizationField(
-                        choices=answer_choices,
-                        categories=categories,
-                    )
-                case "SR":
-                    self.fields["answer"] = SortingField(
-                        choices=answer_choices,
-                    )
-                case "LI":
-                    categories = [
-                        c.answer_choice_category
-                        for c in answer_choices
-                        if c is not None
-                    ]
-                    categories.sort(key=lambda x: x.id)
-                    categories = [
-                        c
-                        for i, c in enumerate(categories)
-                        if i == 0 or c.id != categories[i - 1].id
-                    ]
+            #         self.fields["answer"] = CategorizationField(
+            #             choices=answer_choices,
+            #             categories=categories,
+            #         )
+            #     case "SR":
+            #         self.fields["answer"] = SortingField(
+            #             choices=answer_choices,
+            #         )
+            #     case "LI":
+            #         categories = [
+            #             c.answer_choice_category
+            #             for c in answer_choices
+            #             if c is not None
+            #         ]
+            #         categories.sort(key=lambda x: x.id)
+            #         categories = [
+            #             c
+            #             for i, c in enumerate(categories)
+            #             if i == 0 or c.id != categories[i - 1].id
+            #         ]
 
-                    self.fields["answer"] = LinkingField(
-                        choices=answer_choices,
-                        categories=categories,
-                    )
-                case _:
-                    self.fields["answer"].widget = forms.MultipleHiddenInput()
+            #         self.fields["answer"] = LinkingField(
+            #             choices=answer_choices,
+            #             categories=categories,
+            #         )
+            #     case _:
+            #         self.fields["answer"].widget = forms.MultipleHiddenInput()
 
             self.id = question.pk
             self.type = question.q_type
             self.fields["answer"].label = question.name
             self.fields["answer"].widget.attrs["class"] = "d-grid gap-2 ps-3 mb-5"
             self.fields["answer"].queryset = answer_choices
+
+            print(question.answer_set.count())
+            if question.answer_set.filter(question=question,user=user).exists():
+                print(question.answer_set.filter(question=question,user=user).values_list())
+                self.fields["answer"].initial = question.answer_set.first().answer_choices.values_list('id', flat=True)
+
 
 
 class ResourceDownloadForm(forms.Form):

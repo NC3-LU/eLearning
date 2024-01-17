@@ -97,7 +97,7 @@ def get_slides_content(user: User) -> []:
             )
         elif content_type == ContentType.objects.get_for_model(Question):
             question = get_object_or_404(Question, pk=object_id)
-            form = AnswerForm(question=question)
+            form = AnswerForm(question=question, user=user)
             form.question_index = get_question_index(user, sequence.position)
             slides.append({"question": form})
         elif content_type == ContentType.objects.get_for_model(Challenge):
@@ -153,4 +153,4 @@ def set_status_carousel_controls(user: User) -> [bool, bool]:
         previous_control_enable = False
         next_control_enable = False
 
-    return [previous_control_enable, next_control_enable]
+    return [True, next_control_enable]
