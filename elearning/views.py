@@ -15,6 +15,7 @@ from django.utils.translation import gettext_lazy as _
 from .decorators import user_uuid_required
 from .forms import AnswerForm, ResourceDownloadForm, inputUserUUIDForm
 from .models import (
+    Answer,
     Category,
     Knowledge,
     Level,
@@ -170,8 +171,17 @@ def course(request):
                 Question
             ):
                 question = get_object_or_404(Question, pk=level_sequence.object_id)
-                form = AnswerForm(request.POST, question=question)
+                form = AnswerForm(request.POST, question=question, user=user)
                 if form.is_valid():
+                    user_answer_choices = form.cleaned_data['answer']
+                    print(form.cleaned_data['answer'].items())
+                    answer = Answer(user=user, question=question)
+                    answer.save()
+                    if not isinstance(user_answer_choices, list):
+                        user_answer_choices = [user_answer_choices]
+
+                    answer.answer_choices.set(user_answer_choices, clear=True)
+                           
                     slides = get_slides_content(user)
                     return JsonResponse({"success": True})
 
