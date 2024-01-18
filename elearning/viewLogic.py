@@ -78,17 +78,8 @@ def set_progress_course(user: User) -> None:
         user_score.save()
 
 
-def set_knowledge_course(user: User) -> None:
+def set_knowledge_course(user: User, question: Question) -> None:
     question_contentType = ContentType.objects.get_for_model(Question)
-
-    level_sequences_question_passed = LevelSequence.objects.filter(
-        level=user.current_level,
-        position=user.current_position,
-        content_type=question_contentType,
-    )
-
-    if not level_sequences_question_passed:
-        return
 
     level_sequences_questions_all = LevelSequence.objects.filter(
         content_type=question_contentType
@@ -102,20 +93,7 @@ def set_knowledge_course(user: User) -> None:
         questions_all.values_list("categories__id", flat=True)
     )
 
-    question_passed = get_object_or_404(
-        Question, pk=level_sequences_question_passed.first().object_id
-    )
-
-    # categories_list_all = [question.categories.all() for question in questions_all]
-
-    # all_categories = [
-    #     category for queryset in categories_list_all for category in queryset
-    # ]
-
-    # all_category_counts = Counter(all_categories)
-    # passed_categories_counts = Counter(passed_categories)
-
-    for category in question_passed.categories.all():
+    for category in question.categories.all():
         knowledge = Knowledge.objects.get(user=user, category=category)
         total_category_count = all_category_counts[category.id]
         knowledge.save()
@@ -123,22 +101,6 @@ def set_knowledge_course(user: User) -> None:
 
         knowledge.progress = F("progress") + percentage
         knowledge.save()
-
-    #     all_category_counts[category.id]
-
-    # category_percentages = {}
-
-    # for category, all_count in all_category_counts.items():
-    #     passed_count = categories_list_passed.get(category, 0)
-    #     percentage = (passed_count / all_count) * 100 if all_count > 0 else 0
-    #     category_percentages[category] = percentage
-    #     knowledge.progress = percentage
-    #     knowledge.save()
-
-    # for category, percentage in category_percentages.items():
-    #     knowledge = Knowledge.objects.get(user=user, category=category)
-    #     knowledge.progress = percentage
-    #     knowledge.save()
 
 
 def get_slides_content(user: User) -> []:
@@ -187,13 +149,13 @@ def set_status_carousel_controls(user: User) -> [bool, bool]:
             level=user.current_level, position=user.current_position
         )
 
-        sequence_before = (
-            LevelSequence.objects.filter(
-                level=user.current_level, position__lt=user.current_position
-            )
-            .order_by("position")
-            .last()
-        )
+        # sequence_before = (
+        #     LevelSequence.objects.filter(
+        #         level=user.current_level, position__lt=user.current_position
+        #     )
+        #     .order_by("position")
+        #     .last()
+        # )
 
         sequence_after = (
             LevelSequence.objects.filter(
@@ -203,11 +165,11 @@ def set_status_carousel_controls(user: User) -> [bool, bool]:
             .first()
         )
 
-        previous_control_enable = bool(
-            sequence_before
-            and sequence_before.content_type
-            != ContentType.objects.get_for_model(Question)
-        )
+        # previous_control_enable = bool(
+        #     sequence_before
+        #     and sequence_before.content_type
+        #     != ContentType.objects.get_for_model(Question)
+        # )
         next_control_enable = bool(
             sequence_after
             and current_sequence.content_type
@@ -215,7 +177,7 @@ def set_status_carousel_controls(user: User) -> [bool, bool]:
         )
 
     except LevelSequence.DoesNotExist:
-        previous_control_enable = False
+        # previous_control_enable = False
         next_control_enable = False
 
     return [True, next_control_enable]

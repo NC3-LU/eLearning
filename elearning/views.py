@@ -174,6 +174,7 @@ def course(request):
                         user=user, question=question
                     )
                     if not existing_answer:
+                        set_knowledge_course(user, question)
                         user_answer_choices = form.cleaned_data["answer"]
                         answer = Answer(user=user, question=question)
                         answer.save()
@@ -219,7 +220,6 @@ def change_slide(request):
     direction = request.GET.get("direction", None)
 
     if user.current_level and user.current_position:
-        set_knowledge_course(user)
         set_position_user(user, direction=direction)
         set_progress_course(user)
         slides = get_slides_content(user)
