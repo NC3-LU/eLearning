@@ -6,6 +6,7 @@ import zipfile
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import BooleanField, Case, Value, When
+from django.db.models.query import QuerySet
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -80,15 +81,11 @@ def new_user(request):
     user.save()
 
     for level in levels:
-        score = Score()
-        score.user = user
-        score.level = level
+        score = Score(user=user, level=level)
         score.save()
 
     for category in categories:
-        knowledge = Knowledge()
-        knowledge.user = user
-        knowledge.category = category
+        knowledge = Knowledge(user=user, category=category)
         knowledge.save()
 
     request.session["user_uuid"] = str(user.uuid)
@@ -173,15 +170,18 @@ def course(request):
                 question = get_object_or_404(Question, pk=level_sequence.object_id)
                 form = AnswerForm(request.POST, question=question, user=user)
                 if form.is_valid():
-                    user_answer_choices = form.cleaned_data['answer']
-                    print(form.cleaned_data['answer'].items())
-                    answer = Answer(user=user, question=question)
-                    answer.save()
-                    if not isinstance(user_answer_choices, list):
-                        user_answer_choices = [user_answer_choices]
+                    existing_answer = Answer.objects.filter(
+                        user=user, question=question
+                    )
+                    if not existing_answer:
+                        user_answer_choices = form.cleaned_data["answer"]
+                        answer = Answer(user=user, question=question)
+                        answer.save()
+                        if not isinstance(user_answer_choices, QuerySet):
+                            user_answer_choices = [user_answer_choices]
 
-                    answer.answer_choices.set(user_answer_choices, clear=True)
-                           
+                        answer.answer_choices.set(user_answer_choices, clear=True)
+
                     slides = get_slides_content(user)
                     return JsonResponse({"success": True})
 
