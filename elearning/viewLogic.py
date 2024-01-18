@@ -1,14 +1,16 @@
+from collections import Counter
 from uuid import UUID
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import F
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from .forms import AnswerForm
-from .models import Challenge, Context, Level, LevelSequence, Question, User
+from .models import Challenge, Context, Knowledge, Level, LevelSequence, Question, User
 
 
 def find_user_by_uuid(user_uuid: UUID) -> User:
@@ -74,6 +76,69 @@ def set_progress_course(user: User) -> None:
         progress = (index / total_positions) * 100
         user_score.progress = progress
         user_score.save()
+
+
+def set_knowledge_course(user: User) -> None:
+    question_contentType = ContentType.objects.get_for_model(Question)
+
+    level_sequences_question_passed = LevelSequence.objects.filter(
+        level=user.current_level,
+        position=user.current_position,
+        content_type=question_contentType,
+    )
+
+    if not level_sequences_question_passed:
+        return
+
+    level_sequences_questions_all = LevelSequence.objects.filter(
+        content_type=question_contentType
+    )
+
+    object_ids_all = level_sequences_questions_all.values_list("object_id", flat=True)
+
+    questions_all = Question.objects.filter(id__in=object_ids_all)
+
+    all_category_counts = Counter(
+        questions_all.values_list("categories__id", flat=True)
+    )
+
+    question_passed = get_object_or_404(
+        Question, pk=level_sequences_question_passed.first().object_id
+    )
+
+    # categories_list_all = [question.categories.all() for question in questions_all]
+
+    # all_categories = [
+    #     category for queryset in categories_list_all for category in queryset
+    # ]
+
+    # all_category_counts = Counter(all_categories)
+    # passed_categories_counts = Counter(passed_categories)
+
+    for category in question_passed.categories.all():
+        knowledge = Knowledge.objects.get(user=user, category=category)
+        total_category_count = all_category_counts[category.id]
+        knowledge.save()
+        percentage = (1 / total_category_count) * 100 if total_category_count > 0 else 0
+
+        knowledge.progress = F("progress") + percentage
+        knowledge.save()
+
+    #     all_category_counts[category.id]
+
+    # category_percentages = {}
+
+    # for category, all_count in all_category_counts.items():
+    #     passed_count = categories_list_passed.get(category, 0)
+    #     percentage = (passed_count / all_count) * 100 if all_count > 0 else 0
+    #     category_percentages[category] = percentage
+    #     knowledge.progress = percentage
+    #     knowledge.save()
+
+    # for category, percentage in category_percentages.items():
+    #     knowledge = Knowledge.objects.get(user=user, category=category)
+    #     knowledge.progress = percentage
+    #     knowledge.save()
 
 
 def get_slides_content(user: User) -> []:

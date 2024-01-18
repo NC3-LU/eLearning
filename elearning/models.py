@@ -270,7 +270,7 @@ class Score(models.Model):
 class Knowledge(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    progress = models.DecimalField(default=0, max_digits=3, decimal_places=2)
+    progress = models.DecimalField(default=0, max_digits=5, decimal_places=2)
 
     def __str__(self):
         return str(self.progress)

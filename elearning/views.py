@@ -29,6 +29,7 @@ from .settings import COOKIEBANNER
 from .viewLogic import (
     get_slides_content,
     get_user_from_request,
+    set_knowledge_course,
     set_next_level_user,
     set_position_user,
     set_progress_course,
@@ -208,6 +209,7 @@ def change_slide(request):
     direction = request.GET.get("direction", None)
 
     if user.current_level and user.current_position:
+        set_knowledge_course(user)
         set_position_user(user, direction=direction)
         set_progress_course(user)
         slides = get_slides_content(user)
