@@ -23,19 +23,28 @@ git clone https://github.com/NC3-LU/eLearning.git
 cd eLearning
 ```
 
-### 2. Install Dependencies with Poetry
+### 2. Initialize and Update Submodules
+
+The project uses a Git submodule to manage the template. Initialize and update the submodule with the following commands:
+
+```bash
+git submodule init theme
+git submodule update
+```
+
+### 3. Install Dependencies with Poetry
 
 ```bash
 poetry install
 ```
 
-### 3. Activate the Poetry Environment
+### 4. Activate the Poetry Environment
 
 ```bash
 poetry shell
 ```
 
-### 4. Setup PostgreSQL Database
+### 5. Setup PostgreSQL Database
 
 ```bash
 sudo -u postgres createdb $DB_NAME
@@ -45,7 +54,7 @@ sudo -u postgres psql -c "grant all privileges on database $DB_NAME to $DB_USER;
 
 Replace $DB_NAME with your database name, $DB_USER with your database username, and $DB_PASSWORD with your database password.
 
-### 5. Configure the Project
+### 6. Configure the Project
 
 Modify the config.py or config_dev.py file in the eLearning directory with your database settings and other configurations:
 
@@ -62,13 +71,13 @@ DATABASES = {
 }
 ```
 
-### 6. Run Migrations
+### 7. Run Migrations
 
 ```python
 python manage.py migrate
 ```
 
-### 7. Start the Development Server
+### 8. Start the Development Server
 
 ```python
 python manage.py runserver
