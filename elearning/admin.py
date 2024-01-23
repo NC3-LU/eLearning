@@ -11,12 +11,14 @@ from .globals import MEDIA_TYPE, QUESTION_TYPES, TEXT_TYPE
 from .mixins import TranslationImportMixin
 from .models import (
     AnswerChoice,
-    AnswerChoiceCategory,
     Category,
     Challenge,
     Context,
     ContextMediaTemplate,
     ContextTextTemplate,
+    Explanation,
+    ExplanationMediaTemplate,
+    ExplanationTextTemplate,
     Level,
     LevelSequence,
     Media,
@@ -96,14 +98,6 @@ class AnswerChoicesResource(TranslationImportMixin, resources.ModelResource):
     is_correct = fields.Field(column_name="is_correct", attribute="is_correct")
     score = fields.Field(column_name="score", attribute="score")
     tooltip = fields.Field(column_name="tooltip", attribute="tooltip")
-    answer_text = fields.Field(column_name="answer_text", attribute="answer_text")
-    answer_choice_category = fields.Field(
-        column_name="answer_choice_category",
-        attribute="answer_choice_category",
-        saves_null_values=False,
-        default=None,
-        widget=TranslatedNameWidget(AnswerChoiceCategory, field="name"),
-    )
 
     class Meta:
         model = AnswerChoice
@@ -116,8 +110,6 @@ class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin):
         "index",
         "score",
         "is_correct",
-        "answer_text",
-        "answer_choice_category",
     )
     list_filter = ("is_correct",)
     fields = (
@@ -126,25 +118,8 @@ class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin):
         "is_correct",
         "score",
         "tooltip",
-        "answer_text",
-        "answer_choice_category",
     )
     resource_class = AnswerChoicesResource
-
-
-class AnswerChoiceCategoriesResource(TranslationImportMixin, resources.ModelResource):
-    id = fields.Field(column_name="id", attribute="id", readonly=True)
-    name = fields.Field(column_name="name", attribute="name")
-
-    class Meta:
-        model = AnswerChoiceCategory
-
-
-@admin.register(AnswerChoiceCategory, site=admin_site)
-class AnswerChoiceCategoriesAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name",)
-    fields = ("name",)
-    resource_class = AnswerChoiceCategoriesResource
 
 
 class MediasResource(resources.ModelResource):
@@ -200,7 +175,6 @@ class QuestionsResource(TranslationImportMixin, resources.ModelResource):
         widget=TranslatedNameM2MWidget(Category, field="name", separator="\n"),
     )
     max_score = fields.Field(column_name="max_score", attribute="max_score")
-    explanation = fields.Field(column_name="explanation", attribute="explanation")
     tooltip = fields.Field(column_name="tooltip", attribute="tooltip")
     answer_choices = fields.Field(
         column_name="answer choices",
@@ -247,7 +221,6 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
         "name",
         "q_type",
         "max_score",
-        "explanation",
         "tooltip",
         "categories",
     )
@@ -289,6 +262,46 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
         if level_sequence:
             return level_sequence.position
         return None
+
+
+class ExplanationResource(TranslationImportMixin, resources.ModelResource):
+    id = fields.Field(column_name="id", attribute="id", readonly=True)
+    name = fields.Field(column_name="name", attribute="name")
+    medias = fields.Field(
+        column_name="medias",
+        attribute="medias",
+        widget=ManyToManyWidget(Media, field="name", separator=","),
+    )
+    question = fields.Field(
+        column_name="question",
+        attribute="question",
+        widget=TranslatedNameWidget(Question, field="name"),
+    )
+
+    class Meta:
+        model = Explanation
+
+
+class explanationMediaInline(admin.TabularInline):
+    model = ExplanationMediaTemplate
+    verbose_name = "Media"
+    verbose_name_plural = "Medias"
+    extra = 0
+
+
+class explanationTextInline(admin.TabularInline):
+    model = ExplanationTextTemplate
+    verbose_name = "Text"
+    verbose_name_plural = "Texts"
+    extra = 0
+
+
+@admin.register(Explanation, site=admin_site)
+class ExplanationAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ("name", "question")
+    fields = ("name", "question")
+    inlines = (explanationMediaInline, explanationTextInline, levelSequenceInline)
+    resource_class = ExplanationResource
 
 
 class ContextsResource(TranslationImportMixin, resources.ModelResource):

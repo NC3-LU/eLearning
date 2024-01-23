@@ -10,7 +10,16 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from .forms import AnswerForm
-from .models import Challenge, Context, Knowledge, Level, LevelSequence, Question, User
+from .models import (
+    Challenge,
+    Context,
+    Explanation,
+    Knowledge,
+    Level,
+    LevelSequence,
+    Question,
+    User,
+)
 
 
 def find_user_by_uuid(user_uuid: UUID) -> User:
@@ -127,6 +136,24 @@ def get_slides_content(user: User) -> []:
             form = AnswerForm(question=question, user=user)
             form.question_index = get_question_index(user, sequence.position)
             slides.append({"question": form})
+        elif content_type == ContentType.objects.get_for_model(Explanation):
+            explanation = get_object_or_404(Explanation, pk=object_id)
+            question_sequence = LevelSequence.objects.get(
+                level=user.current_level, object_id=explanation.question.pk
+            )
+            slides.append(
+                {
+                    "explanation": {
+                        "question": explanation.question,
+                        "question_index": get_question_index(
+                            user, question_sequence.position
+                        ),
+                        "label": explanation.name,
+                        "texts": explanation.explanationtexttemplate_set.all(),
+                        "medias": explanation.explanationmediatemplate_set.all(),
+                    }
+                }
+            )
         elif content_type == ContentType.objects.get_for_model(Challenge):
             challenge = get_object_or_404(Challenge, pk=object_id)
             slides.append({"challenge": challenge})

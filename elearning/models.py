@@ -47,20 +47,6 @@ class Category(TranslatableModel):
         verbose_name_plural = _("Categories")
 
 
-# Answer choice categories
-class AnswerChoiceCategory(TranslatableModel):
-    translations = TranslatedFields(
-        name=models.CharField(verbose_name="label", max_length=100),
-    )
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = _("Answer choice category")
-        verbose_name_plural = _("Answer choice categories")
-
-
 # Answer choices
 class AnswerChoice(TranslatableModel):
     index = models.IntegerField()
@@ -71,10 +57,6 @@ class AnswerChoice(TranslatableModel):
     score = models.IntegerField(default=0)
     is_correct = models.BooleanField(
         verbose_name="Is it the correct answer ?", default=False
-    )
-    answer_text = models.CharField(max_length=100, blank=True, default=None, null=True)
-    answer_choice_category = models.ForeignKey(
-        AnswerChoiceCategory, blank=True, null=True, on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -123,7 +105,6 @@ class Text(TranslatableModel):
 class Question(TranslatableModel):
     translations = TranslatedFields(
         name=models.TextField(verbose_name="label"),
-        explanation=models.TextField(blank=True, default=None, null=True),
         tooltip=models.TextField(blank=True, default=None, null=True),
     )
     q_type = models.CharField(
@@ -143,6 +124,23 @@ class Question(TranslatableModel):
     class Meta:
         verbose_name = _("Question")
         verbose_name_plural = _("Questions")
+
+
+# Question explanation
+class Explanation(TranslatableModel):
+    translations = TranslatedFields(name=models.TextField(verbose_name="Label"))
+    medias = models.ManyToManyField(Media, through="ExplanationMediaTemplate")
+    texts = models.ManyToManyField(Text, through="ExplanationTextTemplate")
+    question = models.ForeignKey(
+        Question, blank=True, null=True, on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _("Explanation")
+        verbose_name_plural = _("Explanations")
 
 
 # Contexts
@@ -338,6 +336,38 @@ class QuestionMediaTemplate(models.Model):
     class Meta:
         verbose_name = _("Media Template")
         verbose_name_plural = _("Media Templates")
+
+    def __str__(self):
+        return ""
+
+
+class ExplanationMediaTemplate(models.Model):
+    explanation = models.ForeignKey(Explanation, on_delete=models.CASCADE)
+    media = models.ForeignKey(Media, on_delete=models.CASCADE)
+    position = models.CharField(
+        max_length=2, choices=POSITION_CHOICES, default=POSITION_CHOICES[0][0]
+    )
+    css_classes = ArrayField(models.CharField(), default=list, blank=True)
+
+    class Meta:
+        verbose_name = _("Media Template")
+        verbose_name_plural = _("Media Templates")
+
+    def __str__(self):
+        return ""
+
+
+class ExplanationTextTemplate(models.Model):
+    explanation = models.ForeignKey(Explanation, on_delete=models.CASCADE)
+    text = models.ForeignKey(Text, on_delete=models.CASCADE)
+    position = models.CharField(
+        max_length=2, choices=POSITION_CHOICES, default=POSITION_CHOICES[0][0]
+    )
+    css_classes = ArrayField(models.CharField(), default=list, blank=True)
+
+    class Meta:
+        verbose_name = _("Text Template")
+        verbose_name_plural = _("Text Templates")
 
     def __str__(self):
         return ""
