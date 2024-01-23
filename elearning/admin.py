@@ -398,10 +398,25 @@ class ChallengeAdmin(ImportExportModelAdmin, TranslatableAdmin):
         "description",
     )
     inlines = (levelSequenceInline,)
+    resource_class = ChallengesResource
+
+
+class LevelSequenceAdminResource(resources.ModelResource):
+    id = fields.Field(column_name="id", attribute="id", readonly=True)
+    position = fields.Field(column_name="position", attribute="position")
+    object_id = fields.Field(column_name="object_id", attribute="object_id")
+    level = fields.Field(
+        column_name="level",
+        attribute="level",
+        widget=TranslatedNameWidget(Level, field="name"),
+    )
+
+    class Meta:
+        model = LevelSequence
 
 
 @admin.register(LevelSequence, site=admin_site)
-class LevelSequenceAdmin(admin.ModelAdmin):
+class LevelSequenceAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ("level", "position", "get_content_type_name", "content_object_str")
     list_filter = ("level",)
     ordering = ["level__index", "position"]
