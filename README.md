@@ -71,28 +71,33 @@ DATABASES = {
 }
 ```
 
-### 7. Run Migrations
+### 7. Install Node Packages
 
-```python
+```bash
+npm install
+```
+
+### 8. Run Migrations
+
+```bash
 python manage.py migrate
 ```
 
-### 8. Start the Development Server
+### 9. Start the Development Server
 
-```python
+```bash
 python manage.py runserver
 ```
 
-The server will start at `http://127.0.0.1:8000/`.
+The development server will start at `http://127.0.0.1:8000/`.
 
 ## Usage
 
-After setting up the project, you can:
+Once you have set up the project, you can:
 
 - Access the admin panel at `http://127.0.0.1:8000/admin`.
 - Create and manage courses and users through the admin panel.
 
 ## License
 
-This software is licensed under
-[GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html)
+This software is licensed under the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
