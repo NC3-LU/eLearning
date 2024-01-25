@@ -310,6 +310,7 @@ class ContextMediaTemplate(models.Model):
 
 
 class ContextTextTemplate(models.Model):
+    index = models.PositiveSmallIntegerField()
     context = models.ForeignKey(Context, on_delete=models.CASCADE)
     text = models.ForeignKey(Text, on_delete=models.CASCADE)
     position = models.CharField(
