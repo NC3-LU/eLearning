@@ -312,6 +312,11 @@ class ContextsResource(TranslationImportMixin, resources.ModelResource):
         attribute="medias",
         widget=ManyToManyWidget(Media, field="name", separator=","),
     )
+    texts = fields.Field(
+        column_name="texts",
+        attribute="texts",
+        widget=ManyToManyWidget(Text, field="name", separator=","),
+    )
 
     class Meta:
         model = Context
@@ -328,15 +333,43 @@ class contextTextInline(admin.TabularInline):
     model = ContextTextTemplate
     verbose_name = "Text"
     verbose_name_plural = "Texts"
+    ordering = ("index",)
     extra = 0
 
 
 @admin.register(Context, site=admin_site)
 class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name",)
+    list_display = ("name", "level_sequence_level", "level_sequence_position")
     fields = ("name",)
     inlines = (contextMediaInline, contextTextInline, levelSequenceInline)
     resource_class = ContextsResource
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        levelSequences = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Context),
+            object_id=OuterRef("id"),
+        ).order_by()
+        level_sequence_levels = levelSequences.values("level")[:1]
+        level_sequence_positions = levelSequences.values("position")[:1]
+        return queryset.annotate(
+            level_sequence_level=Subquery(level_sequence_levels),
+            level_sequence_position=Subquery(level_sequence_positions),
+        )
+
+    @admin.display(description="Level", ordering="level_sequence_level")
+    def level_sequence_level(self, obj):
+        level_sequence = LevelSequence.objects.filter(object_id=obj.id).first()
+        if level_sequence:
+            return level_sequence.level
+        return None
+
+    @admin.display(description="Position", ordering="level_sequence_position")
+    def level_sequence_position(self, obj):
+        level_sequence = LevelSequence.objects.filter(object_id=obj.id).first()
+        if level_sequence:
+            return level_sequence.position
+        return None
 
 
 class ResourcesResource(TranslationImportMixin, resources.ModelResource):
@@ -431,6 +464,6 @@ class LevelSequenceAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "content_type":
-            allowed_models = ["context", "question", "challenge"]
+            allowed_models = ["context", "question", "explanation", "challenge"]
             kwargs["queryset"] = ContentType.objects.filter(model__in=allowed_models)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
