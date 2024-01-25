@@ -1,4 +1,5 @@
 POSITION_CHOICES = [
+    ("NA", "Not applicable"),
     ("TL", "Top Left"),
     ("TC", "Top Center"),
     ("TR", "Top Right"),
