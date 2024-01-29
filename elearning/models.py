@@ -251,7 +251,9 @@ class Challenge(TranslatableModel):
 class Score(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
-    score = models.PositiveSmallIntegerField(default=0)
+    score = models.DecimalField(
+        default=0, max_digits=5, decimal_places=2, validators=[MaxValueValidator(100)]
+    )
     progress = models.PositiveSmallIntegerField(
         default=0, validators=[MaxValueValidator(100)]
     )
