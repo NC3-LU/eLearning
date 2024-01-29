@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .forms import AnswerForm
 from .models import (
+    AnswerChoice,
     Challenge,
     Context,
     Explanation,
@@ -18,6 +19,7 @@ from .models import (
     Level,
     LevelSequence,
     Question,
+    Score,
     User,
 )
 
@@ -112,6 +114,35 @@ def set_knowledge_course(user: User, question: Question) -> None:
         knowledge.save()
 
 
+def set_score_course(user: User, user_answer_choices: AnswerChoice) -> None:
+    question_contentType = ContentType.objects.get_for_model(Question)
+
+    level_sequences_questions_all = LevelSequence.objects.filter(
+        content_type=question_contentType,
+        level=user.current_level,
+    )
+
+    object_ids_all = level_sequences_questions_all.values_list("object_id", flat=True)
+
+    total_correct_choices = Question.objects.filter(
+        id__in=object_ids_all, answer_choices__is_correct=True
+    ).count()
+
+    user_answers_are_correct = Counter(
+        answer.is_correct for answer in user_answer_choices
+    )[True]
+
+    user_score = Score.objects.get(user=user, level=user.current_level)
+    percentage = (
+        (user_answers_are_correct / total_correct_choices) * 100
+        if total_correct_choices > 0
+        else 0
+    )
+
+    user_score.score = F("score") + percentage
+    user_score.save()
+
+
 def get_slides_content(user: User) -> []:
     slides = []
     level_sequence = LevelSequence.objects.filter(
@@ -178,13 +209,13 @@ def set_status_carousel_controls(user: User) -> [bool, bool]:
             level=user.current_level, position=user.current_position
         )
 
-        # sequence_before = (
-        #     LevelSequence.objects.filter(
-        #         level=user.current_level, position__lt=user.current_position
-        #     )
-        #     .order_by("position")
-        #     .last()
-        # )
+        sequence_before = (
+            LevelSequence.objects.filter(
+                level=user.current_level, position__lt=user.current_position
+            )
+            .order_by("position")
+            .last()
+        )
 
         sequence_after = (
             LevelSequence.objects.filter(
@@ -194,11 +225,8 @@ def set_status_carousel_controls(user: User) -> [bool, bool]:
             .first()
         )
 
-        # previous_control_enable = bool(
-        #     sequence_before
-        #     and sequence_before.content_type
-        #     != ContentType.objects.get_for_model(Question)
-        # )
+        previous_control_enable = bool(sequence_before)
+
         next_control_enable = bool(
             sequence_after
             and current_sequence.content_type
@@ -206,7 +234,7 @@ def set_status_carousel_controls(user: User) -> [bool, bool]:
         )
 
     except LevelSequence.DoesNotExist:
-        # previous_control_enable = False
+        previous_control_enable = False
         next_control_enable = False
 
-    return [True, next_control_enable]
+    return [previous_control_enable, next_control_enable]

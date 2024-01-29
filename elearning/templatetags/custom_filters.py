@@ -8,7 +8,6 @@ register = template.Library()
 
 @register.filter
 def is_sticker_unlocked(score):
-    # if score.progress == 100:
     if score.score == 0:
         return "1"
     if score.score < 70:

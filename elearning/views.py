@@ -35,6 +35,7 @@ from .viewLogic import (
     set_next_level_user,
     set_position_user,
     set_progress_course,
+    set_score_course,
     set_status_carousel_controls,
 )
 
@@ -180,6 +181,8 @@ def course(request):
                         answer.save()
                         if not isinstance(user_answer_choices, QuerySet):
                             user_answer_choices = [user_answer_choices]
+
+                        set_score_course(user, user_answer_choices)
 
                         answer.answer_choices.set(user_answer_choices, clear=True)
 
