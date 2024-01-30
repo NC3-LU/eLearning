@@ -17,6 +17,7 @@ from .decorators import user_uuid_required
 from .forms import AnswerForm, ResourceDownloadForm, inputUserUUIDForm
 from .models import (
     Answer,
+    AnswerChoice,
     Category,
     Knowledge,
     Level,
@@ -184,7 +185,12 @@ def course(request):
 
                         set_score_course(user, user_answer_choices)
 
-                        answer.answer_choices.set(user_answer_choices, clear=True)
+                        if question.q_type == "SR":
+                            for user_answer in form.data.getlist("answer"):
+                                choice = AnswerChoice.objects.get(id=user_answer)
+                                answer.answer_choices.add(choice)
+                        else:
+                            answer.answer_choices.set(user_answer_choices, clear=True)
 
                     slides = get_slides_content(user)
                     return JsonResponse({"success": True})

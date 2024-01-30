@@ -29,11 +29,16 @@ class SortingWidget(forms.SelectMultiple):
 
         for i, c in enumerate(choices):
             html += f"""
-                <div class="row draggable-item border border-1 border-primary py-1 rounded-3" value="{c.pk}"
+                <div
+                    class="row draggable-item border border-1
+                    border-primary bg-light-blue py-1 rounded-3 small"
+                    value="{c.pk}"
                     role="button">
-                    <div class="col-1 h4 align-self-center text-primary text-nowrap text-center px-0 m-0">
+                    <input type="checkbox" name="answer" value="{c.pk}" checked="checked"
+                    class="d-none" />
+                    <p class="col-1 align-self-center text-nowrap text-center px-0 m-0">
                         { i + 1 }.
-                    </div>
+                    </p>
                     <div class="col-10 align-self-center px-1">{ c }</div>
                     <div class="col-1 h2 align-self-center text-primary text-center px-0 m-0">
                         <i class="bi bi-grip-horizontal"></i>
@@ -45,20 +50,14 @@ class SortingWidget(forms.SelectMultiple):
 
 
 class SortingField(forms.ModelMultipleChoiceField):
-    def _():
-        pass
-
-    attrs = {}
-    is_hidden = False
-    use_required_attribute = _
-    id_for_label = _
-
     def __init__(self, *args, **kwargs):
         queryset = kwargs.pop("queryset", None)
-        super().__init__(queryset)
-        self.widget = SortingWidget(kwargs["choices"])
+        temp_choices = kwargs.pop("choices", None)
+        choices = kwargs["initial"] if kwargs["initial"] else temp_choices
+        super().__init__(queryset, **kwargs)
+        self.widget = SortingWidget(choices)
         self.widget.attrs = self.widget_attrs(self.widget)
-        self.choices = kwargs["choices"]
+        self.choices = choices
 
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)

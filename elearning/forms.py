@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from django import forms
+from django.db.models import Case, IntegerField, Value, When
 
 from elearning.fields.categorization_field import CategorizationField
 from elearning.fields.linking_field import LinkingField
@@ -15,9 +16,32 @@ class AnswerForm(forms.Form):
         user = kwargs.pop("user", None)
         answer_choices = question.answer_choices.all().order_by("index")
         initial_values = None
-
         if question.answer_set.filter(user=user).exists():
-            initial_values = question.answer_set.get(user=user).answer_choices.all()
+            user_answer = question.answer_set.get(user=user)
+            initial_values = user_answer.answer_choices.all()
+            if question.q_type == "SR":
+                user_answer_choices = user_answer.answer_choices.through.objects.filter(
+                    answer=user_answer.id
+                )
+                user_answer_choices_ids = user_answer_choices.values_list(
+                    "answerchoice_id", flat=True
+                )
+
+                ordered_user_answer_choices = (
+                    question.answer_set.get(user=user)
+                    .answer_choices.filter(id__in=user_answer_choices_ids)
+                    .order_by(
+                        Case(
+                            *[
+                                When(id=id_, then=pos)
+                                for pos, id_ in enumerate(user_answer_choices_ids)
+                            ],
+                            default=Value(len(user_answer_choices_ids)),
+                            output_field=IntegerField(),
+                        )
+                    )
+                )
+                initial_values = ordered_user_answer_choices
 
         super().__init__(*args, **kwargs)
 
@@ -75,7 +99,8 @@ class AnswerForm(forms.Form):
                     )
                 case "SR":
                     self.fields["answer"] = SortingField(
-                        choices=answer_choices,
+                        choices=answer_choices.order_by("?"),
+                        initial=initial_values if initial_values else None,
                     )
                 case "LI":
                     categories = [
