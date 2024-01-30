@@ -114,7 +114,9 @@ def set_knowledge_course(user: User, question: Question) -> None:
         knowledge.save()
 
 
-def set_score_course(user: User, user_answer_choices: AnswerChoice) -> None:
+def set_score_course(
+    user: User, question: Question, user_answer_choices: AnswerChoice
+) -> None:
     question_contentType = ContentType.objects.get_for_model(Question)
 
     level_sequences_questions_all = LevelSequence.objects.filter(
@@ -128,9 +130,18 @@ def set_score_course(user: User, user_answer_choices: AnswerChoice) -> None:
         id__in=object_ids_all, answer_choices__is_correct=True
     ).count()
 
-    user_answers_are_correct = Counter(
-        answer.is_correct for answer in user_answer_choices
-    )[True]
+    if question.q_type == "SR":
+        user_answers_are_correct = sum(
+            x == str(y)
+            for x, y in zip(
+                user_answer_choices,
+                question.answer_choices.order_by("index").values_list("id", flat=True),
+            )
+        )
+    else:
+        user_answers_are_correct = Counter(
+            answer.is_correct for answer in user_answer_choices
+        )[True]
 
     user_score = Score.objects.get(user=user, level=user.current_level)
     percentage = (

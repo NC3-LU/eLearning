@@ -183,14 +183,15 @@ def course(request):
                         if not isinstance(user_answer_choices, QuerySet):
                             user_answer_choices = [user_answer_choices]
 
-                        set_score_course(user, user_answer_choices)
-
                         if question.q_type == "SR":
+                            user_answer_choices = form.data.getlist("answer")
                             for user_answer in form.data.getlist("answer"):
                                 choice = AnswerChoice.objects.get(id=user_answer)
                                 answer.answer_choices.add(choice)
                         else:
                             answer.answer_choices.set(user_answer_choices, clear=True)
+
+                        set_score_course(user, question, user_answer_choices)
 
                     slides = get_slides_content(user)
                     return JsonResponse({"success": True})
