@@ -67,7 +67,13 @@ class TranslatedNameM2MWidget(widgets.ManyToManyWidget):
 
 
 class ButtonRadioSelect(forms.RadioSelect):
-    option_template_name = "django/forms/widgets/button_radio_option.html"
+    def render(self, name, value, attrs=None, renderer=None):
+        context = self.get_context(name, value, attrs)
+        rendered_html = render_to_string(
+            "django/forms/widgets/button_radio_option.html", context
+        )
+
+        return format_html(rendered_html)
 
 
 class SortingOptions(forms.SelectMultiple):
