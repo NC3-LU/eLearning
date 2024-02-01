@@ -1,0 +1,21 @@
+{% spaceless %}
+    <div class="sortable d-grid gap-2 px-3 mx-sm-2">
+        {% for choice in choices %}
+            <div
+                class="row draggable-item border border-1
+                border-primary bg-light-blue py-1 rounded-3 small"
+                value="{{choice.pk|stringformat:'s'}}"
+                role="button">
+            <input type="checkbox" name="answer" value="{{choice.pk|stringformat:'s'}}" checked="checked"
+            class="d-none" />
+            <p class="col-1 align-self-center text-nowrap text-center px-0 m-0">
+                {{ forloop.counter }}.
+            </p>
+            <div class="col-10 align-self-center px-1">{{ choice }}</div>
+            <div class="col-1 h2 align-self-center text-primary text-center px-0 m-0">
+                <i class="bi bi-grip-horizontal"></i>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endspaceless %}
