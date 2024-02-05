@@ -18,7 +18,7 @@
         {% csrf_token %}
         <select class="form-select form-select-sm text-primary fw-bold text-uppercase" id="language_selector" name="language">
             {% for language in languages %}
-                <option class="text-primary fw-bold text-uppercase" value="{{ language.code }}"{% if language.code == current_language %} selected{% endif %}>
+                <option class="text-primary fw-bold text-uppercase" value="{{ language.code }}" data-fullname="{{ language.name_local }}"{% if language.code == current_language %} selected{% endif %}>
                     {{ language.code }}
                 </option>
             {% endfor %}
