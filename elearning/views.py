@@ -196,7 +196,7 @@ def course(request):
                     slides = get_slides_content(user)
                     return JsonResponse({"success": True})
 
-        slides = get_slides_content(user)
+        slides = get_slides_content(user, None)
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect(reverse("dashboard"))
@@ -232,7 +232,7 @@ def change_slide(request):
     if user.current_level and user.current_position:
         set_position_user(user, direction=direction)
         set_progress_course(user)
-        slides = get_slides_content(user)
+        slides = get_slides_content(user, direction=direction)
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect(reverse("dashboard"))
@@ -247,7 +247,7 @@ def change_slide(request):
         "slides": slides,
     }
 
-    return render(request, "course_carousel.html", context=context)
+    return render(request, "course_new_slide.html", context=context)
 
 
 @user_uuid_required

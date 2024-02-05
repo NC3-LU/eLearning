@@ -1,3 +1,6 @@
+from django import forms
+from django.template.loader import render_to_string
+from django.utils.html import format_html
 from import_export import widgets
 from parler.models import TranslationDoesNotExist
 
@@ -61,3 +64,34 @@ class TranslatedNameM2MWidget(widgets.ManyToManyWidget):
                     pass
 
         return instances
+
+
+class ButtonRadioSelect(forms.RadioSelect):
+    def render(self, name, value, attrs=None, renderer=None):
+        context = self.get_context(name, value, attrs)
+        rendered_html = render_to_string(
+            "django/forms/widgets/button_radio_option.html", context
+        )
+
+        return format_html(rendered_html)
+
+
+class SortingOptions(forms.SelectMultiple):
+    class Media:
+        js = [
+            "npm_components/jquery-ui/dist/jquery-ui.min.js",
+            "npm_components/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js",
+            "js/sortable.js",
+        ]
+
+    def render(self, name, value, attrs=None, renderer=None):
+        choices = (
+            self.choices.field.initial
+            if self.choices.field.initial
+            else self.choices.queryset.order_by("?")
+        )
+        rendered_html = render_to_string(
+            "django/forms/widgets/draggable_option.html", {"choices": choices}
+        )
+
+        return format_html(rendered_html)

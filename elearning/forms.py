@@ -3,9 +3,7 @@ from uuid import UUID
 from django import forms
 from django.db.models import Case, IntegerField, Value, When
 
-from elearning.fields.categorization_field import CategorizationField
-from elearning.fields.linking_field import LinkingField
-from elearning.fields.sorting_field import SortingField
+from .widgets import ButtonRadioSelect, SortingOptions
 
 
 class AnswerForm(forms.Form):
@@ -22,7 +20,7 @@ class AnswerForm(forms.Form):
             if question.q_type == "SR":
                 user_answer_choices = user_answer.answer_choices.through.objects.filter(
                     answer=user_answer.id
-                )
+                ).order_by("id")
                 user_answer_choices_ids = user_answer_choices.values_list(
                     "answerchoice_id", flat=True
                 )
@@ -81,42 +79,19 @@ class AnswerForm(forms.Form):
                             }
                         ),
                     )
-                case "CA":
-                    categories = [
-                        c.answer_choice_category
-                        for c in answer_choices
-                        if c is not None
-                    ]
-                    categories.sort(key=lambda x: x.id)
-                    categories = [
-                        c
-                        for i, c in enumerate(categories)
-                        if i == 0 or c.id != categories[i - 1].id
-                    ]
-                    self.fields["answer"] = CategorizationField(
-                        choices=answer_choices,
-                        categories=categories,
-                    )
                 case "SR":
-                    self.fields["answer"] = SortingField(
-                        choices=answer_choices.order_by("?"),
+                    self.fields["answer"] = forms.ModelMultipleChoiceField(
+                        queryset=answer_choices,
+                        widget=SortingOptions(),
+                        required=True,
                         initial=initial_values if initial_values else None,
                     )
                 case "LI":
-                    categories = [
-                        c.answer_choice_category
-                        for c in answer_choices
-                        if c is not None
-                    ]
-                    categories.sort(key=lambda x: x.id)
-                    categories = [
-                        c
-                        for i, c in enumerate(categories)
-                        if i == 0 or c.id != categories[i - 1].id
-                    ]
-                    self.fields["answer"] = LinkingField(
-                        choices=answer_choices,
-                        categories=categories,
+                    self.fields["answer"] = forms.ModelChoiceField(
+                        queryset=answer_choices,
+                        widget=ButtonRadioSelect(),
+                        required=True,
+                        initial=initial_values.first() if initial_values else None,
                     )
                 case _:
                     self.fields["answer"] = forms.CharField(
@@ -127,7 +102,6 @@ class AnswerForm(forms.Form):
             self.type = question.q_type
             self.fields["answer"].label = question.name
             self.fields["answer"].widget.attrs["class"] = "d-grid gap-2 ps-3 mb-5"
-            self.fields["answer"].queryset = answer_choices
 
 
 class ResourceDownloadForm(forms.Form):
