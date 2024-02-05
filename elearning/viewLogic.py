@@ -3,7 +3,7 @@ from uuid import UUID
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -154,11 +154,23 @@ def set_score_course(
     user_score.save()
 
 
-def get_slides_content(user: User) -> []:
+def get_slides_content(user: User, direction: str) -> []:
     slides = []
-    level_sequence = LevelSequence.objects.filter(
-        level=user.current_level, position__gte=user.current_position
-    ).order_by("position")[:2]
+    if not direction:
+        level_sequence = LevelSequence.objects.filter(
+            Q(level=user.current_level, position=user.current_position - 1)
+            | Q(level=user.current_level, position=user.current_position)
+            | Q(level=user.current_level, position=user.current_position + 1)
+        ).order_by("position")
+    elif direction == "next":
+        level_sequence = LevelSequence.objects.filter(
+            Q(level=user.current_level, position=user.current_position + 1)
+        ).order_by("position")
+    else:
+        level_sequence = LevelSequence.objects.filter(
+            Q(level=user.current_level, position=user.current_position - 1)
+        ).order_by("position")
+
     for sequence in level_sequence:
         content_type = sequence.content_type
         object_id = sequence.object_id
