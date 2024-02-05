@@ -16,11 +16,11 @@
 {% if languages|length > 1 %}
     <form action="{% url 'set_language' %}" method="post" class="language_selector_form d-flex">
         {% csrf_token %}
-        <i class="bi bi-globe float-start my-auto"></i>
-        <select class="form-select form-select-sm text-primary fw-bold text-uppercase" id="language_selector" name="language">
+        <i class="bi bi-globe my-auto px-1"></i>
+        <select id="language_selector" name="language" class="ps-2">
             {% for language in languages %}
-                <option class="text-primary fw-bold text-uppercase" value="{{ language.code }}" data-fullname="{{ language.name_local }}"{% if language.code == current_language %} selected{% endif %}>
-                    {{ language.code }}
+                <option value="{{ language.code }}" {% if language.code == current_language %} selected{% endif %}>
+                    {{ language.name_translated | capfirst }}
                 </option>
             {% endfor %}
         </select>
