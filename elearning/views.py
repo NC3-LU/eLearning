@@ -244,10 +244,10 @@ def change_slide(request):
         "next_control_enable": next_control_enable,
         "level": user.current_level,
         "score": user.score_set.get(level=user.current_level).score,
-        "slides": slides,
+        "slides": [slides[0]],
     }
 
-    return render(request, "course_carousel.html", context=context)
+    return render(request, "course_new_slide.html", context=context)
 
 
 @user_uuid_required
