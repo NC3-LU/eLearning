@@ -43,6 +43,7 @@ from .viewLogic import (
 
 def index(request):
     request.session.clear()
+    change_sidebar_state(request)
     user_uuid_param = request.GET.get("user_uuid", None)
     if user_uuid_param:
         request.session["user_uuid"] = user_uuid_param
@@ -68,6 +69,12 @@ def start(request):
     else:
         form = inputUserUUIDForm()
     return render(request, "modals/start.html", {"form": form})
+
+
+def change_sidebar_state(request):
+    state = request.GET.get("state", "expanded")
+    request.session["sidebar_state"] = state
+    return JsonResponse({"state": state})
 
 
 def new_user(request):

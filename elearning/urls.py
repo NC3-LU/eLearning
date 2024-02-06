@@ -31,6 +31,8 @@ urlpatterns = [
     path("set-language/", set_language, name="set_language"),
     #   Start Modal
     path("start/", views.start, name="start"),
+    #   State Sidebar
+    path("sidebar_state/", views.change_sidebar_state, name="change_sidebar_state"),
     #   New User Modal
     path("new_user/", views.new_user, name="new_user"),
     # Privacy Policy
