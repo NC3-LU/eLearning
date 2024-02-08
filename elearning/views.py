@@ -193,7 +193,6 @@ def course(request):
 
                         set_score_course(user, question, user_answer_choices)
 
-                    slides = get_slides_content(user)
                     return JsonResponse({"success": True})
 
         slides = get_slides_content(user, None)
@@ -218,6 +217,10 @@ def course(request):
 @user_uuid_required
 def update_progress_bar(request):
     user = get_user_from_request(request)
+    direction = request.GET.get("direction", None)
+    if user.current_level and user.current_position:
+        set_position_user(user, direction=direction)
+        set_progress_course(user)
     context = {
         "progress": user.score_set.get(level=user.current_level).progress,
     }
@@ -230,21 +233,14 @@ def change_slide(request):
     direction = request.GET.get("direction", None)
 
     if user.current_level and user.current_position:
-        set_position_user(user, direction=direction)
-        set_progress_course(user)
         slides = get_slides_content(user, direction=direction)
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect(reverse("dashboard"))
 
-    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
-
     context = {
-        "previous_control_enable": previous_control_enable,
-        "next_control_enable": next_control_enable,
-        "level": user.current_level,
+        "slide": slides[0] if slides else None,
         "score": user.score_set.get(level=user.current_level).score,
-        "slides": slides,
     }
 
     return render(request, "course_new_slide.html", context=context)

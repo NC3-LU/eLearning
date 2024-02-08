@@ -228,10 +228,6 @@ def get_question_index(user: User, position: int) -> int:
 
 def set_status_carousel_controls(user: User) -> [bool, bool]:
     try:
-        current_sequence = LevelSequence.objects.get(
-            level=user.current_level, position=user.current_position
-        )
-
         sequence_before = (
             LevelSequence.objects.filter(
                 level=user.current_level, position__lt=user.current_position
@@ -249,12 +245,7 @@ def set_status_carousel_controls(user: User) -> [bool, bool]:
         )
 
         previous_control_enable = bool(sequence_before)
-
-        next_control_enable = bool(
-            sequence_after
-            and current_sequence.content_type
-            != ContentType.objects.get_for_model(Question)
-        )
+        next_control_enable = bool(sequence_after)
 
     except LevelSequence.DoesNotExist:
         previous_control_enable = False
