@@ -49,14 +49,9 @@ class Category(TranslatableModel):
 
 # Answer choices
 class AnswerChoice(TranslatableModel):
-    index = models.IntegerField()
     translations = TranslatedFields(
         name=models.TextField(verbose_name="label"),
         tooltip=models.TextField(blank=True, default=None, null=True),
-    )
-    score = models.IntegerField(default=0)
-    is_correct = models.BooleanField(
-        verbose_name="Is it the correct answer ?", default=False
     )
 
     def __str__(self):
@@ -114,7 +109,9 @@ class Question(TranslatableModel):
         verbose_name="type",
     )
     categories = models.ManyToManyField(Category, blank=True, default=None)
-    answer_choices = models.ManyToManyField(AnswerChoice)
+    answer_choices = models.ManyToManyField(
+        AnswerChoice, through="QuestionAnswerChoice"
+    )
     medias = models.ManyToManyField(Media, through="QuestionMediaTemplate")
     max_score = models.IntegerField(default=100)
 
@@ -141,6 +138,23 @@ class Explanation(TranslatableModel):
     class Meta:
         verbose_name = _("Explanation")
         verbose_name_plural = _("Explanations")
+
+
+# Quizzes
+class Quiz(TranslatableModel):
+    translations = TranslatedFields(
+        name=models.TextField(verbose_name="label"),
+        tooltip=models.TextField(blank=True, default=None, null=True),
+    )
+    categories = models.ManyToManyField(Category, blank=True, default=None)
+    questions = models.ManyToManyField(Question, through="QuizQuestion")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _("Quiz")
+        verbose_name_plural = _("Quizzes")
 
 
 # Contexts
@@ -371,6 +385,39 @@ class ExplanationTextTemplate(models.Model):
     class Meta:
         verbose_name = _("Text Template")
         verbose_name_plural = _("Text Templates")
+
+    def __str__(self):
+        return ""
+
+
+class QuestionAnswerChoice(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    index = models.PositiveSmallIntegerField(default=0)
+    is_correct = models.BooleanField(
+        verbose_name="Is it the correct answer ?", default=False
+    )
+    score = models.IntegerField(default=0)
+    answerChoice = models.ForeignKey(AnswerChoice, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = _("Question Answer Choice")
+        verbose_name_plural = _("Question Answer Choices")
+
+    def __str__(self):
+        return ""
+
+
+class QuizQuestion(models.Model):
+    index = models.PositiveSmallIntegerField()
+    display_quiz_label = models.BooleanField(
+        verbose_name="Display label quiz?", default=True
+    )
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = _("Quiz Question")
+        verbose_name_plural = _("Quiz Questions")
 
     def __str__(self):
         return ""

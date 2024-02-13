@@ -23,7 +23,10 @@ from .models import (
     LevelSequence,
     Media,
     Question,
+    QuestionAnswerChoice,
     QuestionMediaTemplate,
+    Quiz,
+    QuizQuestion,
     Resource,
     ResourceType,
     Text,
@@ -93,10 +96,7 @@ class CategoryAdmin(ImportExportModelAdmin, TranslatableAdmin):
 
 class AnswerChoicesResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
-    index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="name", attribute="name")
-    is_correct = fields.Field(column_name="is_correct", attribute="is_correct")
-    score = fields.Field(column_name="score", attribute="score")
     tooltip = fields.Field(column_name="tooltip", attribute="tooltip")
 
     class Meta:
@@ -105,18 +105,9 @@ class AnswerChoicesResource(TranslationImportMixin, resources.ModelResource):
 
 @admin.register(AnswerChoice, site=admin_site)
 class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = (
-        "name",
-        "index",
-        "score",
-        "is_correct",
-    )
-    list_filter = ("is_correct",)
+    list_display = ("name",)
     fields = (
-        "index",
         "name",
-        "is_correct",
-        "score",
         "tooltip",
     )
     resource_class = AnswerChoicesResource
@@ -192,9 +183,10 @@ class QuestionsResource(TranslationImportMixin, resources.ModelResource):
 
 
 class questionAnswerChoicesInline(admin.TabularInline):
-    model = Question.answer_choices.through
+    model = QuestionAnswerChoice
     verbose_name = "Answer choice"
     verbose_name_plural = "Answer choices"
+    ordering = ("index",)
     extra = 0
 
 
@@ -302,6 +294,40 @@ class ExplanationAdmin(ImportExportModelAdmin, TranslatableAdmin):
     fields = ("name", "question")
     inlines = (explanationMediaInline, explanationTextInline, levelSequenceInline)
     resource_class = ExplanationResource
+
+
+class QuizResource(TranslationImportMixin, resources.ModelResource):
+    id = fields.Field(column_name="id", attribute="id", readonly=True)
+    name = fields.Field(column_name="name", attribute="name")
+    questions = fields.Field(
+        column_name="question",
+        attribute="question",
+        widget=TranslatedNameWidget(Question, field="name"),
+    )
+
+    class Meta:
+        model = Quiz
+
+
+class quizQuestionsInline(admin.TabularInline):
+    model = QuizQuestion
+    verbose_name = "Question"
+    verbose_name_plural = "Questions"
+    ordering = ("index",)
+    extra = 0
+
+
+@admin.register(Quiz, site=admin_site)
+class QuizAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ("name", "display_categories")
+    fields = ("name", "tooltip", "categories")
+    filter_horizontal = ["categories"]
+    inlines = (quizQuestionsInline, levelSequenceInline)
+    resource_class = QuizResource
+
+    @admin.display(description="Categories")
+    def display_categories(self, obj):
+        return "\n".join([category.name for category in obj.categories.all()])
 
 
 class ContextsResource(TranslationImportMixin, resources.ModelResource):

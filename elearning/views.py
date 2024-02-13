@@ -9,7 +9,7 @@ from django.db.models import BooleanField, Case, Value, When
 from django.db.models.query import QuerySet
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -161,7 +161,6 @@ def course(request):
             user.save()
 
     if user.current_level and user.current_position:
-        set_progress_course(user)
         if request.method == "POST":
             level_sequence = LevelSequence.objects.get(
                 level=user.current_level, position=user.current_position
@@ -169,7 +168,7 @@ def course(request):
             if level_sequence.content_type == ContentType.objects.get_for_model(
                 Question
             ):
-                question = get_object_or_404(Question, pk=level_sequence.object_id)
+                question = level_sequence.content_object
                 form = AnswerForm(request.POST, question=question, user=user)
                 if form.is_valid():
                     existing_answer = Answer.objects.filter(
@@ -194,6 +193,8 @@ def course(request):
                         set_score_course(user, question, user_answer_choices)
 
                     return JsonResponse({"success": True})
+
+            return JsonResponse({"success": False})
 
         slides = get_slides_content(user, None)
     else:
