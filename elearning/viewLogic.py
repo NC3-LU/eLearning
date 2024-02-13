@@ -19,6 +19,7 @@ from .models import (
     Level,
     LevelSequence,
     Question,
+    QuestionAnswerChoice,
     Score,
     User,
 )
@@ -126,8 +127,8 @@ def set_score_course(
 
     object_ids_all = level_sequences_questions_all.values_list("object_id", flat=True)
 
-    total_correct_choices = Question.objects.filter(
-        id__in=object_ids_all, answer_choices__is_correct=True
+    total_correct_choices = QuestionAnswerChoice.objects.filter(
+        question__id__in=object_ids_all, is_correct=True
     ).count()
 
     if question.q_type == "SR":
@@ -135,7 +136,9 @@ def set_score_course(
             x == str(y)
             for x, y in zip(
                 user_answer_choices,
-                question.answer_choices.order_by("index").values_list("id", flat=True),
+                question.answer_choices.order_by(
+                    "questionanswerchoice__index"
+                ).values_list("answerChoice__id", flat=True),
             )
         )
     else:
