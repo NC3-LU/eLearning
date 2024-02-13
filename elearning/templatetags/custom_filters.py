@@ -14,7 +14,7 @@ def is_sticker_unlocked(score):
         return "2"
     if score.score >= 70 and score.score < 90:
         return "3"
-    if score.score > 90:
+    if score.score >= 90:
         return "4"
 
 
