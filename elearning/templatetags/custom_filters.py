@@ -16,6 +16,17 @@ def is_sticker_unlocked(score):
         return "3"
     if score.score >= 90:
         return "4"
+    
+@register.filter
+def getclass(score):
+    if score.score == 0:
+        return "dark"
+    if score.score < 70:
+        return "primary"
+    if score.score >= 70 and score.score < 90:
+        return "primary"
+    if score.score >= 90:
+        return "warning"
 
 
 @register.filter(name="split")
