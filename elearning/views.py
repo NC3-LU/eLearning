@@ -30,6 +30,7 @@ from .models import (
 )
 from .settings import COOKIEBANNER
 from .viewLogic import (
+    get_quiz_order,
     get_slides_content,
     get_user_from_request,
     set_knowledge_course,
@@ -207,6 +208,7 @@ def course(request):
         "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
         "progress": user.score_set.get(level=user.current_level).progress,
+        "quizzes": get_quiz_order(user),
         "level": user.current_level,
         "score": user.score_set.get(level=user.current_level).score,
         "slides": slides,
@@ -221,9 +223,11 @@ def update_progress_bar(request):
     direction = request.GET.get("direction", None)
     if user.current_level and user.current_position:
         set_position_user(user, direction=direction)
-        set_progress_course(user)
+        quizzes = get_quiz_order(user)
+        set_progress_course(user, quizzes)
     context = {
         "progress": user.score_set.get(level=user.current_level).progress,
+        "quizzes": quizzes,
     }
     return render(request, "parts/course_progress_bar.html", context=context)
 

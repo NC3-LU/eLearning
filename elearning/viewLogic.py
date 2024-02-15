@@ -1,9 +1,10 @@
-from collections import Counter
+from collections import Counter, OrderedDict
+from typing import List
 from uuid import UUID
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import F, Q
+from django.db.models import Exists, F, OuterRef, Q, QuerySet
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -20,6 +21,7 @@ from .models import (
     LevelSequence,
     Question,
     QuestionAnswerChoice,
+    QuizQuestion,
     Score,
     User,
 )
@@ -74,20 +76,46 @@ def set_position_user(user: User, direction: str) -> None:
         user.save()
 
 
-def set_progress_course(user: User) -> None:
-    level_sequence = LevelSequence.objects.filter(level=user.current_level)
+def set_progress_course(user: User, quizzes: OrderedDict):
+    level_sequence = LevelSequence.objects.filter(level=user.current_level).order_by(
+        "position"
+    )
     user_score = user.score_set.filter(level=user.current_level).first()
 
     if not level_sequence or not user_score:
         return
 
-    index = level_sequence.filter(position__lte=user.current_position).count()
-    total_positions = level_sequence.count()
+    nb_quizzes = len(quizzes)
+    nb_questions_quiz = sum(value["nb_questions"] for value in quizzes.values())
 
-    if total_positions > 0:
-        progress = (index / total_positions) * 100
-        user_score.progress = progress
-        user_score.save()
+    total_positions = level_sequence.count() - nb_questions_quiz + nb_quizzes
+
+    if total_positions <= 0:
+        return
+
+    total_nb_questions_before, count_before = items_before_position(
+        quizzes, user.current_position
+    )
+
+    index = (
+        level_sequence.filter(position__lte=user.current_position).count()
+        - total_nb_questions_before
+        + count_before
+    )
+
+    current_level_sequence = level_sequence.get(position=user.current_position)
+    question_content_type = ContentType.objects.get_for_model(Question)
+
+    if (
+        current_level_sequence.content_type == question_content_type
+        and current_level_sequence.content_object.quiz_set.exists()
+    ):
+        quiz = current_level_sequence.content_object.quiz_set.first()
+        index = quizzes[quiz.id]["position"]
+
+    progress = (index / total_positions) * 100
+    user_score.progress = progress
+    user_score.save()
 
 
 def set_knowledge_course(user: User, question: Question) -> None:
@@ -193,6 +221,11 @@ def get_slides_content(user: User, direction: str) -> []:
         elif content_type == ContentType.objects.get_for_model(Question):
             question = get_object_or_404(Question, pk=object_id)
             form = AnswerForm(question=question, user=user)
+            form.quiz_index = (
+                get_quiz_index(user, sequence.content_object.quiz_set.first().id)
+                if form.quiz
+                else None
+            )
             form.question_index = get_question_index(user, sequence.position)
             slides.append({"question": form})
         elif content_type == ContentType.objects.get_for_model(Explanation):
@@ -220,16 +253,84 @@ def get_slides_content(user: User, direction: str) -> []:
     return slides
 
 
+def get_questions_level_sequences(
+    user: User, is_quiz: bool = False
+) -> QuerySet[LevelSequence]:
+    question_content_type = ContentType.objects.get_for_model(Question)
+    level_sequences = (
+        LevelSequence.objects.filter(
+            level=user.current_level, content_type=question_content_type
+        )
+        .annotate(
+            is_related_to_quiz=Exists(
+                QuizQuestion.objects.filter(question_id=OuterRef("object_id"))
+            )
+        )
+        .filter(is_related_to_quiz=is_quiz)
+        .order_by("position")
+    )
+
+    return level_sequences
+
+
 def get_question_index(user: User, position: int) -> int:
-    questions = LevelSequence.objects.filter(
-        level=user.current_level,
-        content_type=ContentType.objects.get_for_model(Question),
-    ).order_by("position")
+    questions = get_questions_level_sequences(user)
     index = questions.filter(position__lte=position).count()
     return index
 
 
-def set_status_carousel_controls(user: User) -> [bool, bool]:
+def get_quiz_index(user: User, quiz_id: int) -> int:
+    quiz_order = get_quiz_order(user)
+    index = quiz_order[quiz_id]["index"]
+    return index
+
+
+def get_quiz_order(user: User) -> OrderedDict:
+    quiz_ordered = OrderedDict()
+    all_level_sequence = LevelSequence.objects.filter(
+        level=user.current_level
+    ).order_by("position")
+    questions_quiz_level_sequences = get_questions_level_sequences(user, is_quiz=True)
+    index = 1
+    total_questions = 0
+    for sequence in questions_quiz_level_sequences:
+        quiz = sequence.content_object.quiz_set.first()
+        nb_questions = quiz.quizquestion_set.count()
+        position = all_level_sequence.filter(position__lte=sequence.position).count()
+        if quiz.id not in quiz_ordered:
+            quiz_ordered[quiz.id] = {
+                "index": index,
+                "position": position,
+                "nb_questions": nb_questions,
+            }
+            total_questions += nb_questions
+            index += 1
+
+    total_slides = all_level_sequence.count() - total_questions + len(quiz_ordered)
+
+    for _quiz_id, quiz in quiz_ordered.items():
+        total_nb_questions_before, count_before = items_before_position(
+            quiz_ordered, quiz["position"]
+        )
+
+        quiz["percentage"] = (
+            (quiz["position"] - total_nb_questions_before + count_before) / total_slides
+        ) * 100
+
+    return quiz_ordered
+
+
+def items_before_position(ordered_dict: OrderedDict, current_position: int) -> tuple:
+    total_nb_questions = 0
+    count = 0
+    for _key, value in ordered_dict.items():
+        if value["position"] < current_position:
+            total_nb_questions += value["nb_questions"]
+            count += 1
+    return total_nb_questions, count
+
+
+def set_status_carousel_controls(user: User) -> List[bool]:
     try:
         sequence_before = (
             LevelSequence.objects.filter(
