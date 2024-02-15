@@ -322,7 +322,7 @@ class QuizAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "display_categories")
     fields = ("name", "tooltip", "categories")
     filter_horizontal = ["categories"]
-    inlines = (quizQuestionsInline, levelSequenceInline)
+    inlines = (quizQuestionsInline,)
     resource_class = QuizResource
 
     @admin.display(description="Categories")
