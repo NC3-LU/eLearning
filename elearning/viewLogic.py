@@ -167,7 +167,7 @@ def set_score_course(
                 user_answer_choices,
                 question.answer_choices.order_by(
                     "questionanswerchoice__index"
-                ).values_list("answerChoice__id", flat=True),
+                ).values_list("id", flat=True),
             )
         )
     else:
