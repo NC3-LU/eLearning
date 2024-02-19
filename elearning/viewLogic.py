@@ -103,6 +103,8 @@ def set_progress_course(user: User, quizzes: OrderedDict):
         + count_before
     )
 
+    progress = (index / total_positions) * 100
+
     current_level_sequence = level_sequence.get(position=user.current_position)
     question_content_type = ContentType.objects.get_for_model(Question)
 
@@ -111,9 +113,8 @@ def set_progress_course(user: User, quizzes: OrderedDict):
         and current_level_sequence.content_object.quiz_set.exists()
     ):
         quiz = current_level_sequence.content_object.quiz_set.first()
-        index = quizzes[quiz.id]["position"]
+        progress = quizzes[quiz.id]["percentage"]
 
-    progress = (index / total_positions) * 100
     user_score.progress = progress
     user_score.save()
 
