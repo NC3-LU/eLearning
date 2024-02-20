@@ -85,13 +85,15 @@ class SortingOptions(forms.SelectMultiple):
         ]
 
     def render(self, name, value, attrs=None, renderer=None):
+        is_answered = True if self.choices.field.initial else False
         choices = (
             self.choices.field.initial
             if self.choices.field.initial
             else self.choices.queryset.order_by("?")
         )
         rendered_html = render_to_string(
-            "django/forms/widgets/draggable_option.html", {"choices": choices}
+            "django/forms/widgets/draggable_option.html",
+            {"choices": choices, "is_answered": is_answered},
         )
 
         return format_html(rendered_html)

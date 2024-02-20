@@ -1,5 +1,5 @@
 {% spaceless %}
-    <div class="sortable d-grid gap-2 px-3 mx-sm-2">
+    <div class="{% if is_answered %}question_answered{% endif %} sortable d-grid gap-2 px-3 mx-sm-2">
         {% for choice in choices %}
             <div
                 class="row draggable-item border border-1
