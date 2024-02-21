@@ -108,6 +108,10 @@ class AnswerForm(forms.Form):
                         widget=forms.MultipleHiddenInput(),
                     )
 
+            self.fields["answer"].widget.attrs.update(
+                {"id": f"question_{question.pk}_answer"}
+            )
+
             self.id = question.pk
             self.quiz = (
                 question.quiz_set.first() if question.quiz_set.exists() else None
