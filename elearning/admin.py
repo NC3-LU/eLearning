@@ -228,8 +228,8 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
         queryset = super().get_queryset(request)
         levelSequences = LevelSequence.objects.filter(
             content_type=ContentType.objects.get_for_model(Question),
-            object_id=OuterRef("id"),
-        ).order_by()
+            object_id=OuterRef("pk"),
+        )
         level_sequence_levels = levelSequences.values("level")[:1]
         level_sequence_positions = levelSequences.values("position")[:1]
         return queryset.annotate(
@@ -243,14 +243,18 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
 
     @admin.display(description="Level", ordering="level_sequence_level")
     def level_sequence_level(self, obj):
-        level_sequence = LevelSequence.objects.filter(object_id=obj.id).first()
+        level_sequence = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Question), object_id=obj.id
+        ).first()
         if level_sequence:
             return level_sequence.level
         return None
 
     @admin.display(description="Position", ordering="level_sequence_position")
     def level_sequence_position(self, obj):
-        level_sequence = LevelSequence.objects.filter(object_id=obj.id).first()
+        level_sequence = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Question), object_id=obj.id
+        ).first()
         if level_sequence:
             return level_sequence.position
         return None
