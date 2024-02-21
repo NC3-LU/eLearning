@@ -319,15 +319,10 @@ class quizQuestionsInline(admin.TabularInline):
 
 @admin.register(Quiz, site=admin_site)
 class QuizAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name", "display_categories")
-    fields = ("name", "tooltip", "categories")
-    filter_horizontal = ["categories"]
+    list_display = ("name",)
+    fields = ("name", "tooltip")
     inlines = (quizQuestionsInline,)
     resource_class = QuizResource
-
-    @admin.display(description="Categories")
-    def display_categories(self, obj):
-        return "\n".join([category.name for category in obj.categories.all()])
 
 
 class ContextsResource(TranslationImportMixin, resources.ModelResource):

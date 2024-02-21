@@ -146,7 +146,6 @@ class Quiz(TranslatableModel):
         name=models.TextField(verbose_name="label"),
         tooltip=models.TextField(blank=True, default=None, null=True),
     )
-    categories = models.ManyToManyField(Category, blank=True, default=None)
     questions = models.ManyToManyField(Question, through="QuizQuestion")
 
     def __str__(self):
