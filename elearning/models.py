@@ -82,11 +82,11 @@ class Text(TranslatableModel):
     name = models.CharField(max_length=100, verbose_name="label")
     translations = TranslatedFields(
         description=models.TextField(blank=True, default=None, null=True),
+        hyperlink=models.TextField(blank=True, default=None, null=True),
     )
     t_type = models.CharField(
         max_length=1, choices=TEXT_TYPE, default=TEXT_TYPE[0][0], verbose_name="type"
     )
-    hyperlink = models.TextField(blank=True, default=None, null=True)
 
     def __str__(self):
         return self.name
