@@ -15,6 +15,7 @@ from .models import (
     Challenge,
     Context,
     ContextMediaTemplate,
+    ContextResourceTemplate,
     ContextTextTemplate,
     Explanation,
     ExplanationMediaTemplate,
@@ -342,6 +343,11 @@ class ContextsResource(TranslationImportMixin, resources.ModelResource):
         attribute="texts",
         widget=ManyToManyWidget(Text, field="name", separator=","),
     )
+    resources = fields.Field(
+        column_name="resources",
+        attribute="resources",
+        widget=ManyToManyWidget(Resource, field="name", separator=","),
+    )
 
     class Meta:
         model = Context
@@ -362,11 +368,23 @@ class contextTextInline(admin.TabularInline):
     extra = 0
 
 
+class contextResourcesInline(admin.TabularInline):
+    model = ContextResourceTemplate
+    verbose_name = "Resources"
+    verbose_name_plural = "Resources"
+    extra = 0
+
+
 @admin.register(Context, site=admin_site)
 class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "level_sequence_level", "level_sequence_position")
     fields = ("name",)
-    inlines = (contextMediaInline, contextTextInline, levelSequenceInline)
+    inlines = (
+        contextMediaInline,
+        contextTextInline,
+        contextResourcesInline,
+        levelSequenceInline,
+    )
     resource_class = ContextsResource
 
     def get_queryset(self, request):

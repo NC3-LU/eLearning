@@ -212,10 +212,14 @@ def get_slides_content(user: User, direction: str) -> []:
             slides.append(
                 {
                     "context": {
+                        "label": context.name,
                         "texts": context.contexttexttemplate_set.all().order_by(
                             "index"
                         ),
                         "medias": context.contextmediatemplate_set.all(),
+                        "resources": context.contextresourcetemplate_set.all().order_by(
+                            "index"
+                        ),
                     }
                 }
             )

@@ -96,6 +96,46 @@ class Text(TranslatableModel):
         verbose_name_plural = _("Texts")
 
 
+# Resources Types
+class ResourceType(TranslatableModel):
+    index = models.PositiveIntegerField()
+    translations = TranslatedFields(
+        name=models.CharField(max_length=100),
+    )
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = _("Resource Type")
+        verbose_name_plural = _("Resource Types")
+
+
+# Resources
+class Resource(TranslatableModel):
+    translations = TranslatedFields(
+        name=models.CharField(max_length=100),
+        description=models.TextField(blank=True, default=None, null=True),
+        path=models.FilePathField(path=settings.MEDIA_DIR, recursive=True),
+    )
+    level = models.ForeignKey(
+        Level,
+        models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    resourceType = models.ForeignKey(
+        ResourceType, models.SET_NULL, blank=True, null=True, verbose_name="type"
+    )
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = _("Resource")
+        verbose_name_plural = _("Resources")
+
+
 # Questions
 class Question(TranslatableModel):
     translations = TranslatedFields(
@@ -161,6 +201,7 @@ class Context(TranslatableModel):
     translations = TranslatedFields(name=models.TextField(verbose_name="Title"))
     medias = models.ManyToManyField(Media, through="ContextMediaTemplate")
     texts = models.ManyToManyField(Text, through="ContextTextTemplate")
+    resources = models.ManyToManyField(Resource, through="ContextResourceTemplate")
 
     def __str__(self):
         return self.name
@@ -202,47 +243,6 @@ class Answer(models.Model):
     class Meta:
         verbose_name = _("Answer")
         verbose_name_plural = _("Answers")
-
-
-# Resources Types
-class ResourceType(TranslatableModel):
-    index = models.PositiveIntegerField()
-    translations = TranslatedFields(
-        name=models.CharField(max_length=100),
-    )
-
-    def __str__(self):
-        return str(self.name)
-
-    class Meta:
-        verbose_name = _("Resource Type")
-        verbose_name_plural = _("Resource Types")
-
-
-# Resources
-class Resource(TranslatableModel):
-    translations = TranslatedFields(
-        name=models.CharField(max_length=100),
-        description=models.TextField(blank=True, default=None, null=True),
-    )
-    level = models.ForeignKey(
-        Level,
-        models.SET_NULL,
-        blank=True,
-        null=True,
-    )
-    resourceType = models.ForeignKey(
-        ResourceType, models.SET_NULL, blank=True, null=True, verbose_name="type"
-    )
-
-    path = models.FilePathField(path=settings.MEDIA_DIR, recursive=True)
-
-    def __str__(self):
-        return str(self.name)
-
-    class Meta:
-        verbose_name = _("Resource")
-        verbose_name_plural = _("Resources")
 
 
 # Challenges
@@ -336,6 +336,23 @@ class ContextTextTemplate(models.Model):
     class Meta:
         verbose_name = _("Text Template")
         verbose_name_plural = _("Text Templates")
+
+    def __str__(self):
+        return ""
+
+
+class ContextResourceTemplate(models.Model):
+    index = models.PositiveSmallIntegerField()
+    context = models.ForeignKey(Context, on_delete=models.CASCADE)
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE)
+    position = models.CharField(
+        max_length=2, choices=POSITION_CHOICES, default=POSITION_CHOICES[0][0]
+    )
+    css_classes = ArrayField(models.CharField(), default=list, blank=True)
+
+    class Meta:
+        verbose_name = _("Resource Template")
+        verbose_name_plural = _("Resource Templates")
 
     def __str__(self):
         return ""
