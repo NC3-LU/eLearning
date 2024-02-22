@@ -12,7 +12,6 @@ from .mixins import TranslationImportMixin
 from .models import (
     AnswerChoice,
     Category,
-    Challenge,
     Context,
     ContextMediaTemplate,
     ContextResourceTemplate,
@@ -458,25 +457,6 @@ class ResourceTypeAdmin(ImportExportModelAdmin, TranslatableAdmin):
     resource_class = ResourcesResourceType
 
 
-class ChallengesResource(TranslationImportMixin, resources.ModelResource):
-    id = fields.Field(column_name="id", attribute="id", readonly=True)
-    name = fields.Field(column_name="name", attribute="name")
-    description = fields.Field(column_name="description", attribute="description")
-
-    class Meta:
-        model = Challenge
-
-
-@admin.register(Challenge, site=admin_site)
-class ChallengeAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = (
-        "name",
-        "description",
-    )
-    inlines = (levelSequenceInline,)
-    resource_class = ChallengesResource
-
-
 class LevelSequenceAdminResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     position = fields.Field(column_name="position", attribute="position")
@@ -507,6 +487,6 @@ class LevelSequenceAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "content_type":
-            allowed_models = ["context", "question", "explanation", "challenge"]
+            allowed_models = ["context", "question", "explanation"]
             kwargs["queryset"] = ContentType.objects.filter(model__in=allowed_models)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)

@@ -245,21 +245,6 @@ class Answer(models.Model):
         verbose_name_plural = _("Answers")
 
 
-# Challenges
-class Challenge(TranslatableModel):
-    translations = TranslatedFields(
-        name=models.TextField(),
-        description=models.TextField(blank=True, default=None, null=True),
-    )
-
-    def __str__(self):
-        return str(self.name)
-
-    class Meta:
-        verbose_name = _("Challenge")
-        verbose_name_plural = _("Challenges")
-
-
 # Scores
 class Score(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

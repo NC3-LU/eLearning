@@ -13,7 +13,6 @@ from django.utils.translation import gettext_lazy as _
 from .forms import AnswerForm
 from .models import (
     AnswerChoice,
-    Challenge,
     Context,
     Explanation,
     Knowledge,
@@ -251,9 +250,6 @@ def get_slides_content(user: User, direction: str) -> []:
                     }
                 }
             )
-        elif content_type == ContentType.objects.get_for_model(Challenge):
-            challenge = get_object_or_404(Challenge, pk=object_id)
-            slides.append({"challenge": challenge})
 
     return slides
 
