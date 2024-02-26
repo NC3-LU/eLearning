@@ -30,6 +30,7 @@ from .models import (
 )
 from .settings import COOKIEBANNER
 from .viewLogic import (
+    get_allowed_resources_ids,
     get_quiz_order,
     get_slides_content,
     get_user_from_request,
@@ -268,7 +269,6 @@ def resources(request):
 @user_uuid_required
 def resources_download(request):
     user = get_user_from_request(request)
-
     resource_type_id = request.GET.get("resource_type")
     level_id = request.GET.get("level")
     resources = Resource.objects.all().order_by("level", "resourceType")
@@ -279,10 +279,12 @@ def resources_download(request):
     if level_id:
         resources = resources.filter(level=level_id)
 
+    allowed_resources_ids = get_allowed_resources_ids(user)
+
     resources = resources.annotate(
         disabled=Case(
-            When(level__index__gt=user.current_level.index, then=Value(True)),
-            default=Value(False),
+            When(id__in=allowed_resources_ids, then=Value(False)),
+            default=Value(True),
             output_field=BooleanField(),
         )
     )

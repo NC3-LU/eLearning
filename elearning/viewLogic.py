@@ -4,7 +4,7 @@ from uuid import UUID
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Exists, F, OuterRef, Q, QuerySet
+from django.db.models import Exists, F, OuterRef, Q, QuerySet, Subquery
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -14,6 +14,7 @@ from .forms import AnswerForm
 from .models import (
     AnswerChoice,
     Context,
+    ContextResourceTemplate,
     Explanation,
     Knowledge,
     Level,
@@ -357,3 +358,32 @@ def set_status_carousel_controls(user: User) -> List[bool]:
         next_control_enable = False
 
     return [previous_control_enable, next_control_enable]
+
+
+def get_allowed_resources_ids(user: User) -> List:
+    context_content_type = ContentType.objects.get_for_model(Context)
+    contextResource_subquery = ContextResourceTemplate.objects.filter(
+        context_id=OuterRef("object_id")
+    ).values("context_id")
+
+    context_sequences = LevelSequence.objects.filter(
+        content_type=context_content_type,
+        level__lte=user.current_level,
+        object_id__in=Subquery(contextResource_subquery),
+    )
+
+    allowed_resources_set = set()
+    for sequence in context_sequences:
+        if (
+            sequence.level == user.current_level
+            and sequence.position <= user.current_position
+        ):
+            allowed_resources_set.update(
+                sequence.content_object.resources.values_list("id", flat=True)
+            )
+        elif sequence.level.index < user.current_level.index:
+            allowed_resources_set.update(
+                sequence.content_object.resources.values_list("id", flat=True)
+            )
+
+    return list(allowed_resources_set)
