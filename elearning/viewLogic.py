@@ -373,9 +373,14 @@ def get_allowed_resources_ids(user: User) -> List:
     )
 
     allowed_resources_set = set()
+
+    if not user.current_level:
+        return list(allowed_resources_set)
+
     for sequence in context_sequences:
         if (
             sequence.level == user.current_level
+            and user.current_position
             and sequence.position <= user.current_position
         ):
             allowed_resources_set.update(
