@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-12 14:20+0000\n"
+"POT-Creation-Date: 2024-02-28 08:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,131 +38,139 @@ msgstr ""
 msgid "Categories"
 msgstr ""
 
-#: elearning/models.py:66
+#: elearning/models.py:61
 msgid "Answer choice"
 msgstr ""
 
-#: elearning/models.py:67
+#: elearning/models.py:62
 msgid "Answer choices"
 msgstr ""
 
-#: elearning/models.py:82
+#: elearning/models.py:77
 msgid "Media"
 msgstr ""
 
-#: elearning/models.py:83
+#: elearning/models.py:78
 msgid "Medias"
 msgstr ""
 
-#: elearning/models.py:100
+#: elearning/models.py:95
 msgid "Text"
 msgstr ""
 
-#: elearning/models.py:101
+#: elearning/models.py:96
 msgid "Texts"
 msgstr ""
 
-#: elearning/models.py:125
-msgid "Question"
-msgstr ""
-
-#: elearning/models.py:126
-msgid "Questions"
-msgstr ""
-
-#: elearning/models.py:142
-msgid "Explanation"
-msgstr ""
-
-#: elearning/models.py:143
-msgid "Explanations"
-msgstr ""
-
-#: elearning/models.py:159
-msgid "Quiz"
-msgstr ""
-
-#: elearning/models.py:160
-msgid "Quizzes"
-msgstr ""
-
-#: elearning/models.py:173
-msgid "Context"
-msgstr ""
-
-#: elearning/models.py:174
-msgid "Contexts"
-msgstr ""
-
-#: elearning/models.py:193 elearning/models.py:194
-msgid "Users"
-msgstr ""
-
-#: elearning/models.py:207
-msgid "Answer"
-msgstr ""
-
-#: elearning/models.py:208
-msgid "Answers"
-msgstr ""
-
-#: elearning/models.py:222
+#: elearning/models.py:110
 msgid "Resource Type"
 msgstr ""
 
-#: elearning/models.py:223
+#: elearning/models.py:111
 msgid "Resource Types"
 msgstr ""
 
-#: elearning/models.py:248
+#: elearning/models.py:135
 msgid "Resource"
 msgstr ""
 
-#: elearning/models.py:249
+#: elearning/models.py:136
 msgid "Resources"
 msgstr ""
 
+#: elearning/models.py:162
+msgid "Question"
+msgstr ""
+
+#: elearning/models.py:163
+msgid "Questions"
+msgstr ""
+
+#: elearning/models.py:179
+msgid "Explanation"
+msgstr ""
+
+#: elearning/models.py:180
+msgid "Explanations"
+msgstr ""
+
+#: elearning/models.py:195
+msgid "Quiz"
+msgstr ""
+
+#: elearning/models.py:196
+msgid "Quizzes"
+msgstr ""
+
+#: elearning/models.py:210
+msgid "Context"
+msgstr ""
+
+#: elearning/models.py:211
+msgid "Contexts"
+msgstr ""
+
+#: elearning/models.py:230 elearning/models.py:231
+msgid "Users"
+msgstr ""
+
+#: elearning/models.py:244
+msgid "Answer"
+msgstr ""
+
+#: elearning/models.py:245
+msgid "Answers"
+msgstr ""
+
 #: elearning/models.py:263
-msgid "Challenge"
-msgstr ""
-
-#: elearning/models.py:264
-msgid "Challenges"
-msgstr ""
-
-#: elearning/models.py:282
 msgid "Score"
 msgstr ""
 
-#: elearning/models.py:283
+#: elearning/models.py:264
 msgid "Scores"
 msgstr ""
 
-#: elearning/models.py:296 elearning/models.py:297
+#: elearning/models.py:277 elearning/models.py:278
 msgid "Knowledge"
 msgstr ""
 
-#: elearning/models.py:324 elearning/models.py:357 elearning/models.py:373
+#: elearning/models.py:305 elearning/models.py:355 elearning/models.py:371
 msgid "Media Template"
 msgstr ""
 
-#: elearning/models.py:325 elearning/models.py:358 elearning/models.py:374
+#: elearning/models.py:306 elearning/models.py:356 elearning/models.py:372
 msgid "Media Templates"
 msgstr ""
 
-#: elearning/models.py:341 elearning/models.py:389
+#: elearning/models.py:322 elearning/models.py:387
 msgid "Text Template"
 msgstr ""
 
-#: elearning/models.py:342 elearning/models.py:390
+#: elearning/models.py:323 elearning/models.py:388
 msgid "Text Templates"
 msgstr ""
 
+#: elearning/models.py:339
+msgid "Resource Template"
+msgstr ""
+
+#: elearning/models.py:340
+msgid "Resource Templates"
+msgstr ""
+
+#: elearning/models.py:404
+msgid "Question Answer Choice"
+msgstr ""
+
 #: elearning/models.py:405
+msgid "Question Answer Choices"
+msgstr ""
+
+#: elearning/models.py:420
 msgid "Quiz Question"
 msgstr ""
 
-#: elearning/models.py:406
+#: elearning/models.py:421
 msgid "Quiz Questions"
 msgstr ""
 
@@ -221,11 +229,11 @@ msgstr ""
 msgid "15 days"
 msgstr ""
 
-#: elearning/viewLogic.py:45
+#: elearning/viewLogic.py:47
 msgid "Congratulations! You have completed all available levels."
 msgstr ""
 
-#: elearning/views.py:203 elearning/views.py:241
+#: elearning/views.py:205 elearning/views.py:246
 msgid "No data available to start the level"
 msgstr ""
 
