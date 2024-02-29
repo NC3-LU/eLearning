@@ -48,3 +48,8 @@ def starts_with(value, arg):
 @register.filter(name="contains")
 def contains(value, arg):
     return arg in value
+
+
+@register.simple_tag
+def filter_by_value(obj_list, key, value):
+    return [obj for obj in obj_list if getattr(obj, key) == value]
