@@ -247,6 +247,7 @@ def change_slide(request):
 
     context = {
         "slide": slides[0] if slides else None,
+        "level": user.current_level,
         "score": user.score_set.get(level=user.current_level).score,
     }
 
