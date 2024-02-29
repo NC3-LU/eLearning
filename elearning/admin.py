@@ -165,7 +165,6 @@ class QuestionsResource(TranslationImportMixin, resources.ModelResource):
         attribute="categories",
         widget=TranslatedNameM2MWidget(Category, field="name", separator="\n"),
     )
-    max_score = fields.Field(column_name="max_score", attribute="max_score")
     tooltip = fields.Field(column_name="tooltip", attribute="tooltip")
     answer_choices = fields.Field(
         column_name="answer choices",
@@ -202,7 +201,6 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = (
         "name",
         "q_type",
-        "max_score",
         "level_sequence_level",
         "level_sequence_position",
         "display_categories",
@@ -212,7 +210,6 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
     fields = (
         "name",
         "q_type",
-        "max_score",
         "tooltip",
         "categories",
     )

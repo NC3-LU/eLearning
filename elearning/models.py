@@ -153,7 +153,6 @@ class Question(TranslatableModel):
         AnswerChoice, through="QuestionAnswerChoice"
     )
     medias = models.ManyToManyField(Media, through="QuestionMediaTemplate")
-    max_score = models.IntegerField(default=100)
 
     def __str__(self):
         return self.name
@@ -397,7 +396,6 @@ class QuestionAnswerChoice(models.Model):
     is_correct = models.BooleanField(
         verbose_name="Is it the correct answer ?", default=False
     )
-    score = models.IntegerField(default=0)
     answerChoice = models.ForeignKey(AnswerChoice, on_delete=models.CASCADE)
 
     class Meta:
