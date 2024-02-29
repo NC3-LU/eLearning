@@ -55,6 +55,8 @@ urlpatterns = [
     path("resources", views.resources, name="resources"),
     #   ResourcesDownload Modal
     path("resources_download/", views.resources_download, name="resources_download"),
+    #   Report Download
+    path("report/", views.report, name="report"),
 ]
 
 if DEBUG:

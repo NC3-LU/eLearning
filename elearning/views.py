@@ -32,6 +32,7 @@ from .settings import COOKIEBANNER
 from .viewLogic import (
     get_allowed_resources_ids,
     get_quiz_order,
+    get_report_pdf,
     get_slides_content,
     get_user_from_request,
     set_knowledge_course,
@@ -352,3 +353,19 @@ def resources_download(request):
             form.icon_class = "text-secondary"
 
     return render(request, "modals/resources_download.html", {"formset": formset})
+
+
+@user_uuid_required
+def report(request):
+    user = get_user_from_request(request)
+
+    if not user.get_level_progress() >= 100:
+        return HttpResponseRedirect(reverse("dashboard"))
+
+    pdf_report = get_report_pdf(user, request)
+
+    # Return the report in the HTTP answer
+    response = HttpResponse(pdf_report, content_type="application/pdf")
+    response["Content-Disposition"] = "attachment;filename=Report.pdf"
+
+    return response

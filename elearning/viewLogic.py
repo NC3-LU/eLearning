@@ -1,14 +1,18 @@
+import os
 from collections import Counter, OrderedDict
 from typing import List
 from uuid import UUID
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Exists, F, OuterRef, Q, QuerySet, Subquery
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from weasyprint import CSS, HTML
 
 from .forms import AnswerForm
 from .models import (
@@ -186,7 +190,7 @@ def set_score_course(
     user_score.save()
 
 
-def get_slides_content(user: User, direction: str) -> []:
+def get_slides_content(user: User, direction: str) -> List:
     slides = []
     if not direction:
         level_sequence = LevelSequence.objects.filter(
@@ -392,3 +396,47 @@ def get_allowed_resources_ids(user: User) -> List:
             )
 
     return list(allowed_resources_set)
+
+
+def get_questions_and_quizzes(user: User) -> List:
+    questions_and_quizzes = []
+    question_content_type = ContentType.objects.get_for_model(Question)
+    level_sequence = LevelSequence.objects.filter(
+        level=user.current_level, content_type=question_content_type
+    ).order_by("position")
+    for sequence in level_sequence:
+        question = get_object_or_404(Question, pk=sequence.object_id)
+        form = AnswerForm(question=question, user=user)
+        form.quiz_index = (
+            get_quiz_index(user, sequence.content_object.quiz_set.first().id)
+            if form.quiz
+            else None
+        )
+        form.question_index = get_question_index(user, sequence.position)
+        questions_and_quizzes.append(form)
+
+    return questions_and_quizzes
+
+
+def get_report_pdf(user: User, request: HttpRequest) -> bytes:
+    html_string = render_to_string(
+        "report/template.html",
+        {
+            "index_level": user.current_level.index,
+            "name_level": user.current_level.name,
+            "score_level": Score.objects.get(user=user, level=user.current_level).score,
+            "static_theme_dir": os.path.abspath(settings.STATIC_THEME_DIR),
+            "user_id": user.uuid,
+            "end_level_date": user.updated_at,
+            "questions_and_quizzes": get_questions_and_quizzes(user),
+        },
+        request=request,
+    )
+
+    htmldoc = HTML(string=html_string)
+    stylesheets = [
+        CSS(os.path.join(settings.STATIC_THEME_DIR, "css/custom.css")),
+        CSS(os.path.join(settings.STATIC_THEME_DIR, "css/report.css")),
+    ]
+
+    return htmldoc.write_pdf(stylesheets=stylesheets)
