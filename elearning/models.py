@@ -251,8 +251,8 @@ class Score(models.Model):
     score = models.DecimalField(
         default=0, max_digits=5, decimal_places=2, validators=[MaxValueValidator(100)]
     )
-    progress = models.PositiveSmallIntegerField(
-        default=0, validators=[MaxValueValidator(100)]
+    progress = models.DecimalField(
+        default=0, max_digits=5, decimal_places=2, validators=[MaxValueValidator(100)]
     )
 
     def __str__(self):
@@ -267,7 +267,9 @@ class Score(models.Model):
 class Knowledge(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    progress = models.DecimalField(default=0, max_digits=5, decimal_places=2)
+    progress = models.DecimalField(
+        default=0, max_digits=5, decimal_places=2, validators=[MaxValueValidator(100)]
+    )
 
     def __str__(self):
         return str(self.progress)
