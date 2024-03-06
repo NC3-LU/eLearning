@@ -49,14 +49,9 @@ class Category(TranslatableModel):
 
 # Answer choices
 class AnswerChoice(TranslatableModel):
-    index = models.IntegerField()
     translations = TranslatedFields(
         name=models.TextField(verbose_name="label"),
         tooltip=models.TextField(blank=True, default=None, null=True),
-    )
-    score = models.IntegerField(default=0)
-    is_correct = models.BooleanField(
-        verbose_name="Is it the correct answer ?", default=False
     )
 
     def __str__(self):
@@ -87,11 +82,11 @@ class Text(TranslatableModel):
     name = models.CharField(max_length=100, verbose_name="label")
     translations = TranslatedFields(
         description=models.TextField(blank=True, default=None, null=True),
+        hyperlink=models.TextField(blank=True, default=None, null=True),
     )
     t_type = models.CharField(
         max_length=1, choices=TEXT_TYPE, default=TEXT_TYPE[0][0], verbose_name="type"
     )
-    hyperlink = models.TextField(blank=True, default=None, null=True)
 
     def __str__(self):
         return self.name
@@ -99,6 +94,46 @@ class Text(TranslatableModel):
     class Meta:
         verbose_name = _("Text")
         verbose_name_plural = _("Texts")
+
+
+# Resources Types
+class ResourceType(TranslatableModel):
+    index = models.PositiveIntegerField()
+    translations = TranslatedFields(
+        name=models.CharField(max_length=100),
+    )
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = _("Resource Type")
+        verbose_name_plural = _("Resource Types")
+
+
+# Resources
+class Resource(TranslatableModel):
+    translations = TranslatedFields(
+        name=models.CharField(max_length=100),
+        description=models.TextField(blank=True, default=None, null=True),
+        path=models.FilePathField(path=settings.MEDIA_DIR, recursive=True),
+    )
+    level = models.ForeignKey(
+        Level,
+        models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    resourceType = models.ForeignKey(
+        ResourceType, models.SET_NULL, blank=True, null=True, verbose_name="type"
+    )
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = _("Resource")
+        verbose_name_plural = _("Resources")
 
 
 # Questions
@@ -114,9 +149,10 @@ class Question(TranslatableModel):
         verbose_name="type",
     )
     categories = models.ManyToManyField(Category, blank=True, default=None)
-    answer_choices = models.ManyToManyField(AnswerChoice)
+    answer_choices = models.ManyToManyField(
+        AnswerChoice, through="QuestionAnswerChoice"
+    )
     medias = models.ManyToManyField(Media, through="QuestionMediaTemplate")
-    max_score = models.IntegerField(default=100)
 
     def __str__(self):
         return self.name
@@ -143,11 +179,28 @@ class Explanation(TranslatableModel):
         verbose_name_plural = _("Explanations")
 
 
+# Quizzes
+class Quiz(TranslatableModel):
+    translations = TranslatedFields(
+        name=models.TextField(verbose_name="label"),
+        tooltip=models.TextField(blank=True, default=None, null=True),
+    )
+    questions = models.ManyToManyField(Question, through="QuizQuestion")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = _("Quiz")
+        verbose_name_plural = _("Quizzes")
+
+
 # Contexts
 class Context(TranslatableModel):
     translations = TranslatedFields(name=models.TextField(verbose_name="Title"))
     medias = models.ManyToManyField(Media, through="ContextMediaTemplate")
     texts = models.ManyToManyField(Text, through="ContextTextTemplate")
+    resources = models.ManyToManyField(Resource, through="ContextResourceTemplate")
 
     def __str__(self):
         return self.name
@@ -191,62 +244,6 @@ class Answer(models.Model):
         verbose_name_plural = _("Answers")
 
 
-# Resources Types
-class ResourceType(TranslatableModel):
-    index = models.PositiveIntegerField()
-    translations = TranslatedFields(
-        name=models.CharField(max_length=100),
-    )
-
-    def __str__(self):
-        return str(self.name)
-
-    class Meta:
-        verbose_name = _("Resource Type")
-        verbose_name_plural = _("Resource Types")
-
-
-# Resources
-class Resource(TranslatableModel):
-    translations = TranslatedFields(
-        name=models.CharField(max_length=100),
-        description=models.TextField(blank=True, default=None, null=True),
-    )
-    level = models.ForeignKey(
-        Level,
-        models.SET_NULL,
-        blank=True,
-        null=True,
-    )
-    resourceType = models.ForeignKey(
-        ResourceType, models.SET_NULL, blank=True, null=True, verbose_name="type"
-    )
-
-    path = models.FilePathField(path=settings.MEDIA_DIR, recursive=True)
-
-    def __str__(self):
-        return str(self.name)
-
-    class Meta:
-        verbose_name = _("Resource")
-        verbose_name_plural = _("Resources")
-
-
-# Challenges
-class Challenge(TranslatableModel):
-    translations = TranslatedFields(
-        name=models.TextField(),
-        description=models.TextField(blank=True, default=None, null=True),
-    )
-
-    def __str__(self):
-        return str(self.name)
-
-    class Meta:
-        verbose_name = _("Challenge")
-        verbose_name_plural = _("Challenges")
-
-
 # Scores
 class Score(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -254,8 +251,8 @@ class Score(models.Model):
     score = models.DecimalField(
         default=0, max_digits=5, decimal_places=2, validators=[MaxValueValidator(100)]
     )
-    progress = models.PositiveSmallIntegerField(
-        default=0, validators=[MaxValueValidator(100)]
+    progress = models.DecimalField(
+        default=0, max_digits=5, decimal_places=2, validators=[MaxValueValidator(100)]
     )
 
     def __str__(self):
@@ -270,7 +267,9 @@ class Score(models.Model):
 class Knowledge(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    progress = models.DecimalField(default=0, max_digits=5, decimal_places=2)
+    progress = models.DecimalField(
+        default=0, max_digits=5, decimal_places=2, validators=[MaxValueValidator(100)]
+    )
 
     def __str__(self):
         return str(self.progress)
@@ -328,6 +327,23 @@ class ContextTextTemplate(models.Model):
         return ""
 
 
+class ContextResourceTemplate(models.Model):
+    index = models.PositiveSmallIntegerField()
+    context = models.ForeignKey(Context, on_delete=models.CASCADE)
+    resource = models.ForeignKey(Resource, on_delete=models.CASCADE)
+    position = models.CharField(
+        max_length=2, choices=POSITION_CHOICES, default=POSITION_CHOICES[0][0]
+    )
+    css_classes = ArrayField(models.CharField(), default=list, blank=True)
+
+    class Meta:
+        verbose_name = _("Resource Template")
+        verbose_name_plural = _("Resource Templates")
+
+    def __str__(self):
+        return ""
+
+
 class QuestionMediaTemplate(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     media = models.ForeignKey(Media, on_delete=models.CASCADE)
@@ -371,6 +387,38 @@ class ExplanationTextTemplate(models.Model):
     class Meta:
         verbose_name = _("Text Template")
         verbose_name_plural = _("Text Templates")
+
+    def __str__(self):
+        return ""
+
+
+class QuestionAnswerChoice(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    index = models.PositiveSmallIntegerField(default=0)
+    is_correct = models.BooleanField(
+        verbose_name="Is it the correct answer ?", default=False
+    )
+    answerChoice = models.ForeignKey(AnswerChoice, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = _("Question Answer Choice")
+        verbose_name_plural = _("Question Answer Choices")
+
+    def __str__(self):
+        return ""
+
+
+class QuizQuestion(models.Model):
+    index = models.PositiveSmallIntegerField()
+    display_quiz_label = models.BooleanField(
+        verbose_name="Display label quiz?", default=True
+    )
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = _("Quiz Question")
+        verbose_name_plural = _("Quiz Questions")
 
     def __str__(self):
         return ""

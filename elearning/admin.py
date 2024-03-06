@@ -12,9 +12,9 @@ from .mixins import TranslationImportMixin
 from .models import (
     AnswerChoice,
     Category,
-    Challenge,
     Context,
     ContextMediaTemplate,
+    ContextResourceTemplate,
     ContextTextTemplate,
     Explanation,
     ExplanationMediaTemplate,
@@ -23,7 +23,10 @@ from .models import (
     LevelSequence,
     Media,
     Question,
+    QuestionAnswerChoice,
     QuestionMediaTemplate,
+    Quiz,
+    QuizQuestion,
     Resource,
     ResourceType,
     Text,
@@ -93,10 +96,7 @@ class CategoryAdmin(ImportExportModelAdmin, TranslatableAdmin):
 
 class AnswerChoicesResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
-    index = fields.Field(column_name="index", attribute="index")
     name = fields.Field(column_name="name", attribute="name")
-    is_correct = fields.Field(column_name="is_correct", attribute="is_correct")
-    score = fields.Field(column_name="score", attribute="score")
     tooltip = fields.Field(column_name="tooltip", attribute="tooltip")
 
     class Meta:
@@ -105,18 +105,9 @@ class AnswerChoicesResource(TranslationImportMixin, resources.ModelResource):
 
 @admin.register(AnswerChoice, site=admin_site)
 class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = (
-        "name",
-        "index",
-        "score",
-        "is_correct",
-    )
-    list_filter = ("is_correct",)
+    list_display = ("name",)
     fields = (
-        "index",
         "name",
-        "is_correct",
-        "score",
         "tooltip",
     )
     resource_class = AnswerChoicesResource
@@ -174,7 +165,6 @@ class QuestionsResource(TranslationImportMixin, resources.ModelResource):
         attribute="categories",
         widget=TranslatedNameM2MWidget(Category, field="name", separator="\n"),
     )
-    max_score = fields.Field(column_name="max_score", attribute="max_score")
     tooltip = fields.Field(column_name="tooltip", attribute="tooltip")
     answer_choices = fields.Field(
         column_name="answer choices",
@@ -192,9 +182,10 @@ class QuestionsResource(TranslationImportMixin, resources.ModelResource):
 
 
 class questionAnswerChoicesInline(admin.TabularInline):
-    model = Question.answer_choices.through
+    model = QuestionAnswerChoice
     verbose_name = "Answer choice"
     verbose_name_plural = "Answer choices"
+    ordering = ("index",)
     extra = 0
 
 
@@ -210,7 +201,6 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = (
         "name",
         "q_type",
-        "max_score",
         "level_sequence_level",
         "level_sequence_position",
         "display_categories",
@@ -220,7 +210,6 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
     fields = (
         "name",
         "q_type",
-        "max_score",
         "tooltip",
         "categories",
     )
@@ -236,8 +225,8 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
         queryset = super().get_queryset(request)
         levelSequences = LevelSequence.objects.filter(
             content_type=ContentType.objects.get_for_model(Question),
-            object_id=OuterRef("id"),
-        ).order_by()
+            object_id=OuterRef("pk"),
+        )
         level_sequence_levels = levelSequences.values("level")[:1]
         level_sequence_positions = levelSequences.values("position")[:1]
         return queryset.annotate(
@@ -251,14 +240,18 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
 
     @admin.display(description="Level", ordering="level_sequence_level")
     def level_sequence_level(self, obj):
-        level_sequence = LevelSequence.objects.filter(object_id=obj.id).first()
+        level_sequence = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Question), object_id=obj.id
+        ).first()
         if level_sequence:
             return level_sequence.level
         return None
 
     @admin.display(description="Position", ordering="level_sequence_position")
     def level_sequence_position(self, obj):
-        level_sequence = LevelSequence.objects.filter(object_id=obj.id).first()
+        level_sequence = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Question), object_id=obj.id
+        ).first()
         if level_sequence:
             return level_sequence.position
         return None
@@ -304,6 +297,35 @@ class ExplanationAdmin(ImportExportModelAdmin, TranslatableAdmin):
     resource_class = ExplanationResource
 
 
+class QuizResource(TranslationImportMixin, resources.ModelResource):
+    id = fields.Field(column_name="id", attribute="id", readonly=True)
+    name = fields.Field(column_name="name", attribute="name")
+    questions = fields.Field(
+        column_name="question",
+        attribute="question",
+        widget=TranslatedNameWidget(Question, field="name"),
+    )
+
+    class Meta:
+        model = Quiz
+
+
+class quizQuestionsInline(admin.TabularInline):
+    model = QuizQuestion
+    verbose_name = "Question"
+    verbose_name_plural = "Questions"
+    ordering = ("index",)
+    extra = 0
+
+
+@admin.register(Quiz, site=admin_site)
+class QuizAdmin(ImportExportModelAdmin, TranslatableAdmin):
+    list_display = ("name",)
+    fields = ("name", "tooltip")
+    inlines = (quizQuestionsInline,)
+    resource_class = QuizResource
+
+
 class ContextsResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
@@ -316,6 +338,11 @@ class ContextsResource(TranslationImportMixin, resources.ModelResource):
         column_name="texts",
         attribute="texts",
         widget=ManyToManyWidget(Text, field="name", separator=","),
+    )
+    resources = fields.Field(
+        column_name="resources",
+        attribute="resources",
+        widget=ManyToManyWidget(Resource, field="name", separator=","),
     )
 
     class Meta:
@@ -337,11 +364,23 @@ class contextTextInline(admin.TabularInline):
     extra = 0
 
 
+class contextResourcesInline(admin.TabularInline):
+    model = ContextResourceTemplate
+    verbose_name = "Resources"
+    verbose_name_plural = "Resources"
+    extra = 0
+
+
 @admin.register(Context, site=admin_site)
 class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin):
     list_display = ("name", "level_sequence_level", "level_sequence_position")
     fields = ("name",)
-    inlines = (contextMediaInline, contextTextInline, levelSequenceInline)
+    inlines = (
+        contextMediaInline,
+        contextTextInline,
+        contextResourcesInline,
+        levelSequenceInline,
+    )
     resource_class = ContextsResource
 
     def get_queryset(self, request):
@@ -415,25 +454,6 @@ class ResourceTypeAdmin(ImportExportModelAdmin, TranslatableAdmin):
     resource_class = ResourcesResourceType
 
 
-class ChallengesResource(TranslationImportMixin, resources.ModelResource):
-    id = fields.Field(column_name="id", attribute="id", readonly=True)
-    name = fields.Field(column_name="name", attribute="name")
-    description = fields.Field(column_name="description", attribute="description")
-
-    class Meta:
-        model = Challenge
-
-
-@admin.register(Challenge, site=admin_site)
-class ChallengeAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = (
-        "name",
-        "description",
-    )
-    inlines = (levelSequenceInline,)
-    resource_class = ChallengesResource
-
-
 class LevelSequenceAdminResource(resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     position = fields.Field(column_name="position", attribute="position")
@@ -464,6 +484,6 @@ class LevelSequenceAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "content_type":
-            allowed_models = ["context", "question", "explanation", "challenge"]
+            allowed_models = ["context", "question", "explanation"]
             kwargs["queryset"] = ContentType.objects.filter(model__in=allowed_models)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)

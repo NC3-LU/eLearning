@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from django import forms
-from django.db.models import Case, IntegerField, Value, When
+from django.db.models import BooleanField, Case, IntegerField, Value, When
 
 from .widgets import ButtonRadioSelect, SortingOptions
 
@@ -12,7 +12,17 @@ class AnswerForm(forms.Form):
     def __init__(self, *args, **kwargs):
         question = kwargs.pop("question", None)
         user = kwargs.pop("user", None)
-        answer_choices = question.answer_choices.all().order_by("index")
+        answer_choices = (
+            question.answer_choices.filter(questionanswerchoice__question=question)
+            .order_by("questionanswerchoice__index")
+            .annotate(
+                is_correct=Case(
+                    When(questionanswerchoice__is_correct=True, then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField(),
+                )
+            )
+        )
         initial_values = None
         if question.answer_set.filter(user=user).exists():
             user_answer = question.answer_set.get(user=user)
@@ -98,7 +108,25 @@ class AnswerForm(forms.Form):
                         widget=forms.MultipleHiddenInput(),
                     )
 
+            self.fields["answer"].widget.attrs.update(
+                {"id": f"question_{question.pk}_answer"}
+            )
+
             self.id = question.pk
+            self.quiz = (
+                question.quiz_set.first() if question.quiz_set.exists() else None
+            )
+            self.display_quiz_label = (
+                question.quizquestion_set.first().display_quiz_label
+                if question.quizquestion_set.exists()
+                else None
+            )
+
+            self.question_quiz_index = (
+                question.quizquestion_set.first().index
+                if question.quizquestion_set.exists()
+                else None
+            )
             self.type = question.q_type
             self.fields["answer"].label = question.name
             self.fields["answer"].widget.attrs["class"] = "d-grid gap-2 ps-3 mb-5"

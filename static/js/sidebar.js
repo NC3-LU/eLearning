@@ -1,23 +1,11 @@
 $(document).ready(function () {
-    function toggleSidebar() {
-        $('#sidebar .d-none').toggleClass('d-sm-inline');
-        $('#sidebar .d-inline').toggleClass('d-sm-none');
-        $('#logo_small, #open_sidebar, #language_selector_minimized').toggleClass('d-sm-none');
-    }
-
-    let sidebarState = JSON.parse(document.getElementById('sidebarState').textContent);
-    toggleSidebar()
-    if (sidebarState === 'expanded') {
-        $('#sidebar').removeClass('minimized');
-    } else {
-        $('#sidebar').addClass('minimized');
-    }
-
-
-
+    let windowsWidth = $(window).width();
+    let sidebarState = 'expanded';
 
     $('#sidebarToggle').click(function () {
-        toggleSidebar()
+        $('#sidebar .d-none').toggleClass('d-sm-inline');
+        $('#sidebar .d-inline').toggleClass('d-sm-none');
+        $('#logo_small, #open_sidebar').toggleClass('d-sm-none');
         if (sidebarState === 'expanded') {
             $.get( 'sidebar_state/' + '?state=minimized', function() {
             })
@@ -30,4 +18,17 @@ $(document).ready(function () {
             sidebarState = 'expanded';
         }
     });
+
+    $(window).on('resize', function(){
+        var win = $(this);
+        if (win.width() <= 992 && sidebarState === 'expanded') {
+            $('#sidebarToggle').trigger( "click" );
+        }else if (win.width() > 992 && sidebarState === 'minimized'){
+            $('#sidebarToggle').trigger( "click" );
+        }
+    });
+
+    if (windowsWidth <= 992 && sidebarState === 'expanded'){
+        $('#sidebarToggle').trigger( "click" );
+    }
 });

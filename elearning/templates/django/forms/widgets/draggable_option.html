@@ -1,5 +1,5 @@
 {% spaceless %}
-    <div class="sortable d-grid gap-2 px-3 mx-sm-2">
+    <div class="{% if is_answered %}question_answered{% endif %} sortable d-grid gap-2 px-3 mx-sm-2">
         {% for choice in choices %}
             <div
                 class="row draggable-item border border-1
@@ -8,11 +8,11 @@
                 role="button">
             <input type="checkbox" name="answer" value="{{choice.pk|stringformat:'s'}}" checked="checked"
             class="d-none" />
-            <p class="col-1 align-self-center text-nowrap text-center px-0 m-0">
+            <p class="col-1 align-self-center text-nowrap text-center px-0 m-0 handle">
                 {{ forloop.counter }}.
             </p>
             <div class="col-10 align-self-center px-1">{{ choice }}</div>
-            <div class="col-1 h2 align-self-center text-primary text-center px-0 m-0">
+            <div class="col-1 h2 align-self-center text-primary text-center px-0 m-0 handle">
                 <i class="bi bi-grip-horizontal"></i>
             </div>
         </div>

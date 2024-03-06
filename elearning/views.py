@@ -9,7 +9,7 @@ from django.db.models import BooleanField, Case, Value, When
 from django.db.models.query import QuerySet
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -30,6 +30,9 @@ from .models import (
 )
 from .settings import COOKIEBANNER
 from .viewLogic import (
+    get_allowed_resources_ids,
+    get_quiz_order,
+    get_report_pdf,
     get_slides_content,
     get_user_from_request,
     set_knowledge_course,
@@ -125,6 +128,10 @@ def accessibility(request):
     return render(request, "accessibility.html")
 
 
+def stats(request):
+    return render(request, "stats.html")
+
+
 @user_uuid_required
 def dashboard(request):
     user = get_user_from_request(request)
@@ -168,7 +175,6 @@ def course(request):
             user.save()
 
     if user.current_level and user.current_position:
-        set_progress_course(user)
         if request.method == "POST":
             level_sequence = LevelSequence.objects.get(
                 level=user.current_level, position=user.current_position
@@ -176,7 +182,7 @@ def course(request):
             if level_sequence.content_type == ContentType.objects.get_for_model(
                 Question
             ):
-                question = get_object_or_404(Question, pk=level_sequence.object_id)
+                question = level_sequence.content_object
                 form = AnswerForm(request.POST, question=question, user=user)
                 if form.is_valid():
                     existing_answer = Answer.objects.filter(
@@ -200,8 +206,9 @@ def course(request):
 
                         set_score_course(user, question, user_answer_choices)
 
-                    slides = get_slides_content(user)
                     return JsonResponse({"success": True})
+
+            return JsonResponse({"success": False})
 
         slides = get_slides_content(user, None)
     else:
@@ -214,6 +221,7 @@ def course(request):
         "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
         "progress": user.score_set.get(level=user.current_level).progress,
+        "quizzes": get_quiz_order(user),
         "level": user.current_level,
         "score": user.score_set.get(level=user.current_level).score,
         "slides": slides,
@@ -225,8 +233,14 @@ def course(request):
 @user_uuid_required
 def update_progress_bar(request):
     user = get_user_from_request(request)
+    direction = request.GET.get("direction", None)
+    if user.current_level and user.current_position:
+        set_position_user(user, direction=direction)
+        quizzes = get_quiz_order(user)
+        set_progress_course(user, quizzes)
     context = {
         "progress": user.score_set.get(level=user.current_level).progress,
+        "quizzes": quizzes,
     }
     return render(request, "parts/course_progress_bar.html", context=context)
 
@@ -237,21 +251,15 @@ def change_slide(request):
     direction = request.GET.get("direction", None)
 
     if user.current_level and user.current_position:
-        set_position_user(user, direction=direction)
-        set_progress_course(user)
         slides = get_slides_content(user, direction=direction)
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect(reverse("dashboard"))
 
-    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
-
     context = {
-        "previous_control_enable": previous_control_enable,
-        "next_control_enable": next_control_enable,
+        "slide": slides[0] if slides else None,
         "level": user.current_level,
         "score": user.score_set.get(level=user.current_level).score,
-        "slides": slides,
     }
 
     return render(request, "course_new_slide.html", context=context)
@@ -274,7 +282,6 @@ def resources(request):
 @user_uuid_required
 def resources_download(request):
     user = get_user_from_request(request)
-
     resource_type_id = request.GET.get("resource_type")
     level_id = request.GET.get("level")
     resources = Resource.objects.all().order_by("level", "resourceType")
@@ -285,10 +292,12 @@ def resources_download(request):
     if level_id:
         resources = resources.filter(level=level_id)
 
+    allowed_resources_ids = get_allowed_resources_ids(user)
+
     resources = resources.annotate(
         disabled=Case(
-            When(level__index__gt=user.current_level.index, then=Value(True)),
-            default=Value(False),
+            When(id__in=allowed_resources_ids, then=Value(False)),
+            default=Value(True),
             output_field=BooleanField(),
         )
     )
@@ -356,3 +365,19 @@ def resources_download(request):
             form.icon_class = "text-secondary"
 
     return render(request, "modals/resources_download.html", {"formset": formset})
+
+
+@user_uuid_required
+def report(request):
+    user = get_user_from_request(request)
+
+    if not user.get_level_progress() >= 100:
+        return HttpResponseRedirect(reverse("dashboard"))
+
+    pdf_report = get_report_pdf(user, request)
+
+    # Return the report in the HTTP answer
+    response = HttpResponse(pdf_report, content_type="application/pdf")
+    response["Content-Disposition"] = "attachment;filename=Report.pdf"
+
+    return response

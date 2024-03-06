@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-12 11:00+0000\n"
+"POT-Creation-Date: 2024-03-04 13:31+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,104 +18,223 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: elearning/models.py:30
+#: elearning/decorators.py:24
+msgid "User does not exist"
+msgstr ""
+
+#: elearning/models.py:33
 msgid "Level"
 msgstr ""
 
-#: elearning/models.py:31
+#: elearning/models.py:34
 msgid "Levels"
 msgstr ""
 
-#: elearning/models.py:44
+#: elearning/models.py:46
 msgid "Category"
 msgstr ""
 
-#: elearning/models.py:45
+#: elearning/models.py:47
 msgid "Categories"
 msgstr ""
 
-#: elearning/models.py:64
+#: elearning/models.py:61
 msgid "Answer choice"
 msgstr ""
 
-#: elearning/models.py:65
+#: elearning/models.py:62
 msgid "Answer choices"
 msgstr ""
 
-#: elearning/models.py:80
+#: elearning/models.py:77
 msgid "Media"
 msgstr ""
 
-#: elearning/models.py:81
+#: elearning/models.py:78
 msgid "Medias"
 msgstr ""
 
-#: elearning/models.py:98
+#: elearning/models.py:95
 msgid "Text"
 msgstr ""
 
-#: elearning/models.py:99
+#: elearning/models.py:96
 msgid "Texts"
 msgstr ""
 
-#: elearning/models.py:126
-msgid "Question"
+#: elearning/models.py:110
+msgid "Resource Type"
 msgstr ""
 
-#: elearning/models.py:127
-msgid "Questions"
+#: elearning/models.py:111
+msgid "Resource Types"
 msgstr ""
 
-#: elearning/models.py:147
-msgid "Context"
-msgstr ""
-
-#: elearning/models.py:148
-msgid "Contexts"
-msgstr ""
-
-#: elearning/models.py:163 elearning/models.py:164
-msgid "Users"
-msgstr ""
-
-#: elearning/models.py:177
-msgid "Answer"
-msgstr ""
-
-#: elearning/models.py:178
-msgid "Answers"
-msgstr ""
-
-#: elearning/models.py:205
+#: elearning/models.py:135
 msgid "Resource"
 msgstr ""
 
-#: elearning/models.py:206
+#: elearning/models.py:136
 msgid "Resources"
 msgstr ""
 
-#: elearning/models.py:225
-msgid "Challenge"
+#: elearning/models.py:161
+msgid "Question"
 msgstr ""
 
-#: elearning/models.py:226
-msgid "Challenges"
+#: elearning/models.py:162
+msgid "Questions"
 msgstr ""
 
-#: elearning/models.py:238 elearning/models.py:270
+#: elearning/models.py:178
+msgid "Explanation"
+msgstr ""
+
+#: elearning/models.py:179
+msgid "Explanations"
+msgstr ""
+
+#: elearning/models.py:194
+msgid "Quiz"
+msgstr ""
+
+#: elearning/models.py:195
+msgid "Quizzes"
+msgstr ""
+
+#: elearning/models.py:209
+msgid "Context"
+msgstr ""
+
+#: elearning/models.py:210
+msgid "Contexts"
+msgstr ""
+
+#: elearning/models.py:229 elearning/models.py:230
+msgid "Users"
+msgstr ""
+
+#: elearning/models.py:243
+msgid "Answer"
+msgstr ""
+
+#: elearning/models.py:244
+msgid "Answers"
+msgstr ""
+
+#: elearning/models.py:262
+msgid "Score"
+msgstr ""
+
+#: elearning/models.py:263
+msgid "Scores"
+msgstr ""
+
+#: elearning/models.py:278 elearning/models.py:279
+msgid "Knowledge"
+msgstr ""
+
+#: elearning/models.py:306 elearning/models.py:356 elearning/models.py:372
 msgid "Media Template"
 msgstr ""
 
-#: elearning/models.py:239 elearning/models.py:271
+#: elearning/models.py:307 elearning/models.py:357 elearning/models.py:373
 msgid "Media Templates"
 msgstr ""
 
-#: elearning/models.py:254
+#: elearning/models.py:323 elearning/models.py:388
 msgid "Text Template"
 msgstr ""
 
-#: elearning/models.py:255
+#: elearning/models.py:324 elearning/models.py:389
 msgid "Text Templates"
+msgstr ""
+
+#: elearning/models.py:340
+msgid "Resource Template"
+msgstr ""
+
+#: elearning/models.py:341
+msgid "Resource Templates"
+msgstr ""
+
+#: elearning/models.py:404
+msgid "Question Answer Choice"
+msgstr ""
+
+#: elearning/models.py:405
+msgid "Question Answer Choices"
+msgstr ""
+
+#: elearning/models.py:420
+msgid "Quiz Question"
+msgstr ""
+
+#: elearning/models.py:421
+msgid "Quiz Questions"
+msgstr ""
+
+#: elearning/settings.py:29
+msgid "Cookie settings"
+msgstr ""
+
+#: elearning/settings.py:33
+msgid "Essential"
+msgstr ""
+
+#: elearning/settings.py:35
+msgid ""
+"This website uses cookies and other similar technologies strictly "
+"necessary                 for its operation, without the use of personal "
+"data."
+msgstr ""
+
+#: elearning/settings.py:41
+msgid "Meta cookie for the cookies that are set."
+msgstr ""
+
+#: elearning/settings.py:42 elearning/settings.py:48
+msgid "Accepted cookies"
+msgstr ""
+
+#: elearning/settings.py:43 elearning/settings.py:57
+msgid "1 year"
+msgstr ""
+
+#: elearning/settings.py:47
+msgid "Meta cookie for user language settings"
+msgstr ""
+
+#: elearning/settings.py:49
+msgid "Session"
+msgstr ""
+
+#: elearning/settings.py:54
+msgid "This cookie prevents Cross-Site-Request-Forgery attacks."
+msgstr ""
+
+#: elearning/settings.py:56
+msgid "Token"
+msgstr ""
+
+#: elearning/settings.py:61
+msgid "This cookie is necessary for user options"
+msgstr ""
+
+#: elearning/settings.py:62
+msgid "session ID"
+msgstr ""
+
+#: elearning/settings.py:63
+msgid "15 days"
+msgstr ""
+
+#: elearning/viewLogic.py:51
+msgid "Congratulations! You have completed all available levels."
+msgstr ""
+
+#: elearning/views.py:204 elearning/views.py:245
+msgid "No data available to start the level"
 msgstr ""
 
 #: templates/admin/base_site.html:8

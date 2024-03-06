@@ -47,6 +47,8 @@ urlpatterns = [
     path("helping_center", views.helping_center, name="helping_center"),
     # Accessibility
     path("accessibility/", views.accessibility, name="accessibility"),
+    # Statistics
+    path("stats/", views.stats, name="stats"),
     # Dashboard
     path("dashboard", views.dashboard, name="dashboard"),
     # Course
@@ -57,6 +59,8 @@ urlpatterns = [
     path("resources", views.resources, name="resources"),
     #   ResourcesDownload Modal
     path("resources_download/", views.resources_download, name="resources_download"),
+    #   Report Download
+    path("report/", views.report, name="report"),
 ]
 
 if DEBUG:

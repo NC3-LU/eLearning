@@ -2,7 +2,7 @@
 name = "elearning"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Juan Rocha <juan.rocha@nc3.lu>"]
 license = "AGPL-3.0-or-later"
 readme = "README.md"
 
@@ -23,6 +23,7 @@ django-import-export = "^3.2.0"
 parler = "^1.0.1"
 django-parler = "^2.3"
 django-cookiebanner = "^0.2.7"
+weasyprint = "^61.1"
 
 
 [tool.poetry.group.dev.dependencies]
