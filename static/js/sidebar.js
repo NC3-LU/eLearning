@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    let windowsWidth = $(window).width();
     let sidebarState = 'expanded';
 
     $('#sidebarToggle').click(function () {
@@ -13,4 +14,17 @@ $(document).ready(function () {
             sidebarState = 'expanded';
         }
     });
+
+    $(window).on('resize', function(){
+        var win = $(this);
+        if (win.width() <= 992 && sidebarState === 'expanded') {
+            $('#sidebarToggle').trigger( "click" );
+        }else if (win.width() > 992 && sidebarState === 'minimized'){
+            $('#sidebarToggle').trigger( "click" );
+        }
+    });
+
+    if (windowsWidth <= 992 && sidebarState === 'expanded'){
+        $('#sidebarToggle').trigger( "click" );
+    }
 });
