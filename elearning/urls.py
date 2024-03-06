@@ -45,6 +45,8 @@ urlpatterns = [
     path("helping_center", views.helping_center, name="helping_center"),
     # Accessibility
     path("accessibility/", views.accessibility, name="accessibility"),
+    # Statistics
+    path("stats/", views.stats, name="stats"),
     # Dashboard
     path("dashboard", views.dashboard, name="dashboard"),
     # Course

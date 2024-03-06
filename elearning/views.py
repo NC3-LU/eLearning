@@ -121,6 +121,10 @@ def accessibility(request):
     return render(request, "accessibility.html")
 
 
+def stats(request):
+    return render(request, "stats.html")
+
+
 @user_uuid_required
 def dashboard(request):
     user = get_user_from_request(request)
