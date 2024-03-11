@@ -123,7 +123,7 @@ def accessibility(request):
 
 def stats(request):
     users_by_date = list(User.objects.values('created_at').order_by('created_at').annotate(total_users=Count('id')))
-    users_by_level = list(User.objects.values('current_level__index').annotate(total_users=Count('id')))
+    users_by_level = list(User.objects.values('current_level__index').order_by('current_level__index').annotate(total_users=Count('id')))
     context = {
         "users_by_date": users_by_date,
         "users_by_level": users_by_level,
