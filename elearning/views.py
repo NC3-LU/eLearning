@@ -5,7 +5,7 @@ import zipfile
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import BooleanField, Case, Value, When, Count, Sum
+from django.db.models import BooleanField, Case, Value, When, Count, Avg
 from django.db.models.query import QuerySet
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -122,9 +122,15 @@ def accessibility(request):
 
 
 def stats(request):
+    global_total_users = User.objects.all().count()
+    global_avg_score = Score.objects.aggregate(avg_score=Avg('score'))['avg_score']
+    avg_score_by_level = list(Score.objects.values('level__index').annotate(avg_score=Avg('score')))
     users_by_date = list(User.objects.values('created_at').order_by('created_at').annotate(total_users=Count('id')))
     users_by_level = list(User.objects.values('current_level__index').order_by('current_level__index').annotate(total_users=Count('id')))
     context = {
+        "global_total_users": global_total_users,
+        "global_avg_score": global_avg_score,
+        "avg_score_by_level": avg_score_by_level,
         "users_by_date": users_by_date,
         "users_by_level": users_by_level,
     }   
