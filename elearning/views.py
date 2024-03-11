@@ -125,12 +125,14 @@ def stats(request):
     global_total_users = User.objects.all().count()
     global_avg_score = Score.objects.aggregate(avg_score=Avg('score'))['avg_score']
     avg_score_by_level = list(Score.objects.values('level__index').annotate(avg_score=Avg('score')))
+    avg_progress_by_level = list(Score.objects.values('level__index').annotate(avg_progress=Avg('progress')))
     users_by_date = list(User.objects.values('created_at').order_by('created_at').annotate(total_users=Count('id')))
     users_by_level = list(User.objects.values('current_level__index').order_by('current_level__index').annotate(total_users=Count('id')))
     context = {
         "global_total_users": global_total_users,
         "global_avg_score": global_avg_score,
         "avg_score_by_level": avg_score_by_level,
+        "avg_progress_by_level": avg_progress_by_level,
         "users_by_date": users_by_date,
         "users_by_level": users_by_level,
     }   
