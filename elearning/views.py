@@ -125,10 +125,14 @@ def stats(request):
     global_total_users = User.objects.all().count()
     global_avg_score = Score.objects.aggregate(avg_score=Avg("score"))["avg_score"]
     avg_score_by_level = list(
-        Score.objects.values("level__index").annotate(avg_score=Avg("score"))
+        Score.objects.values("level__translations__name", "level__index")
+        .annotate(avg_score=Avg("score"))
+        .order_by("level__index")
     )
     avg_progress_by_level = list(
-        Score.objects.values("level__index").annotate(avg_progress=Avg("progress"))
+        Score.objects.values("level__index")
+        .annotate(avg_progress=Avg("progress"))
+        .order_by("level__index")
     )
     users_by_date = list(
         User.objects.values("created_at")
@@ -137,9 +141,14 @@ def stats(request):
         .values("timestamp", "count")
     )
     users_by_level = list(
-        User.objects.values("current_level__index")
+        User.objects.values("current_level__translations__name", "current_level__index")
         .order_by("current_level__index")
-        .annotate(count=Count("id"))
+        .annotate(
+            level_index=F("current_level__index"),
+            level_name=F("current_level__translations__name"),
+            count=Count("id"),
+        )
+        .values("level_index", "level_name", "count")
     )
     context = {
         "global_total_users": global_total_users,
