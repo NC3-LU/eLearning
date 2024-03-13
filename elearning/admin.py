@@ -137,7 +137,7 @@ class TextsResource(TranslationImportMixin, resources.ModelResource):
     id = fields.Field(column_name="id", attribute="id", readonly=True)
     name = fields.Field(column_name="name", attribute="name")
     t_type = fields.Field(
-        column_name="type", attribute="m_type", widget=ChoicesWidget(TEXT_TYPE)
+        column_name="type", attribute="t_type", widget=ChoicesWidget(TEXT_TYPE)
     )
     description = fields.Field(column_name="description", attribute="description")
     hyperlink = fields.Field(column_name="hyperlink", attribute="hyperlink")
