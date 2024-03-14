@@ -31,6 +31,7 @@ from .models import (
 from .settings import COOKIEBANNER
 from .viewLogic import (
     get_allowed_resources_ids,
+    get_questions_success_rate,
     get_quiz_order,
     get_report_pdf,
     get_slides_content,
@@ -122,6 +123,7 @@ def accessibility(request):
 
 
 def stats(request):
+    questions_success_rate = list(get_questions_success_rate())
     global_total_users = User.objects.all().count()
     global_avg_score = Score.objects.aggregate(avg_score=Avg("score"))["avg_score"]
     avg_score_by_level = list(
@@ -151,6 +153,7 @@ def stats(request):
         .values("level_index", "level_name", "count")
     )
     context = {
+        "questions_success_rate": questions_success_rate,
         "global_total_users": global_total_users,
         "global_avg_score": global_avg_score,
         "avg_score_by_level": avg_score_by_level,
@@ -158,6 +161,7 @@ def stats(request):
         "users_by_date": users_by_date,
         "users_by_level": users_by_level,
     }
+
     return render(request, "stats.html", context=context)
 
 

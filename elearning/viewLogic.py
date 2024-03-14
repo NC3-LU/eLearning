@@ -6,7 +6,21 @@ from uuid import UUID
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Exists, F, OuterRef, Q, QuerySet, Subquery
+from django.db.models import (
+    Case,
+    Count,
+    Exists,
+    ExpressionWrapper,
+    F,
+    FloatField,
+    OuterRef,
+    Q,
+    QuerySet,
+    Subquery,
+    Value,
+    When,
+)
+from django.db.models.functions import Cast
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -16,6 +30,7 @@ from weasyprint import CSS, HTML
 
 from .forms import AnswerForm
 from .models import (
+    Answer,
     AnswerChoice,
     Context,
     ContextResourceTemplate,
@@ -440,3 +455,79 @@ def get_report_pdf(user: User, request: HttpRequest) -> bytes:
     ]
 
     return htmldoc.write_pdf(stylesheets=stylesheets)
+
+
+def get_questions_success_rate(is_quiz: bool = False) -> LevelSequence:
+    correct_answers_subquery = (
+        QuestionAnswerChoice.objects.filter(
+            question_id=OuterRef("object_id"), is_correct=True
+        )
+        .values("question_id")
+        .annotate(correct_answers_count=Count("id"))
+        .values("correct_answers_count")
+    )
+
+    correct_user_answers_subquery = (
+        Answer.objects.filter(question_id=OuterRef("object_id"))
+        .prefetch_related("answer_choices_set__questionanswerchoice_set")
+        .values("question_id")
+        .annotate(
+            correct_user_answer_choices=Count(
+                "answer_choices__questionanswerchoice",
+                filter=Q(answer_choices__questionanswerchoice__is_correct=True),
+            ),
+        )
+        .values("correct_user_answer_choices")
+    )
+
+    user_answers_subquery = (
+        Answer.objects.filter(question_id=OuterRef("object_id"))
+        .values("question_id")
+        .annotate(total_answers=Count("id"))
+        .values("total_answers")
+    )
+
+    question_categories_subquery = Question.objects.filter(
+        id=OuterRef("object_id")
+    ).values("categories")
+
+    question_contentType = ContentType.objects.get_for_model(Question)
+    average_success_by_question = (
+        LevelSequence.objects.filter(content_type=question_contentType)
+        .annotate(
+            categories=Subquery(question_categories_subquery),
+            nb_answers=Cast(Subquery(user_answers_subquery), FloatField()),
+            correct_user_answer=Cast(
+                Subquery(correct_user_answers_subquery),
+                FloatField(),
+            ),
+            is_related_to_quiz=Exists(
+                QuizQuestion.objects.filter(question_id=OuterRef("object_id"))
+            ),
+            total_correct_question_answers=Cast(
+                Subquery(correct_answers_subquery),
+                FloatField(),
+            ),
+            success_rate=Case(
+                When(nb_answers=0, then=Cast(Value(0), FloatField())),
+                When(
+                    total_correct_question_answers=0, then=Cast(Value(0), FloatField())
+                ),
+                default=ExpressionWrapper(
+                    F("correct_user_answer")
+                    / (F("nb_answers") * F("total_correct_question_answers")),
+                    output_field=FloatField(),
+                ),
+            ),
+        )
+        .filter(is_related_to_quiz=is_quiz)
+        .order_by("level__index", "position")
+        .values(
+            "object_id",
+            "level__translations__name",
+            "categories",
+            "success_rate",
+        )
+    )
+
+    return average_success_by_question
