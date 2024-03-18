@@ -487,9 +487,9 @@ def get_questions_success_rate(is_quiz: bool = False) -> LevelSequence:
         .values("total_answers")
     )
 
-    question_categories_subquery = Question.objects.filter(
-        id=OuterRef("object_id")
-    ).values("categories")
+    question_categories_subquery = Question.categories.through.objects.filter(
+        question_id=OuterRef("object_id")
+    ).values("category__translations__name")
 
     question_contentType = ContentType.objects.get_for_model(Question)
     average_success_by_question = (
