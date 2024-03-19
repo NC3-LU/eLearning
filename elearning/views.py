@@ -152,6 +152,16 @@ def stats(request):
         )
         .values("level_index", "level_name", "count")
     )
+    users_current_position = list(
+        User.objects.exclude(current_position=None)
+        .values(
+            "current_level__translations__name",
+            "current_level__index",
+            "current_position",
+        )
+        .annotate(total_users=Count("id"))
+        .order_by("-total_users")
+    )
     context = {
         "questions_success_rate": questions_success_rate,
         "global_total_users": global_total_users,
@@ -160,6 +170,7 @@ def stats(request):
         "avg_progress_by_level": avg_progress_by_level,
         "users_by_date": users_by_date,
         "users_by_level": users_by_level,
+        "users_current_position": users_current_position,
     }
 
     return render(request, "stats.html", context=context)
