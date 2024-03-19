@@ -1,6 +1,9 @@
 $(document).ready(function () {
     let windowsWidth = $(window).width();
     let sidebarState = 'expanded';
+    const tooltips =  $('[data-toggle="tooltip"]')
+
+    tooltips.tooltip({placement: 'auto'})
 
     $('#sidebarToggle').click(function () {
         $('#sidebar .d-none').toggleClass('d-sm-inline');
