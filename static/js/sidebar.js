@@ -1,6 +1,8 @@
 $(document).ready(function () {
     let windowsWidth = $(window).width();
     let sidebarState = JSON.parse(document.getElementById('sidebarState').textContent);
+    const tooltips =  $('[data-toggle="tooltip"]')
+    tooltips.tooltip({placement: 'auto'})
     console.log(sidebarState);
 
     function getCookie(name) {
