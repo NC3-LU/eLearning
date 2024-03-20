@@ -457,7 +457,7 @@ def get_report_pdf(user: User, request: HttpRequest) -> bytes:
     return htmldoc.write_pdf(stylesheets=stylesheets)
 
 
-def get_questions_success_rate(is_quiz: bool = False) -> LevelSequence:
+def get_questions_success_rate() -> LevelSequence:
     correct_answers_subquery = (
         QuestionAnswerChoice.objects.filter(
             question_id=OuterRef("object_id"), is_correct=True
@@ -491,6 +491,10 @@ def get_questions_success_rate(is_quiz: bool = False) -> LevelSequence:
         question_id=OuterRef("object_id")
     ).values("category__translations__name")
 
+    quiz_id_subquery = QuizQuestion.objects.filter(
+        question_id=OuterRef("object_id")
+    ).values("quiz_id")
+
     question_contentType = ContentType.objects.get_for_model(Question)
     average_success_by_question = (
         LevelSequence.objects.filter(content_type=question_contentType)
@@ -501,9 +505,7 @@ def get_questions_success_rate(is_quiz: bool = False) -> LevelSequence:
                 Subquery(correct_user_answers_subquery),
                 FloatField(),
             ),
-            is_related_to_quiz=Exists(
-                QuizQuestion.objects.filter(question_id=OuterRef("object_id"))
-            ),
+            quiz_id=Subquery(quiz_id_subquery),
             total_correct_question_answers=Cast(
                 Subquery(correct_answers_subquery),
                 FloatField(),
@@ -520,13 +522,13 @@ def get_questions_success_rate(is_quiz: bool = False) -> LevelSequence:
                 ),
             ),
         )
-        .filter(is_related_to_quiz=is_quiz)
         .order_by("level__index", "position")
         .values(
             "object_id",
             "level__translations__name",
             "categories",
             "success_rate",
+            "quiz_id",
         )
     )
 
