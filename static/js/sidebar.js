@@ -37,7 +37,7 @@ $(document).ready(function () {
                     console.log(data);
                 }
             });
-            
+
         } else {
             $.ajax({
                 type: "POST",
@@ -47,7 +47,7 @@ $(document).ready(function () {
                 },
                 success: function (data) {
                     sidebarState = 'expanded';
-                    console.log('after ajax:', sidebarState);                    
+                    console.log('after ajax:', sidebarState);
                 },
                 error: function (data) {
                     console.log(data);
