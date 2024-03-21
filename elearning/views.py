@@ -46,12 +46,11 @@ from .viewLogic import (
 
 
 def index(request):
-    request.session.clear()
+    request.session.flush()
     user_uuid_param = request.GET.get("user_uuid", None)
     if user_uuid_param:
         request.session["user_uuid"] = user_uuid_param
         return HttpResponseRedirect("/dashboard")
-
     levels = Level.objects.order_by("index")
     context = {
         "levels": levels,
