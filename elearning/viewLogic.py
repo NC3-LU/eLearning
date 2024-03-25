@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import (
+    BooleanField,
     Case,
     Count,
     Exists,
@@ -17,10 +18,12 @@ from django.db.models import (
     Q,
     QuerySet,
     Subquery,
+    Sum,
     Value,
     When,
+    Window,
 )
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Rank
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -467,14 +470,61 @@ def get_questions_success_rate() -> LevelSequence:
         .values("correct_answers_count")
     )
 
+    correct_sorting_question_subquery = QuestionAnswerChoice.objects.filter(
+        question_id=OuterRef("answer__question_id"),
+        answerChoice_id=OuterRef("answerchoice_id"),
+    ).values("index")
+
+    correct_user_answers_for_others_question_subquery = (
+        Answer.answer_choices.through.objects.filter(
+            answer_id=OuterRef("id"),
+        )
+        .values("answer_id")
+        .annotate(
+            correct_answers=Count(
+                Subquery(
+                    QuestionAnswerChoice.objects.filter(
+                        question_id=OuterRef("answer__question_id"),
+                        answerChoice_id=OuterRef("answerchoice_id"),
+                        is_correct=True,
+                    ).values("id")
+                )
+            )
+        )
+        .filter(correct_answers__gt=0)
+        .values("correct_answers")
+    )
+
+    correct_user_answers_for_sorting_questions_subquery = (
+        Answer.answer_choices.through.objects.filter(answer_id=OuterRef("id"))
+        .values("answer_id")
+        .annotate(
+            rank=Window(Rank(), partition_by="answer_id", order_by="id"),
+            index=Subquery(correct_sorting_question_subquery),
+            is_correct_user_answer=Case(
+                When(rank=F("index"), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            ),
+        )
+        .filter(is_correct_user_answer=True)
+        .values("is_correct_user_answer")
+    )
+
     correct_user_answers_subquery = (
         Answer.objects.filter(question_id=OuterRef("object_id"))
-        .prefetch_related("answer_choices_set__questionanswerchoice_set")
         .values("question_id")
         .annotate(
-            correct_user_answer_choices=Count(
-                "answer_choices__questionanswerchoice",
-                filter=Q(answer_choices__questionanswerchoice__is_correct=True),
+            correct_user_answer_choices=Case(
+                When(
+                    question__q_type="SR",
+                    then=Count(
+                        Subquery(correct_user_answers_for_sorting_questions_subquery)
+                    ),
+                ),
+                default=Sum(
+                    Subquery(correct_user_answers_for_others_question_subquery)
+                ),
             ),
         )
         .values("correct_user_answer_choices")
