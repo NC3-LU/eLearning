@@ -17,7 +17,7 @@
     <form action="{% url 'set_language' %}" method="post" class="language_selector_form d-flex">
         {% csrf_token %}
         <i class="bi bi-globe my-auto px-1"></i>
-        <select id="language_selector" name="language" class="ps-2">
+        <select id="language_selector_expanded" name="language" class="ps-2">
             {% for language in languages %}
                 <option value="{{ language.code }}" {% if language.code == current_language %} selected{% endif %}>
                     {{ language.name_translated | capfirst }}
