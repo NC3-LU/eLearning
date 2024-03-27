@@ -3,7 +3,12 @@ from uuid import UUID
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseBadRequest, HttpResponseRedirect
+from django.http import (
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+    HttpResponseRedirect,
+)
+from django.template import TemplateDoesNotExist
 from django.utils.translation import gettext_lazy as _
 
 from .models import User
@@ -35,3 +40,14 @@ def user_uuid_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view
+
+
+def handle_template_not_found(view_func):
+    @wraps(view_func)
+    def wrapped_view(request, *args, **kwargs):
+        try:
+            return view_func(request, *args, **kwargs)
+        except TemplateDoesNotExist:
+            return HttpResponseNotFound("<h1>Page not found</h1>")
+
+    return wrapped_view

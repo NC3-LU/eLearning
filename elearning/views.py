@@ -13,7 +13,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from .decorators import user_uuid_required
+from .decorators import handle_template_not_found, user_uuid_required
 from .forms import AnswerForm, ResourceDownloadForm, inputUserUUIDForm
 from .models import (
     Answer,
@@ -45,6 +45,7 @@ from .viewLogic import (
 )
 
 
+@handle_template_not_found
 def index(request):
     request.session.flush()
     user_uuid_param = request.GET.get("user_uuid", None)
@@ -58,6 +59,7 @@ def index(request):
     return render(request, "landing.html", context=context)
 
 
+@handle_template_not_found
 def start(request):
     if request.method == "POST":
         form = inputUserUUIDForm(request.POST)
@@ -73,6 +75,7 @@ def start(request):
     return render(request, "modals/start.html", {"form": form})
 
 
+@handle_template_not_found
 def new_user(request):
     levels = Level.objects.order_by("index")
     categories = Category.objects.order_by("index")
@@ -97,30 +100,37 @@ def new_user(request):
     return render(request, "modals/new_user.html")
 
 
+@handle_template_not_found
 def privacy_policy(request):
     return render(request, "privacy_policy.html")
 
 
+@handle_template_not_found
 def cookies(request):
     return render(request, "cookies.html", context=COOKIEBANNER)
 
 
+@handle_template_not_found
 def tos(request):
     return render(request, "tos.html")
 
 
+@handle_template_not_found
 def legal(request):
     return render(request, "legal.html")
 
 
+@handle_template_not_found
 def helping_center(request):
     return render(request, "helping_center.html")
 
 
+@handle_template_not_found
 def accessibility(request):
     return render(request, "accessibility.html")
 
 
+@handle_template_not_found
 def stats(request):
     questions_success_rate = list(get_questions_success_rate())
     global_total_users = User.objects.all().count()
@@ -175,6 +185,7 @@ def stats(request):
     return render(request, "stats.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def dashboard(request):
     user = get_user_from_request(request)
@@ -204,6 +215,7 @@ def dashboard(request):
     return render(request, "dashboard.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def course(request):
     user = get_user_from_request(request)
@@ -273,6 +285,7 @@ def course(request):
     return render(request, "course.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def update_progress_bar(request):
     user = get_user_from_request(request)
@@ -288,6 +301,7 @@ def update_progress_bar(request):
     return render(request, "parts/course_progress_bar.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def change_slide(request):
     user = get_user_from_request(request)
@@ -308,6 +322,7 @@ def change_slide(request):
     return render(request, "course_new_slide.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def resources(request):
     levels = Level.objects.order_by("index")
@@ -322,6 +337,7 @@ def resources(request):
     return render(request, "resources.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def resources_download(request):
     user = get_user_from_request(request)
