@@ -116,7 +116,9 @@ class Resource(TranslatableModel):
     translations = TranslatedFields(
         name=models.CharField(max_length=100),
         description=models.TextField(blank=True, default=None, null=True),
-        path=models.FilePathField(path=settings.MEDIA_DIR, recursive=True),
+        path=models.FilePathField(
+            path=settings.MEDIA_DIR, recursive=True, max_length=200
+        ),
     )
     level = models.ForeignKey(
         Level,
