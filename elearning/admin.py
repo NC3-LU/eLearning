@@ -342,7 +342,7 @@ class ContextsResource(TranslationImportMixin, resources.ModelResource):
     resources = fields.Field(
         column_name="resources",
         attribute="resources",
-        widget=ManyToManyWidget(Resource, field="name", separator=","),
+        widget=TranslatedNameM2MWidget(Resource, field="name", separator=","),
     )
 
     class Meta:
