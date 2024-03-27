@@ -313,7 +313,7 @@ class ContextMediaTemplate(models.Model):
 
 
 class ContextTextTemplate(models.Model):
-    index = models.PositiveSmallIntegerField()
+    index = models.PositiveSmallIntegerField(default=0)
     context = models.ForeignKey(Context, on_delete=models.CASCADE)
     text = models.ForeignKey(Text, on_delete=models.CASCADE)
     position = models.CharField(
@@ -330,7 +330,7 @@ class ContextTextTemplate(models.Model):
 
 
 class ContextResourceTemplate(models.Model):
-    index = models.PositiveSmallIntegerField()
+    index = models.PositiveSmallIntegerField(default=0)
     context = models.ForeignKey(Context, on_delete=models.CASCADE)
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE)
     position = models.CharField(
@@ -411,7 +411,7 @@ class QuestionAnswerChoice(models.Model):
 
 
 class QuizQuestion(models.Model):
-    index = models.PositiveSmallIntegerField()
+    index = models.PositiveSmallIntegerField(default=0)
     display_quiz_label = models.BooleanField(
         verbose_name="Display label quiz?", default=True
     )
