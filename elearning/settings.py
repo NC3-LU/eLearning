@@ -238,7 +238,7 @@ SITE_ID = 1
 LANGUAGES = [
     ("en", "English"),
     ("fr", "Français"),
-    ("de", "German"),
+    # ("de", "German"),
 ]
 
 
@@ -341,9 +341,9 @@ PARLER_LANGUAGES = {
         {
             "code": "en",
         },  # English
-        {
-            "code": "de",
-        },  # German
+        # {
+        #     "code": "de",
+        # },  # German
     ),
     "default": {
         "fallbacks": ["fr"],
