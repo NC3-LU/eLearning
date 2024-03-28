@@ -219,6 +219,16 @@ def dashboard(request):
 @user_uuid_required
 def course(request):
     user = get_user_from_request(request)
+    level_id = request.GET.get("level", None)
+
+    if level_id is not None:
+        level_id = int(level_id)
+        if Level.objects.filter(id=level_id) and level_id < user.current_level.id:
+            level_reviewed = Level.objects.get(id=level_id)
+            request.session["level_reviewed"] = level_reviewed.id
+            request.session[
+                "level_reviewed_position"
+            ] = level_reviewed.get_first_level_position()
 
     if user.get_level_progress() == 100:
         set_next_level_user(request, user)
