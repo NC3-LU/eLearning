@@ -395,11 +395,11 @@ def change_slide(request):
     elif user.current_level and user.current_position:
         user_level = user.current_level
         user_position = user.current_position
-
-    slides = get_slides_content(user, user_level, user_position, direction=direction)
-    if not slides:
+    else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect(reverse("dashboard"))
+
+    slides = get_slides_content(user, user_level, user_position, direction=direction)
 
     context = {
         "slide": slides[0] if slides else None,
