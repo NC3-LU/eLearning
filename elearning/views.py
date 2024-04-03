@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Avg, BooleanField, Case, Count, F, Value, When
 from django.db.models.query import QuerySet
 from django.forms.formsets import formset_factory
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -222,13 +222,49 @@ def course(request):
     level_id = request.GET.get("level", None)
 
     if level_id is not None:
-        level_id = int(level_id)
-        if Level.objects.filter(id=level_id) and level_id < user.current_level.id:
-            level_reviewed = Level.objects.get(id=level_id)
-            request.session["level_reviewed"] = level_reviewed.id
-            request.session[
-                "level_reviewed_position"
-            ] = level_reviewed.get_first_level_position()
+        try:
+            level_id = int(level_id)
+        except ValueError:
+            raise Http404
+
+        if level_id < user.current_level.id:
+            try:
+                level_reviewed = Level.objects.get(id=level_id)
+            except Level.DoesNotExist:
+                raise Http404
+
+            level_reviewed_cookie = request.session.get("level_reviewed")
+            if not level_reviewed_cookie or level_reviewed_cookie != level_id:
+                request.session["level_reviewed"] = level_reviewed.id
+                request.session[
+                    "level_reviewed_position"
+                ] = level_reviewed.get_first_level_position()
+
+            position_level_reviewed = request.session.get("level_reviewed_position")
+            slides = get_slides_content(
+                user, level_reviewed, position_level_reviewed, None
+            )
+            previous_control_enable, next_control_enable = set_status_carousel_controls(
+                level_reviewed, position_level_reviewed
+            )
+
+            user_score = user.score_set.get(level=level_reviewed)
+
+            context = {
+                "previous_control_enable": previous_control_enable,
+                "next_control_enable": next_control_enable,
+                "progress": user_score.progress,
+                "quizzes": get_quiz_order(level_reviewed),
+                "level": level_reviewed,
+                "score": user_score.score,
+                "slides": slides,
+            }
+
+            return render(request, "course.html", context=context)
+
+    if "level_reviewed" in request.session:
+        del request.session["level_reviewed"]
+        del request.session["level_reviewed_position"]
 
     if user.get_level_progress() == 100:
         set_next_level_user(request, user)
@@ -275,18 +311,22 @@ def course(request):
 
             return JsonResponse({"success": False})
 
-        slides = get_slides_content(user, None)
+        slides = get_slides_content(
+            user, user.current_level, user.current_position, None
+        )
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect(reverse("dashboard"))
 
-    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
+    [previous_control_enable, next_control_enable] = set_status_carousel_controls(
+        user.current_level, user.current_position
+    )
 
     context = {
         "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
         "progress": user.score_set.get(level=user.current_level).progress,
-        "quizzes": get_quiz_order(user),
+        "quizzes": get_quiz_order(user.current_level),
         "level": user.current_level,
         "score": user.score_set.get(level=user.current_level).score,
         "slides": slides,
@@ -300,12 +340,38 @@ def course(request):
 def update_progress_bar(request):
     user = get_user_from_request(request)
     direction = request.GET.get("direction", None)
-    if user.current_level and user.current_position:
-        set_position_user(user, direction=direction)
-        quizzes = get_quiz_order(user)
+    level_reviewed_cookie = request.session.get("level_reviewed")
+    position_level_reviewed = request.session.get("level_reviewed_position")
+
+    if level_reviewed_cookie and position_level_reviewed:
+        try:
+            user_level = Level.objects.get(id=level_reviewed_cookie)
+        except Level.DoesNotExist:
+            raise Http404
+
+        set_position_user(
+            request, user, user_level, position_level_reviewed, direction=direction
+        )
+        quizzes = get_quiz_order(user_level)
+    elif user.current_level and user.current_position:
+        set_position_user(
+            request,
+            user,
+            user.current_level,
+            user.current_position,
+            direction=direction,
+        )
+        quizzes = get_quiz_order(user.current_level)
         set_progress_course(user, quizzes)
+        user_level = user.current_level
+
+    try:
+        progress = user.score_set.get(level=user_level).progress
+    except Score.DoesNotExist:
+        progress = 0
+
     context = {
-        "progress": user.score_set.get(level=user.current_level).progress,
+        "progress": progress,
         "quizzes": quizzes,
     }
     return render(request, "parts/course_progress_bar.html", context=context)
@@ -316,17 +382,29 @@ def update_progress_bar(request):
 def change_slide(request):
     user = get_user_from_request(request)
     direction = request.GET.get("direction", None)
+    level_reviewed_cookie = request.session.get("level_reviewed")
+    position_level_reviewed = request.session.get("level_reviewed_position")
 
-    if user.current_level and user.current_position:
-        slides = get_slides_content(user, direction=direction)
-    else:
+    if level_reviewed_cookie and position_level_reviewed:
+        try:
+            user_level = Level.objects.get(id=level_reviewed_cookie)
+            user_position = position_level_reviewed
+        except Level.DoesNotExist:
+            raise Http404
+
+    elif user.current_level and user.current_position:
+        user_level = user.current_level
+        user_position = user.current_position
+
+    slides = get_slides_content(user, user_level, user_position, direction=direction)
+    if not slides:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect(reverse("dashboard"))
 
     context = {
         "slide": slides[0] if slides else None,
-        "level": user.current_level,
-        "score": user.score_set.get(level=user.current_level).score,
+        "level": user_level,
+        "score": user.score_set.get(level=user_level).score,
     }
 
     return render(request, "course_new_slide.html", context=context)
@@ -439,13 +517,20 @@ def resources_download(request):
 @user_uuid_required
 def report(request):
     user = get_user_from_request(request)
+    level_reviewed_cookie = request.session.get("level_reviewed")
 
-    if not user.get_level_progress() >= 100:
+    if level_reviewed_cookie:
+        try:
+            user_level = Level.objects.get(id=level_reviewed_cookie)
+        except Level.DoesNotExist:
+            raise Http404
+    elif not user.get_level_progress() >= 100:
         return HttpResponseRedirect(reverse("dashboard"))
+    else:
+        user_level = user.current_level
 
-    pdf_report = get_report_pdf(user, request)
+    pdf_report = get_report_pdf(request, user, user_level)
 
-    # Return the report in the HTTP answer
     response = HttpResponse(pdf_report, content_type="application/pdf")
     response["Content-Disposition"] = "attachment;filename=Report.pdf"
 

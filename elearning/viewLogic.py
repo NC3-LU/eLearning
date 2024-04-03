@@ -76,8 +76,10 @@ def set_next_level_user(request: HttpRequest, user: User) -> None:
     user.save()
 
 
-def set_position_user(user: User, direction: str) -> None:
-    level_sequence = LevelSequence.objects.filter(level=user.current_level)
+def set_position_user(
+    request: HttpRequest, user: User, level: Level, position: int, direction: str
+) -> None:
+    level_sequence = LevelSequence.objects.filter(level=level)
 
     if not level_sequence:
         return
@@ -85,17 +87,19 @@ def set_position_user(user: User, direction: str) -> None:
     order_by_field = "position" if direction == "next" else "-position"
     filter_condition = "gt" if direction == "next" else "lt"
 
-    position = (
-        level_sequence.filter(
-            **{f"position__{filter_condition}": user.current_position}
-        )
+    new_position = (
+        level_sequence.filter(**{f"position__{filter_condition}": position})
         .order_by(order_by_field)
         .first()
     )
 
-    if position:
-        user.current_position = position.position
-        user.save()
+    if new_position:
+        position_level_reviewed = request.session.get("level_reviewed_position")
+        if position_level_reviewed:
+            request.session["level_reviewed_position"] = new_position.position
+        else:
+            user.current_position = new_position.position
+            user.save()
 
 
 def set_progress_course(user: User, quizzes: OrderedDict):
@@ -208,21 +212,21 @@ def set_score_course(
     user_score.save()
 
 
-def get_slides_content(user: User, direction: str) -> List:
+def get_slides_content(user: User, level: Level, position: int, direction: str) -> List:
     slides = []
     if not direction:
         level_sequence = LevelSequence.objects.filter(
-            Q(level=user.current_level, position=user.current_position - 1)
-            | Q(level=user.current_level, position=user.current_position)
-            | Q(level=user.current_level, position=user.current_position + 1)
+            Q(level=level, position=position - 1)
+            | Q(level=level, position=position)
+            | Q(level=level, position=position + 1)
         ).order_by("position")
     elif direction == "next":
         level_sequence = LevelSequence.objects.filter(
-            Q(level=user.current_level, position=user.current_position + 1)
+            Q(level=level, position=position + 1)
         ).order_by("position")
     else:
         level_sequence = LevelSequence.objects.filter(
-            Q(level=user.current_level, position=user.current_position - 1)
+            Q(level=level, position=position - 1)
         ).order_by("position")
 
     for sequence in level_sequence:
@@ -249,23 +253,23 @@ def get_slides_content(user: User, direction: str) -> List:
             question = get_object_or_404(Question, pk=object_id)
             form = AnswerForm(question=question, user=user)
             form.quiz_index = (
-                get_quiz_index(user, sequence.content_object.quiz_set.first().id)
+                get_quiz_index(user, level, sequence.content_object.quiz_set.first().id)
                 if form.quiz
                 else None
             )
-            form.question_index = get_question_index(user, sequence.position)
+            form.question_index = get_question_index(level, sequence.position)
             slides.append({"question": form})
         elif content_type == ContentType.objects.get_for_model(Explanation):
             explanation = get_object_or_404(Explanation, pk=object_id)
             question_sequence = LevelSequence.objects.get(
-                level=user.current_level, object_id=explanation.question.pk
+                level=level, object_id=explanation.question.pk
             )
             slides.append(
                 {
                     "explanation": {
                         "question": explanation.question,
                         "question_index": get_question_index(
-                            user, question_sequence.position
+                            level, question_sequence.position
                         ),
                         "label": explanation.name,
                         "texts": explanation.explanationtexttemplate_set.all(),
@@ -278,13 +282,11 @@ def get_slides_content(user: User, direction: str) -> List:
 
 
 def get_questions_level_sequences(
-    user: User, is_quiz: bool = False
+    level: Level, is_quiz: bool = False
 ) -> QuerySet[LevelSequence]:
     question_content_type = ContentType.objects.get_for_model(Question)
     level_sequences = (
-        LevelSequence.objects.filter(
-            level=user.current_level, content_type=question_content_type
-        )
+        LevelSequence.objects.filter(level=level, content_type=question_content_type)
         .annotate(
             is_related_to_quiz=Exists(
                 QuizQuestion.objects.filter(question_id=OuterRef("object_id"))
@@ -297,24 +299,22 @@ def get_questions_level_sequences(
     return level_sequences
 
 
-def get_question_index(user: User, position: int) -> int:
-    questions = get_questions_level_sequences(user)
+def get_question_index(level: Level, position: int) -> int:
+    questions = get_questions_level_sequences(level)
     index = questions.filter(position__lte=position).count()
     return index
 
 
-def get_quiz_index(user: User, quiz_id: int) -> int:
-    quiz_order = get_quiz_order(user)
+def get_quiz_index(user: User, level: Level, quiz_id: int) -> int:
+    quiz_order = get_quiz_order(level)
     index = quiz_order[quiz_id]["index"]
     return index
 
 
-def get_quiz_order(user: User) -> OrderedDict:
+def get_quiz_order(level: Level) -> OrderedDict:
     quiz_ordered = OrderedDict()
-    all_level_sequence = LevelSequence.objects.filter(
-        level=user.current_level
-    ).order_by("position")
-    questions_quiz_level_sequences = get_questions_level_sequences(user, is_quiz=True)
+    all_level_sequence = LevelSequence.objects.filter(level=level).order_by("position")
+    questions_quiz_level_sequences = get_questions_level_sequences(level, is_quiz=True)
     index = 1
     total_questions = 0
     for sequence in questions_quiz_level_sequences:
@@ -340,7 +340,6 @@ def get_quiz_order(user: User) -> OrderedDict:
         quiz["percentage"] = (
             (quiz["position"] - total_nb_questions_before + count_before) / total_slides
         ) * 100
-
     return quiz_ordered
 
 
@@ -354,20 +353,16 @@ def items_before_position(ordered_dict: OrderedDict, current_position: int) -> t
     return total_nb_questions, count
 
 
-def set_status_carousel_controls(user: User) -> List[bool]:
+def set_status_carousel_controls(level: Level, position: int) -> List[bool]:
     try:
         sequence_before = (
-            LevelSequence.objects.filter(
-                level=user.current_level, position__lt=user.current_position
-            )
+            LevelSequence.objects.filter(level=level, position__lt=position)
             .order_by("position")
             .last()
         )
 
         sequence_after = (
-            LevelSequence.objects.filter(
-                level=user.current_level, position__gt=user.current_position
-            )
+            LevelSequence.objects.filter(level=level, position__gt=position)
             .order_by("position")
             .first()
         )
@@ -416,37 +411,37 @@ def get_allowed_resources_ids(user: User) -> List:
     return list(allowed_resources_set)
 
 
-def get_questions_and_quizzes(user: User) -> List:
+def get_questions_and_quizzes(user: User, level: Level) -> List:
     questions_and_quizzes = []
     question_content_type = ContentType.objects.get_for_model(Question)
     level_sequence = LevelSequence.objects.filter(
-        level=user.current_level, content_type=question_content_type
+        level=level, content_type=question_content_type
     ).order_by("position")
     for sequence in level_sequence:
         question = get_object_or_404(Question, pk=sequence.object_id)
         form = AnswerForm(question=question, user=user)
         form.quiz_index = (
-            get_quiz_index(user, sequence.content_object.quiz_set.first().id)
+            get_quiz_index(user, level, sequence.content_object.quiz_set.first().id)
             if form.quiz
             else None
         )
-        form.question_index = get_question_index(user, sequence.position)
+        form.question_index = get_question_index(level, sequence.position)
         questions_and_quizzes.append(form)
 
     return questions_and_quizzes
 
 
-def get_report_pdf(user: User, request: HttpRequest) -> bytes:
+def get_report_pdf(request: HttpRequest, user: User, level: Level) -> bytes:
     html_string = render_to_string(
         "report/template.html",
         {
-            "index_level": user.current_level.index,
-            "name_level": user.current_level.name,
-            "score_level": Score.objects.get(user=user, level=user.current_level).score,
+            "index_level": level.index,
+            "name_level": level.name,
+            "score_level": Score.objects.get(user=user, level=level).score,
             "static_theme_dir": os.path.abspath(settings.STATIC_THEME_DIR),
             "user_id": user.uuid,
             "end_level_date": user.updated_at,
-            "questions_and_quizzes": get_questions_and_quizzes(user),
+            "questions_and_quizzes": get_questions_and_quizzes(user, level),
         },
         request=request,
     )
