@@ -3,11 +3,7 @@ from uuid import UUID
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.http import (
-    HttpResponseBadRequest,
-    HttpResponseNotFound,
-    HttpResponseRedirect,
-)
+from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.template import TemplateDoesNotExist
 from django.utils.translation import gettext_lazy as _
 
@@ -48,6 +44,6 @@ def handle_template_not_found(view_func):
         try:
             return view_func(request, *args, **kwargs)
         except TemplateDoesNotExist:
-            return HttpResponseNotFound("<h1>Page not found</h1>")
+            raise Http404
 
     return wrapped_view
