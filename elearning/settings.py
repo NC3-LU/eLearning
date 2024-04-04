@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 
-from django.utils.translation import gettext_lazy as _
-
 try:
     from elearning import config  # type: ignore
 except ImportError:  # pragma: no cover
@@ -22,50 +20,6 @@ except ImportError:  # pragma: no cover
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-
-
-# Cookie Banner settings
-COOKIEBANNER = {
-    "title": _("Cookie settings"),
-    "groups": [
-        {
-            "id": "essential",
-            "name": _("Essential"),
-            "description": _(
-                "This website uses cookies and other similar technologies strictly necessary \
-                for its operation, without the use of personal data."
-            ),
-            "cookies": [
-                {
-                    "pattern": "cookiebanner",
-                    "description": _("Meta cookie for the cookies that are set."),
-                    "content": _("Accepted cookies"),
-                    "max_age": _("1 year"),
-                },
-                {
-                    "pattern": "django_language",
-                    "description": _("Meta cookie for user language settings"),
-                    "content": _("Accepted cookies"),
-                    "max_age": _("Session"),
-                },
-                {
-                    "pattern": "csrftoken",
-                    "description": _(
-                        "This cookie prevents Cross-Site-Request-Forgery attacks."
-                    ),
-                    "content": _("Token"),
-                    "max_age": _("1 year"),
-                },
-                {
-                    "pattern": "sessionid",
-                    "description": _("This cookie is necessary for user options"),
-                    "content": _("session ID"),
-                    "max_age": _("15 days"),
-                },
-            ],
-        }
-    ],
-}
 
 try:
     # SECURITY WARNING: keep the secret key used in production secret!
@@ -91,6 +45,12 @@ try:
 
     # Medias
     MEDIA_DIR = os.path.join(BASE_DIR, config.MEDIA_DIR)
+
+    # SESSION COOKIES
+    COOKIEBANNER = config.COOKIEBANNER
+    SESSION_COOKIE_AGE = config.SESSION_COOKIE_AGE
+    CSRF_COOKIE_AGE = config.CSRF_COOKIE_AGE
+
 except AttributeError as e:
     print("Please check you configuration file for the missing configuration variable:")
     print(f"  {e}")
@@ -227,19 +187,23 @@ LOGIN_URL = "/account/login"
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 SITE_ID = 1
 
-LANGUAGES = [
-    ("en", "English"),
-    ("fr", "Français"),
-    # ("de", "German"),
-]
+try:
+    LANGUAGE_CODE = config.LANGUAGE_CODE
+    LANGUAGES = config.LANGUAGES
+
+    # Multinlingual DB parameter
+    PARLER_DEFAULT_LANGUAGE_CODE = config.PARLER_DEFAULT_LANGUAGE_CODE
+    PARLER_LANGUAGES = config.PARLER_LANGUAGES
+
+except AttributeError as e:
+    print("Please check you configuration file for the missing configuration variable:")
+    print(f"  {e}")
+    exit(1)
 
 
 LOCALE_PATHS = [
@@ -328,25 +292,5 @@ BOOTSTRAP5 = {
     },
     "field_renderers": {
         "default": "django_bootstrap5.renderers.FieldRenderer",
-    },
-}
-
-# Multinlingual DB parameter
-PARLER_DEFAULT_LANGUAGE_CODE = "fr"
-PARLER_LANGUAGES = {
-    1: (
-        {
-            "code": "fr",
-        },  # French
-        {
-            "code": "en",
-        },  # English
-        # {
-        #     "code": "de",
-        # },  # German
-    ),
-    "default": {
-        "fallbacks": ["fr"],
-        "hide_untranslated": False,
     },
 }
