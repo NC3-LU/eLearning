@@ -2,10 +2,11 @@ import io
 import mimetypes
 import os
 import zipfile
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Avg, BooleanField, Case, Count, F, Value, When
+from django.db.models import Avg, BooleanField, Case, Count, F, Q, Value, When
 from django.db.models.query import QuerySet
 from django.forms.formsets import formset_factory
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
@@ -19,7 +20,6 @@ from .models import (
     Answer,
     AnswerChoice,
     Category,
-    Knowledge,
     Level,
     LevelSequence,
     Question,
@@ -77,8 +77,6 @@ def start(request):
 
 @handle_template_not_found
 def new_user(request):
-    levels = Level.objects.order_by("index")
-    categories = Category.objects.order_by("index")
     first_level = Level.objects.order_by("index").first()
 
     user = User()
@@ -87,14 +85,6 @@ def new_user(request):
         user.current_level = first_level
 
     user.save()
-
-    for level in levels:
-        score = Score(user=user, level=level)
-        score.save()
-
-    for category in categories:
-        knowledge = Knowledge(user=user, category=category)
-        knowledge.save()
 
     request.session["user_uuid"] = str(user.uuid)
     return render(request, "modals/new_user.html")
@@ -189,27 +179,30 @@ def stats(request):
 @user_uuid_required
 def dashboard(request):
     user = get_user_from_request(request)
-    knowledge = Knowledge.objects.filter(user=user).order_by("category__index")
-    scores = Score.objects.filter(user=user).order_by("level__index")
-    criteria = {
-        "data": [
-            {"label": label, "value": progress}
-            for label, progress in zip(
-                knowledge.values_list("category__translations__name", flat=True),
-                knowledge.values_list("progress", flat=True),
-            )
-        ]
-    }
+    levels = Level.objects.all().order_by("index")
+    categories = Category.objects.all().order_by("index")
+    levels_by_score = {}
+    knowledge = {}
+    progress = []
+    success = []
 
-    progress = list(scores.values_list("progress", flat=True))
-    success = list(scores.values_list("score", flat=True))
+    for level in levels:
+        score = level.score_set.filter(Q(user=user) | Q(user=None)).first()
+        levels_by_score[level] = score
+        progress.append(score.progress if score else Decimal(0))
+        success.append(score.score if score else Decimal(0))
+
+    for category in categories:
+        knowledge[category] = category.knowledge_set.filter(
+            Q(user=user) | Q(user=None)
+        ).first()
 
     context = {
         "user": user,
-        "scores": scores,
         "success": success,
         "progress": progress,
-        "criteria": criteria,
+        "levels": levels_by_score,
+        "knowledge": knowledge,
     }
 
     return render(request, "dashboard.html", context=context)
@@ -322,13 +315,18 @@ def course(request):
         user.current_level, user.current_position
     )
 
+    user_score, _created = Score.objects.get_or_create(
+        user=user,
+        level=user.current_level,
+    )
+
     context = {
         "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
-        "progress": user.score_set.get(level=user.current_level).progress,
+        "progress": user_score.progress,
         "quizzes": get_quiz_order(user.current_level),
         "level": user.current_level,
-        "score": user.score_set.get(level=user.current_level).score,
+        "score": user_score.score,
         "slides": slides,
     }
 

@@ -161,11 +161,12 @@ def set_knowledge_course(user: User, question: Question) -> None:
     )
 
     for category in question.categories.all():
-        knowledge = Knowledge.objects.get(user=user, category=category)
         total_category_count = all_category_counts[category.id]
-        knowledge.save()
         percentage = (1 / total_category_count) * 100 if total_category_count > 0 else 0
-
+        knowledge, _created = Knowledge.objects.get_or_create(
+            user=user,
+            category=category,
+        )
         knowledge.progress = F("progress") + percentage
         knowledge.save()
 
