@@ -8,26 +8,14 @@ register = template.Library()
 
 @register.filter
 def is_sticker_unlocked(score):
-    if score.score == 0:
+    if score == 0:
         return "1"
-    if score.score < 70:
+    if score < 70:
         return "2"
-    if score.score >= 70 and score.score < 90:
+    if score >= 70 and score < 90:
         return "3"
-    if score.score >= 90:
+    if score >= 90:
         return "4"
-
-
-@register.filter
-def getclass(score):
-    if score.score == 0:
-        return "dark"
-    if score.score < 70:
-        return "primary"
-    if score.score >= 70 and score.score < 90:
-        return "primary"
-    if score.score >= 90:
-        return "warning"
 
 
 @register.filter(name="split")
