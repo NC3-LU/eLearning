@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-27 12:09+0000\n"
+"POT-Creation-Date: 2024-04-04 08:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: elearning/decorators.py:17
+#: elearning/decorators.py:18
 msgid "Session expired or browser sessions conflict"
 msgstr ""
 
-#: elearning/decorators.py:33
+#: elearning/decorators.py:34
 msgid "User does not exist"
 msgstr ""
 
@@ -236,7 +236,7 @@ msgstr ""
 msgid "Congratulations! You have completed all available levels."
 msgstr ""
 
-#: elearning/views.py:258 elearning/views.py:299
+#: elearning/views.py:318 elearning/views.py:399
 msgid "No data available to start the level"
 msgstr ""
 
