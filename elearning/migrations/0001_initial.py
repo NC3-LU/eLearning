@@ -135,7 +135,6 @@ class Migration(migrations.Migration):
                         max_length=200,
                         path=settings.MEDIA_DIR,
                         recursive=True,
-                        recursive=True,
                     ),
                 ),
                 (
@@ -1077,7 +1076,6 @@ class Migration(migrations.Migration):
                     models.FilePathField(
                         max_length=200,
                         path=settings.MEDIA_DIR,
-                        recursive=True,
                         recursive=True,
                     ),
                 ),
