@@ -122,27 +122,36 @@ def accessibility(request):
 
 @handle_template_not_found
 def stats(request):
+    users_qs = User.objects.filter(
+        current_level__translations__language_code=request.LANGUAGE_CODE
+    )
+    score_qs = Score.objects.filter(
+        level__translations__language_code=request.LANGUAGE_CODE
+    )
     questions_success_rate = list(get_questions_success_rate())
-    global_total_users = User.objects.all().count()
-    global_avg_score = Score.objects.aggregate(avg_score=Avg("score"))["avg_score"]
-    avg_score_by_level = list(
-        Score.objects.values("level__translations__name", "level__index")
-        .annotate(avg_score=Avg("score"))
+    global_total_users = users_qs.count()
+    global_avg_score = score_qs.aggregate(avg_score=Avg("score"))["avg_score"]
+    avg_score_and_progress_by_level = list(
+        score_qs.values("level__translations__name", "level__index")
         .order_by("level__index")
+        .annotate(
+            level_index=F("level__index"),
+            level_name=F("level__translations__name"),
+            count=Count("id"),
+            avg_score=Avg("score"),
+            avg_progress=Avg("progress"),
+        )
+        .values("level_index", "level_name", "avg_score", "avg_progress", "count")
     )
-    avg_progress_by_level = list(
-        Score.objects.values("level__index")
-        .annotate(avg_progress=Avg("progress"))
-        .order_by("level__index")
-    )
+
     users_by_date = list(
-        User.objects.values("created_at")
+        users_qs.values("created_at")
         .annotate(timestamp=F("created_at"), count=Count("id"))
         .order_by("created_at")
         .values("timestamp", "count")
     )
     users_by_level = list(
-        User.objects.values("current_level__translations__name", "current_level__index")
+        users_qs.values("current_level", "current_level__index")
         .order_by("current_level__index")
         .annotate(
             level_index=F("current_level__index"),
@@ -152,7 +161,7 @@ def stats(request):
         .values("level_index", "level_name", "count")
     )
     users_current_position = list(
-        User.objects.exclude(current_position=None)
+        users_qs.exclude(current_position=None)
         .values(
             "current_level__translations__name",
             "current_level__index",
@@ -165,8 +174,7 @@ def stats(request):
         "questions_success_rate": questions_success_rate,
         "global_total_users": global_total_users,
         "global_avg_score": global_avg_score,
-        "avg_score_by_level": avg_score_by_level,
-        "avg_progress_by_level": avg_progress_by_level,
+        "avg_score_and_progress_by_level": avg_score_and_progress_by_level,
         "users_by_date": users_by_date,
         "users_by_level": users_by_level,
         "users_current_position": users_current_position,
