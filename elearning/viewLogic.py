@@ -433,15 +433,16 @@ def get_questions_and_quizzes(user: User, level: Level) -> List:
 
 
 def get_report_pdf(request: HttpRequest, user: User, level: Level) -> bytes:
+    user_score = Score.objects.get(user=user, level=level)
     html_string = render_to_string(
         "report/template.html",
         {
             "index_level": level.index,
             "name_level": level.name,
-            "score_level": Score.objects.get(user=user, level=level).score,
+            "score_level": user_score.score,
             "static_theme_dir": os.path.abspath(settings.STATIC_THEME_DIR),
             "user_id": user.uuid,
-            "end_level_date": user.updated_at,
+            "end_level_date": user_score.updated_at,
             "questions_and_quizzes": get_questions_and_quizzes(user, level),
         },
         request=request,
