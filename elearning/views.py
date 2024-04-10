@@ -143,15 +143,30 @@ def stats(request):
         )
         .values("level_index", "level_name", "avg_score", "avg_progress", "count")
     )
+    first_level = Level.objects.order_by("index").first()
 
     users_by_date = list(
-        users_qs.values("created_at")
-        .annotate(timestamp=F("created_at"), count=Count("id"))
-        .order_by("created_at")
-        .values("timestamp", "count")
+        users_qs.annotate(
+            is_unstarted=Case(
+                When(
+                    current_level=first_level,
+                    current_position__isnull=True,
+                    then=Value(True),
+                ),
+                default=Value(False),
+                output_field=BooleanField(),
+            ),
+            timestamp=F("created_at"),
+        )
+        .values("timestamp", "is_unstarted")
+        .annotate(count=Count("id"))
+        .order_by("timestamp")
+        .values("timestamp", "is_unstarted", "count")
     )
+
     users_by_level = list(
-        users_qs.values("current_level", "current_level__index")
+        users_qs.exclude(current_level=first_level, current_position__isnull=True)
+        .values("current_level", "current_level__index")
         .order_by("current_level__index")
         .annotate(
             level_index=F("current_level__index"),
@@ -161,7 +176,7 @@ def stats(request):
         .values("level_index", "level_name", "count")
     )
     users_current_position = list(
-        users_qs.exclude(current_position=None)
+        users_qs.exclude(current_position__isnull=True)
         .values(
             "current_level__translations__name",
             "current_level__index",
