@@ -6,7 +6,18 @@ from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Avg, BooleanField, Case, Count, F, Q, Value, When
+from django.db.models import (
+    Avg,
+    BooleanField,
+    Case,
+    Count,
+    DurationField,
+    ExpressionWrapper,
+    F,
+    Q,
+    Value,
+    When,
+)
 from django.db.models.query import QuerySet
 from django.forms.formsets import formset_factory
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
@@ -185,14 +196,44 @@ def stats(request):
         .annotate(total_users=Count("id"))
         .order_by("-total_users")
     )
+    average_duration_by_level = list(
+        score_qs.values("level__translations__name", "level__index")
+        .order_by("level__index")
+        .annotate(
+            level_index=F("level__index"),
+            level_name=F("level__translations__name"),
+            duration_seconds=ExpressionWrapper(
+                F("updated_at") - F("created_at"), output_field=DurationField()
+            ),
+        )
+        .values("level_index", "level_name")
+        .annotate(
+            avg_duration=Avg(
+                ExpressionWrapper(F("duration_seconds"), output_field=DurationField())
+            )
+        )
+    )
+    for field in average_duration_by_level:
+        field["avg_duration"] = field["avg_duration"].total_seconds()
+
+    global_avg_duration = score_qs.aggregate(
+        global_avg_duration=Avg(
+            ExpressionWrapper(
+                F("updated_at") - F("created_at"), output_field=DurationField()
+            )
+        )
+    )["global_avg_duration"]
+
     context = {
         "questions_success_rate": questions_success_rate,
         "global_total_users": global_total_users,
         "global_avg_score": global_avg_score,
+        "global_avg_duration": global_avg_duration,
         "avg_score_and_progress_by_level": avg_score_and_progress_by_level,
         "users_by_date": users_by_date,
         "users_by_level": users_by_level,
         "users_current_position": users_current_position,
+        "average_duration_by_level": average_duration_by_level,
     }
 
     return render(request, "stats.html", context=context)
