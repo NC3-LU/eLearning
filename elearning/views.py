@@ -88,7 +88,6 @@ def start(request):
 
 
 @handle_template_not_found
-@user_uuid_required
 def change_sidebar_state(request):
     state = request.GET.get("state", "expanded")
     request.session["sidebar_state"] = state
