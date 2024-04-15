@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // set the cookie.
-        let max_age = (365 * 24 * 60 * 60);
+        let max_age = (180 * 24 * 60 * 60);
 
         let secure = window.location.hostname === 'localhost' ? "" : "secure";
         document.cookie = `cookiebanner=${encodeURIComponent(enable_cookies)}; path=/; max-age=${max_age}; ${secure}`;

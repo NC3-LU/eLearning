@@ -1,5 +1,7 @@
 import os
 
+from django.utils.translation import gettext_lazy as _
+
 PUBLIC_URL = ""
 ALLOWED_HOSTS = ["127.0.0.1", locals().get("PUBLIC_URL", "")]
 HOST_CONTACT = {
@@ -75,3 +77,79 @@ LOGGING = {
         },
     },
 }
+
+# Internationalization
+# Django
+LANGUAGE_CODE = "en-us"
+
+LANGUAGES = [
+    ("en", "English"),
+    ("fr", "Français"),
+    ("de", "German"),
+]
+
+# Parler
+PARLER_DEFAULT_LANGUAGE_CODE = "en"
+PARLER_LANGUAGES = {
+    1: (
+        {
+            "code": "fr",
+        },  # French
+        {
+            "code": "en",
+        },  # English
+        {
+            "code": "de",
+        },  # German
+    ),
+    "default": {
+        "fallbacks": ["en"],
+        "hide_untranslated": False,
+    },
+}
+
+# SESSION COOKIES
+COOKIEBANNER = {
+    "title": _("Cookie settings"),
+    "groups": [
+        {
+            "id": "essential",
+            "name": _("Essential"),
+            "description": _(
+                "This website uses cookies and other similar technologies strictly necessary \
+                for its operation, without the use of personal data."
+            ),
+            "cookies": [
+                {
+                    "pattern": "cookiebanner",
+                    "description": _("Meta cookie for the cookies that are set."),
+                    "content": _("Accepted cookies"),
+                    "max_age": _("6 months"),  # cookie_banner.js [max_age variable]
+                },
+                {
+                    "pattern": "django_language",
+                    "description": _("Meta cookie for user language settings"),
+                    "content": _("Accepted cookies"),
+                    "max_age": _("Session"),
+                },
+                {
+                    "pattern": "csrftoken",
+                    "description": _(
+                        "This cookie prevents Cross-Site-Request-Forgery attacks."
+                    ),
+                    "content": _("Token"),
+                    "max_age": _("6 months"),  # CSRF_COOKIE_AGE
+                },
+                {
+                    "pattern": "sessionid",
+                    "description": _("This cookie is necessary for user options"),
+                    "content": _("session ID"),
+                    "max_age": _("6 months"),  # SESSION_COOKIE_AGE
+                },
+            ],
+        }
+    ],
+}
+
+SESSION_COOKIE_AGE = 180 * 24 * 60 * 60  # 6 months, in seconds
+CSRF_COOKIE_AGE = 180 * 24 * 60 * 60  # 6 months, in seconds

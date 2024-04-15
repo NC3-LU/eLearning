@@ -116,7 +116,9 @@ class Resource(TranslatableModel):
     translations = TranslatedFields(
         name=models.CharField(max_length=100),
         description=models.TextField(blank=True, default=None, null=True),
-        path=models.FilePathField(path=settings.MEDIA_DIR, recursive=True),
+        path=models.FilePathField(
+            path=settings.MEDIA_DIR, recursive=True, max_length=200
+        ),
     )
     level = models.ForeignKey(
         Level,
@@ -254,6 +256,8 @@ class Score(models.Model):
     progress = models.DecimalField(
         default=0, max_digits=5, decimal_places=2, validators=[MaxValueValidator(100)]
     )
+    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True)
 
     def __str__(self):
         return str(self.score)
@@ -311,7 +315,7 @@ class ContextMediaTemplate(models.Model):
 
 
 class ContextTextTemplate(models.Model):
-    index = models.PositiveSmallIntegerField()
+    index = models.PositiveSmallIntegerField(default=0)
     context = models.ForeignKey(Context, on_delete=models.CASCADE)
     text = models.ForeignKey(Text, on_delete=models.CASCADE)
     position = models.CharField(
@@ -328,7 +332,7 @@ class ContextTextTemplate(models.Model):
 
 
 class ContextResourceTemplate(models.Model):
-    index = models.PositiveSmallIntegerField()
+    index = models.PositiveSmallIntegerField(default=0)
     context = models.ForeignKey(Context, on_delete=models.CASCADE)
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE)
     position = models.CharField(
@@ -409,7 +413,7 @@ class QuestionAnswerChoice(models.Model):
 
 
 class QuizQuestion(models.Model):
-    index = models.PositiveSmallIntegerField()
+    index = models.PositiveSmallIntegerField(default=0)
     display_quiz_label = models.BooleanField(
         verbose_name="Display label quiz?", default=True
     )

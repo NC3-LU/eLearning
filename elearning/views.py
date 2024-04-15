@@ -2,24 +2,35 @@ import io
 import mimetypes
 import os
 import zipfile
+from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import BooleanField, Case, Value, When
+from django.db.models import (
+    Avg,
+    BooleanField,
+    Case,
+    Count,
+    DurationField,
+    ExpressionWrapper,
+    F,
+    Q,
+    Value,
+    When,
+)
 from django.db.models.query import QuerySet
 from django.forms.formsets import formset_factory
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from .decorators import user_uuid_required
+from .decorators import handle_template_not_found, user_uuid_required
 from .forms import AnswerForm, ResourceDownloadForm, inputUserUUIDForm
 from .models import (
     Answer,
     AnswerChoice,
     Category,
-    Knowledge,
     Level,
     LevelSequence,
     Question,
@@ -31,6 +42,7 @@ from .models import (
 from .settings import COOKIEBANNER
 from .viewLogic import (
     get_allowed_resources_ids,
+    get_questions_success_rate,
     get_quiz_order,
     get_report_pdf,
     get_slides_content,
@@ -44,14 +56,14 @@ from .viewLogic import (
 )
 
 
+@handle_template_not_found
 def index(request):
-    request.session.clear()
+    request.session.flush()
     change_sidebar_state(request)
     user_uuid_param = request.GET.get("user_uuid", None)
     if user_uuid_param:
         request.session["user_uuid"] = user_uuid_param
         return HttpResponseRedirect("/dashboard")
-
     levels = Level.objects.order_by("index")
     context = {
         "levels": levels,
@@ -59,6 +71,7 @@ def index(request):
     return render(request, "landing.html", context=context)
 
 
+@handle_template_not_found
 def start(request):
     if request.method == "POST":
         form = inputUserUUIDForm(request.POST)
@@ -74,15 +87,16 @@ def start(request):
     return render(request, "modals/start.html", {"form": form})
 
 
+@handle_template_not_found
+@user_uuid_required
 def change_sidebar_state(request):
     state = request.GET.get("state", "expanded")
     request.session["sidebar_state"] = state
     return JsonResponse({"state": state})
 
 
+@handle_template_not_found
 def new_user(request):
-    levels = Level.objects.order_by("index")
-    categories = Category.objects.order_by("index")
     first_level = Level.objects.order_by("index").first()
 
     user = User()
@@ -92,78 +106,231 @@ def new_user(request):
 
     user.save()
 
-    for level in levels:
-        score = Score(user=user, level=level)
-        score.save()
-
-    for category in categories:
-        knowledge = Knowledge(user=user, category=category)
-        knowledge.save()
-
     request.session["user_uuid"] = str(user.uuid)
     return render(request, "modals/new_user.html")
 
 
+@handle_template_not_found
 def privacy_policy(request):
     return render(request, "privacy_policy.html")
 
 
+@handle_template_not_found
 def cookies(request):
     return render(request, "cookies.html", context=COOKIEBANNER)
 
 
+@handle_template_not_found
 def tos(request):
     return render(request, "tos.html")
 
 
+@handle_template_not_found
 def legal(request):
     return render(request, "legal.html")
 
 
+@handle_template_not_found
 def helping_center(request):
     return render(request, "helping_center.html")
 
 
+@handle_template_not_found
 def accessibility(request):
     return render(request, "accessibility.html")
 
 
+@handle_template_not_found
 def stats(request):
-    return render(request, "stats.html")
+    users_qs = User.objects.filter(
+        current_level__translations__language_code=request.LANGUAGE_CODE
+    )
+    score_qs = Score.objects.filter(
+        level__translations__language_code=request.LANGUAGE_CODE
+    )
+    questions_success_rate = list(get_questions_success_rate())
+    global_total_users = users_qs.count()
+    global_avg_score = score_qs.aggregate(avg_score=Avg("score"))["avg_score"]
+    avg_score_and_progress_by_level = list(
+        score_qs.values("level__translations__name", "level__index")
+        .order_by("level__index")
+        .annotate(
+            level_index=F("level__index"),
+            level_name=F("level__translations__name"),
+            count=Count("id"),
+            avg_score=Avg("score"),
+            avg_progress=Avg("progress"),
+        )
+        .values("level_index", "level_name", "avg_score", "avg_progress", "count")
+    )
+    first_level = Level.objects.order_by("index").first()
+
+    users_by_date = list(
+        users_qs.annotate(
+            is_unstarted=Case(
+                When(
+                    current_level=first_level,
+                    current_position__isnull=True,
+                    then=Value(True),
+                ),
+                default=Value(False),
+                output_field=BooleanField(),
+            ),
+            timestamp=F("created_at"),
+        )
+        .values("timestamp", "is_unstarted")
+        .annotate(count=Count("id"))
+        .order_by("timestamp")
+        .values("timestamp", "is_unstarted", "count")
+    )
+
+    users_by_level = list(
+        users_qs.exclude(current_level=first_level, current_position__isnull=True)
+        .values("current_level", "current_level__index")
+        .order_by("current_level__index")
+        .annotate(
+            level_index=F("current_level__index"),
+            level_name=F("current_level__translations__name"),
+            count=Count("id"),
+        )
+        .values("level_index", "level_name", "count")
+    )
+    users_current_position = list(
+        users_qs.exclude(current_position__isnull=True)
+        .values(
+            "current_level__translations__name",
+            "current_level__index",
+            "current_position",
+        )
+        .annotate(total_users=Count("id"))
+        .order_by("-total_users")
+    )
+    average_duration_by_level = list(
+        score_qs.values("level__translations__name", "level__index")
+        .order_by("level__index")
+        .annotate(
+            level_index=F("level__index"),
+            level_name=F("level__translations__name"),
+            duration_seconds=ExpressionWrapper(
+                F("updated_at") - F("created_at"), output_field=DurationField()
+            ),
+        )
+        .values("level_index", "level_name")
+        .annotate(
+            avg_duration=Avg(
+                ExpressionWrapper(F("duration_seconds"), output_field=DurationField())
+            )
+        )
+    )
+    for field in average_duration_by_level:
+        field["avg_duration"] = field["avg_duration"].total_seconds()
+
+    global_avg_duration = score_qs.aggregate(
+        global_avg_duration=Avg(
+            ExpressionWrapper(
+                F("updated_at") - F("created_at"), output_field=DurationField()
+            )
+        )
+    )["global_avg_duration"]
+
+    context = {
+        "questions_success_rate": questions_success_rate,
+        "global_total_users": global_total_users,
+        "global_avg_score": global_avg_score,
+        "global_avg_duration": global_avg_duration,
+        "avg_score_and_progress_by_level": avg_score_and_progress_by_level,
+        "users_by_date": users_by_date,
+        "users_by_level": users_by_level,
+        "users_current_position": users_current_position,
+        "average_duration_by_level": average_duration_by_level,
+    }
+
+    return render(request, "stats.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def dashboard(request):
     user = get_user_from_request(request)
-    knowledge = Knowledge.objects.filter(user=user).order_by("category__index")
-    scores = Score.objects.filter(user=user).order_by("level__index")
-    criteria = {
-        "data": [
-            {"label": label, "value": progress}
-            for label, progress in zip(
-                knowledge.values_list("category__translations__name", flat=True),
-                knowledge.values_list("progress", flat=True),
-            )
-        ]
-    }
+    levels = Level.objects.all().order_by("index")
+    categories = Category.objects.all().order_by("index")
+    levels_by_score = {}
+    knowledge = {}
+    progress = []
+    success = []
 
-    progress = list(scores.values_list("progress", flat=True))
-    success = list(scores.values_list("score", flat=True))
+    for level in levels:
+        score = level.score_set.filter(Q(user=user) | Q(user=None)).first()
+        levels_by_score[level] = score
+        progress.append(score.progress if score else Decimal(0))
+        success.append(score.score if score else Decimal(0))
+
+    for category in categories:
+        knowledge[category] = category.knowledge_set.filter(
+            Q(user=user) | Q(user=None)
+        ).first()
 
     context = {
         "user": user,
-        "scores": scores,
         "success": success,
         "progress": progress,
-        "criteria": criteria,
+        "levels": levels_by_score,
+        "knowledge": knowledge,
     }
 
     return render(request, "dashboard.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def course(request):
     user = get_user_from_request(request)
+    level_id = request.GET.get("level", None)
+
+    if level_id is not None:
+        try:
+            level_id = int(level_id)
+        except ValueError:
+            raise Http404
+
+        if level_id < user.current_level.id:
+            try:
+                level_reviewed = Level.objects.get(id=level_id)
+            except Level.DoesNotExist:
+                raise Http404
+
+            level_reviewed_cookie = request.session.get("level_reviewed")
+            if not level_reviewed_cookie or level_reviewed_cookie != level_id:
+                request.session["level_reviewed"] = level_reviewed.id
+                request.session[
+                    "level_reviewed_position"
+                ] = level_reviewed.get_first_level_position()
+
+            position_level_reviewed = request.session.get("level_reviewed_position")
+            slides = get_slides_content(
+                user, level_reviewed, position_level_reviewed, None
+            )
+            previous_control_enable, next_control_enable = set_status_carousel_controls(
+                level_reviewed, position_level_reviewed
+            )
+
+            user_score = user.score_set.get(level=level_reviewed)
+
+            context = {
+                "previous_control_enable": previous_control_enable,
+                "next_control_enable": next_control_enable,
+                "progress": user_score.progress,
+                "quizzes": get_quiz_order(level_reviewed),
+                "level": level_reviewed,
+                "score": user_score.score,
+                "slides": slides,
+            }
+
+            return render(request, "course.html", context=context)
+
+    if "level_reviewed" in request.session:
+        del request.session["level_reviewed"]
+        del request.session["level_reviewed_position"]
 
     if user.get_level_progress() == 100:
         set_next_level_user(request, user)
@@ -210,61 +377,111 @@ def course(request):
 
             return JsonResponse({"success": False})
 
-        slides = get_slides_content(user, None)
+        slides = get_slides_content(
+            user, user.current_level, user.current_position, None
+        )
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect(reverse("dashboard"))
 
-    [previous_control_enable, next_control_enable] = set_status_carousel_controls(user)
+    [previous_control_enable, next_control_enable] = set_status_carousel_controls(
+        user.current_level, user.current_position
+    )
+
+    user_score, _created = Score.objects.get_or_create(
+        user=user,
+        level=user.current_level,
+    )
 
     context = {
         "previous_control_enable": previous_control_enable,
         "next_control_enable": next_control_enable,
-        "progress": user.score_set.get(level=user.current_level).progress,
-        "quizzes": get_quiz_order(user),
+        "progress": user_score.progress,
+        "quizzes": get_quiz_order(user.current_level),
         "level": user.current_level,
-        "score": user.score_set.get(level=user.current_level).score,
+        "score": user_score.score,
         "slides": slides,
     }
 
     return render(request, "course.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def update_progress_bar(request):
     user = get_user_from_request(request)
     direction = request.GET.get("direction", None)
-    if user.current_level and user.current_position:
-        set_position_user(user, direction=direction)
-        quizzes = get_quiz_order(user)
+    level_reviewed_cookie = request.session.get("level_reviewed")
+    position_level_reviewed = request.session.get("level_reviewed_position")
+
+    if level_reviewed_cookie and position_level_reviewed:
+        try:
+            user_level = Level.objects.get(id=level_reviewed_cookie)
+        except Level.DoesNotExist:
+            raise Http404
+
+        set_position_user(
+            request, user, user_level, position_level_reviewed, direction=direction
+        )
+        quizzes = get_quiz_order(user_level)
+    elif user.current_level and user.current_position:
+        set_position_user(
+            request,
+            user,
+            user.current_level,
+            user.current_position,
+            direction=direction,
+        )
+        quizzes = get_quiz_order(user.current_level)
         set_progress_course(user, quizzes)
+        user_level = user.current_level
+
+    try:
+        progress = user.score_set.get(level=user_level).progress
+    except Score.DoesNotExist:
+        progress = 0
+
     context = {
-        "progress": user.score_set.get(level=user.current_level).progress,
+        "progress": progress,
         "quizzes": quizzes,
     }
     return render(request, "parts/course_progress_bar.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def change_slide(request):
     user = get_user_from_request(request)
     direction = request.GET.get("direction", None)
+    level_reviewed_cookie = request.session.get("level_reviewed")
+    position_level_reviewed = request.session.get("level_reviewed_position")
 
-    if user.current_level and user.current_position:
-        slides = get_slides_content(user, direction=direction)
+    if level_reviewed_cookie and position_level_reviewed:
+        try:
+            user_level = Level.objects.get(id=level_reviewed_cookie)
+            user_position = position_level_reviewed
+        except Level.DoesNotExist:
+            raise Http404
+
+    elif user.current_level and user.current_position:
+        user_level = user.current_level
+        user_position = user.current_position
     else:
         messages.warning(request, _("No data available to start the level"))
         return HttpResponseRedirect(reverse("dashboard"))
 
+    slides = get_slides_content(user, user_level, user_position, direction=direction)
+
     context = {
         "slide": slides[0] if slides else None,
-        "level": user.current_level,
-        "score": user.score_set.get(level=user.current_level).score,
+        "level": user_level,
+        "score": user.score_set.get(level=user_level).score,
     }
 
     return render(request, "course_new_slide.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def resources(request):
     levels = Level.objects.order_by("index")
@@ -279,6 +496,7 @@ def resources(request):
     return render(request, "resources.html", context=context)
 
 
+@handle_template_not_found
 @user_uuid_required
 def resources_download(request):
     user = get_user_from_request(request)
@@ -370,13 +588,20 @@ def resources_download(request):
 @user_uuid_required
 def report(request):
     user = get_user_from_request(request)
+    level_reviewed_cookie = request.session.get("level_reviewed")
 
-    if not user.get_level_progress() >= 100:
+    if level_reviewed_cookie:
+        try:
+            user_level = Level.objects.get(id=level_reviewed_cookie)
+        except Level.DoesNotExist:
+            raise Http404
+    elif not user.get_level_progress() >= 100:
         return HttpResponseRedirect(reverse("dashboard"))
+    else:
+        user_level = user.current_level
 
-    pdf_report = get_report_pdf(user, request)
+    pdf_report = get_report_pdf(request, user, user_level)
 
-    # Return the report in the HTTP answer
     response = HttpResponse(pdf_report, content_type="application/pdf")
     response["Content-Disposition"] = "attachment;filename=Report.pdf"
 
