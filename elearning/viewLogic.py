@@ -457,7 +457,7 @@ def get_report_pdf(request: HttpRequest, user: User, level: Level) -> bytes:
     return htmldoc.write_pdf(stylesheets=stylesheets)
 
 
-def get_questions_success_rate() -> LevelSequence:
+def get_questions_success_rate(request: HttpRequest) -> LevelSequence:
     correct_answers_subquery = (
         QuestionAnswerChoice.objects.filter(
             question_id=OuterRef("object_id"), is_correct=True
@@ -545,7 +545,10 @@ def get_questions_success_rate() -> LevelSequence:
 
     question_contentType = ContentType.objects.get_for_model(Question)
     average_success_by_question = (
-        LevelSequence.objects.filter(content_type=question_contentType)
+        LevelSequence.objects.filter(
+            content_type=question_contentType,
+            level__translations__language_code=request.LANGUAGE_CODE,
+        )
         .annotate(
             categories=Subquery(question_categories_subquery),
             nb_answers=Cast(Subquery(user_answers_subquery), FloatField()),

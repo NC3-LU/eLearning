@@ -147,7 +147,7 @@ def stats(request):
     score_qs = Score.objects.filter(
         level__translations__language_code=request.LANGUAGE_CODE
     )
-    questions_success_rate = list(get_questions_success_rate())
+    questions_success_rate = list(get_questions_success_rate(request))
     global_total_users = users_qs.count()
     global_avg_score = score_qs.aggregate(avg_score=Avg("score"))["avg_score"]
     avg_score_and_progress_by_level = list(
@@ -301,9 +301,9 @@ def course(request):
             level_reviewed_cookie = request.session.get("level_reviewed")
             if not level_reviewed_cookie or level_reviewed_cookie != level_id:
                 request.session["level_reviewed"] = level_reviewed.id
-                request.session[
-                    "level_reviewed_position"
-                ] = level_reviewed.get_first_level_position()
+                request.session["level_reviewed_position"] = (
+                    level_reviewed.get_first_level_position()
+                )
 
             position_level_reviewed = request.session.get("level_reviewed_position")
             slides = get_slides_content(
