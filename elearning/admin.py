@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import OuterRef, Subquery
@@ -41,6 +42,39 @@ class CustomAdminSite(admin.AdminSite):
 
 
 admin_site = CustomAdminSite()
+
+
+@admin.register(User, site=admin_site)
+class UserAdmin(admin.ModelAdmin):
+    list_display = [
+        "username",
+        "first_name",
+        "last_name",
+        "email",
+        "date_joined",
+        "last_login",
+    ]
+    fieldsets = [
+        (
+            None,
+            {
+                "fields": ["first_name", "last_name", "username", "email"],
+            },
+        ),
+        (
+            "Advanced Permissions",
+            {
+                "classes": ["collapse"],
+                "fields": [
+                    "is_superuser",
+                    "is_staff",
+                    "is_active",
+                    "groups",
+                    "user_permissions",
+                ],
+            },
+        ),
+    ]
 
 
 class LevelsResource(TranslationImportMixin, resources.ModelResource):
