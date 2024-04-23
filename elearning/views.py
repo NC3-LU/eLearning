@@ -147,7 +147,7 @@ def stats(request):
     score_qs = Score.objects.filter(
         level__translations__language_code=request.LANGUAGE_CODE
     )
-    questions_success_rate = list(get_questions_success_rate(request))
+    questions_success_rate = get_questions_success_rate(request)
     global_total_users = users_qs.count()
     global_avg_score = score_qs.aggregate(avg_score=Avg("score"))["avg_score"]
     avg_score_and_progress_by_level = list(

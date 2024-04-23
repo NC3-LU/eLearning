@@ -467,11 +467,6 @@ def get_questions_success_rate(request: HttpRequest) -> LevelSequence:
         .values("correct_answers_count")
     )
 
-    # correct_sorting_question_subquery = QuestionAnswerChoice.objects.filter(
-    #     question_id=OuterRef("answer__question_id"),
-    #     answerChoice_id=OuterRef("answerchoice_id"),
-    # ).values("index")
-
     correct_user_answers_for_others_question_subquery = (
         Answer.answer_choices.through.objects.filter(
             answer_id=OuterRef("id"),
@@ -492,38 +487,13 @@ def get_questions_success_rate(request: HttpRequest) -> LevelSequence:
         .values("correct_answers")
     )
 
-    # correct_user_answers_for_sorting_questions_subquery = (
-    #     Answer.answer_choices.through.objects.filter(answer_id=OuterRef("id"))
-    #     .values("answer_id")
-    #     .annotate(
-    #         rank=Window(Rank(), partition_by="answer_id", order_by="id"),
-    #         index=Subquery(correct_sorting_question_subquery),
-    #         is_correct_user_answer=Case(
-    #             When(rank=F("index"), then=Value(True)),
-    #             default=Value(False),
-    #             output_field=BooleanField(),
-    #         ),
-    #     )
-    #     .filter(is_correct_user_answer=True)
-    #     .values("is_correct_user_answer")
-    # )
-
     correct_user_answers_subquery = (
         Answer.objects.filter(question_id=OuterRef("object_id"))
         .values("question_id")
         .annotate(
-            correct_user_answer_choices=Case(
-                When(
-                    question__q_type="SR",
-                    then=0,  # TODO: Fix this subquery issue
-                    # then=Count(
-                    #     Subquery(correct_user_answers_for_sorting_questions_subquery)
-                    # ),
-                ),
-                default=Sum(
-                    Subquery(correct_user_answers_for_others_question_subquery)
-                ),
-            ),
+            correct_user_answer_choices=Sum(
+                Subquery(correct_user_answers_for_others_question_subquery)
+            )
         )
         .values("correct_user_answer_choices")
     )
@@ -550,6 +520,9 @@ def get_questions_success_rate(request: HttpRequest) -> LevelSequence:
             level__translations__language_code=request.LANGUAGE_CODE,
         )
         .annotate(
+            question_type=Subquery(
+                Question.objects.filter(id=OuterRef("object_id")).values("q_type")[:1]
+            ),
             categories=Subquery(question_categories_subquery),
             nb_answers=Cast(Subquery(user_answers_subquery), FloatField()),
             correct_user_answer=Cast(
@@ -574,13 +547,45 @@ def get_questions_success_rate(request: HttpRequest) -> LevelSequence:
             ),
         )
         .order_by("level__index", "position")
-        .values(
-            "object_id",
-            "level__translations__name",
-            "categories",
-            "success_rate",
-            "quiz_id",
-        )
+    ).values(
+        "object_id",
+        "question_type",
+        "level__translations__name",
+        "total_correct_question_answers",
+        "nb_answers",
+        "categories",
+        "success_rate",
+        "quiz_id",
     )
+    average_success_by_question_list = list(average_success_by_question)
 
-    return average_success_by_question
+    for ls in average_success_by_question_list:
+        if ls["question_type"] == "SR":
+            sorting_question = Question.objects.get(id=ls["object_id"])
+            sum_correct_answers = 0
+            correct_sorting = (
+                sorting_question.questionanswerchoice_set.all()
+                .order_by("index")
+                .values_list("answerChoice_id", flat=True)
+            )
+            for user_answer in sorting_question.answer_set.all():
+                user_answerchoices = (
+                    user_answer.answer_choices.through.objects.filter(
+                        answer=user_answer.id
+                    )
+                    .order_by("id")
+                    .values_list("answerchoice_id", flat=True)
+                )
+
+                sum_correct_answers += sum(
+                    x == y for x, y in zip(correct_sorting, user_answerchoices)
+                )
+            ls["success_rate"] = sum_correct_answers / (
+                ls["nb_answers"] * ls["total_correct_question_answers"]
+            )
+
+        ls.pop("nb_answers")
+        ls.pop("total_correct_question_answers")
+        ls.pop("question_type")
+
+    return average_success_by_question_list
