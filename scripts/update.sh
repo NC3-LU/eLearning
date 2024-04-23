@@ -1,9 +1,22 @@
 #!/bin/bash
 
-echo "--- Updating ---"
+# Define usage message
+usage() {
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  -u, --update-repositories   Update git repositories"
+    echo "  -npm, --update-npm-packages Update npm packages"
+    echo "  -p, --update-python-packages Update python packages"
+    echo "  -m, --migrate-database      Migrate database"
+    echo "  -c, --compile-translations  Compile translations"
+    echo "  -s, --collect-static        Collect static files"
+    echo "  -a, --update-all            Update all components"
+    echo "  --help                      Display this help message"
+    exit 1
+}
 
 # Define an array of repositories to update
-repositories="elearning theme"
+repositories=("elearning" "theme")
 
 # Function to check if repository directory exists
 check_repository_exists() {
@@ -16,7 +29,7 @@ check_repository_exists() {
 
 # Function to update repositories
 update_repositories() {
-    for repo in $repositories; do
+    for repo in "${repositories[@]}"; do
         check_repository_exists "$repo"
         echo "--- Git pull repository: $repo ---"
         (cd "$repo" && git pull origin master)
@@ -26,7 +39,7 @@ update_repositories() {
 # Function to update npm packages
 update_npm_packages() {
     echo "--- Updating npm packages ---"
-    npm install
+    npm ci
 }
 
 # Function to update python packages
@@ -53,16 +66,26 @@ collect_static_files() {
     poetry run python manage.py collectstatic --no-input > /dev/null 2>&1
 }
 
-restart_apache() {
-    echo "--- Restarting Apache ---"
-    sudo systemctl restart apache2
-}
 
-# Call functions
-update_repositories
-update_npm_packages
-update_python_packages
-migrate_database
-compile_translations
-collect_static_files
-restart_apache
+# Parse command-line arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -u|--update-repositories) update_repositories; shift ;;
+        -npm|--update-npm-packages) update_npm_packages; shift ;;
+        -p|--update-python-packages) update_python_packages; shift ;;
+        -m|--migrate-database) migrate_database; shift ;;
+        -c|--compile-translations) compile_translations; shift ;;
+        -s|--collect-static) collect_static_files; shift ;;
+        -a|--update-all)
+            update_repositories
+            update_npm_packages
+            update_python_packages
+            migrate_database
+            compile_translations
+            collect_static_files
+            exit 0
+            ;;
+        --help) usage ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+done
