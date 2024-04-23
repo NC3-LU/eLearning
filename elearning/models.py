@@ -65,7 +65,7 @@ class AnswerChoice(TranslatableModel):
 # Medias
 class Media(models.Model):
     name = models.CharField(max_length=100, verbose_name="label")
-    path = models.FilePathField(path=settings.MEDIA_DIR, recursive=True)
+    path = models.FilePathField(path=settings.MEDIA_DIR, recursive=True, max_length=200)
     m_type = models.CharField(
         max_length=1, choices=MEDIA_TYPE, default=MEDIA_TYPE[0][0], verbose_name="type"
     )
