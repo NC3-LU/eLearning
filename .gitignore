@@ -5,7 +5,6 @@ __pycache__/
 .idea
 .vscode/
 theme/
-.gitmodules
 
 docs/_build/
 
