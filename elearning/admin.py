@@ -401,18 +401,18 @@ class QuizAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
         queryset = super().get_queryset(request)
         levelSequences = LevelSequence.objects.filter(
             content_type=ContentType.objects.get_for_model(Question),
-            object_id=OuterRef("pk"),
+            object_id=OuterRef("quizquestion__question_id"),
         )
         level_sequence_levels = levelSequences.values("level")[:1]
         return queryset.annotate(
             level_sequence_level=Subquery(level_sequence_levels),
-        )
+        ).distinct()
 
     @admin.display(description="Level", ordering="level_sequence_level")
     def level_sequence_level(self, obj):
         level_sequence = LevelSequence.objects.filter(
             content_type=ContentType.objects.get_for_model(Question),
-            object_id=obj.questions.first().id,
+            object_id=obj.quizquestion_set.first().question.id,
         ).first()
         if level_sequence:
             return level_sequence.level
