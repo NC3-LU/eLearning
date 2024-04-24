@@ -39,7 +39,7 @@ update_repositories() {
 # Function to update npm packages
 update_npm_packages() {
     echo "--- Updating npm packages ---"
-    npm ci
+    npm install
 }
 
 # Function to update python packages
