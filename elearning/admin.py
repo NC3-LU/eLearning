@@ -1,8 +1,10 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import OuterRef, Subquery
+from django.utils.translation import gettext_lazy as _
 from import_export import fields, resources
 from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 from import_export.widgets import ManyToManyWidget
@@ -230,6 +232,21 @@ class questionMediaInline(admin.TabularInline):
     extra = 0
 
 
+class LevelListFilter(SimpleListFilter):
+    title = _("Level")
+    parameter_name = "level_sequence_level"
+
+    def lookups(self, request, model_admin):
+        levels = Level.objects.all().order_by("index")
+        return [(level.id, level.name) for level in levels]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value:
+            return queryset.filter(level_sequence_level=value).distinct()
+        return queryset
+
+
 @admin.register(Question, site=admin_site)
 class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = (
@@ -239,7 +256,7 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin
         "level_sequence_position",
         "display_categories",
     )
-    list_filter = ("q_type",)
+    list_filter = ("q_type", LevelListFilter)
     list_display_links = ["name"]
     fields = (
         "name",
@@ -332,6 +349,7 @@ class ExplanationAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMi
         "level_sequence_position",
     )
     fields = ("name", "question")
+    list_filter = (LevelListFilter,)
     inlines = (explanationMediaInline, explanationTextInline, levelSequenceInline)
     resource_class = ExplanationResource
 
@@ -394,6 +412,7 @@ class quizQuestionsInline(admin.TabularInline):
 class QuizAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = ("name", "level_sequence_level")
     fields = ("name", "tooltip")
+    list_filter = (LevelListFilter,)
     inlines = (quizQuestionsInline,)
     resource_class = QuizResource
 
@@ -474,6 +493,7 @@ class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin)
         contextResourcesInline,
         levelSequenceInline,
     )
+    list_filter = (LevelListFilter,)
     resource_class = ContextsResource
 
     def get_queryset(self, request):
