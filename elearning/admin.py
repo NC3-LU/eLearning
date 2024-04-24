@@ -4,7 +4,7 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import OuterRef, Subquery
 from import_export import fields, resources
-from import_export.admin import ImportExportModelAdmin
+from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 from import_export.widgets import ManyToManyWidget
 from parler.admin import TranslatableAdmin
 
@@ -95,7 +95,7 @@ class levelSequenceInline(GenericTabularInline):
 
 
 @admin.register(Level, site=admin_site)
-class LevelAdmin(ImportExportModelAdmin, TranslatableAdmin):
+class LevelAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = ("index", "name", "description")
     list_display_links = ["index", "name"]
     fields = (
@@ -117,7 +117,7 @@ class CategoriesResource(TranslationImportMixin, resources.ModelResource):
 
 
 @admin.register(Category, site=admin_site)
-class CategoryAdmin(ImportExportModelAdmin, TranslatableAdmin):
+class CategoryAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = (
         "index",
         "name",
@@ -138,7 +138,7 @@ class AnswerChoicesResource(TranslationImportMixin, resources.ModelResource):
 
 
 @admin.register(AnswerChoice, site=admin_site)
-class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin):
+class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = ("name",)
     fields = (
         "name",
@@ -160,7 +160,7 @@ class MediasResource(resources.ModelResource):
 
 
 @admin.register(Media, site=admin_site)
-class MediaAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class MediaAdmin(ImportExportModelAdmin, ExportActionMixin, admin.ModelAdmin):
     list_display = ("name", "path", "m_type")
     search_fields = ("name", "m_type")
     fields = ("name", "path", "m_type")
@@ -181,7 +181,7 @@ class TextsResource(TranslationImportMixin, resources.ModelResource):
 
 
 @admin.register(Text, site=admin_site)
-class TextAdmin(ImportExportModelAdmin, TranslatableAdmin):
+class TextAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = ("name", "t_type")
     search_fields = ("name", "t_type")
     fields = ("name", "t_type", "description", "hyperlink")
@@ -231,7 +231,7 @@ class questionMediaInline(admin.TabularInline):
 
 
 @admin.register(Question, site=admin_site)
-class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin):
+class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = (
         "name",
         "q_type",
@@ -324,11 +324,49 @@ class explanationTextInline(admin.TabularInline):
 
 
 @admin.register(Explanation, site=admin_site)
-class ExplanationAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name", "question")
+class ExplanationAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
+    list_display = (
+        "name",
+        "question",
+        "level_sequence_level",
+        "level_sequence_position",
+    )
     fields = ("name", "question")
     inlines = (explanationMediaInline, explanationTextInline, levelSequenceInline)
     resource_class = ExplanationResource
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        levelSequences = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Explanation),
+            object_id=OuterRef("pk"),
+        )
+        level_sequence_levels = levelSequences.values("level")[:1]
+        level_sequence_positions = levelSequences.values("position")[:1]
+        return queryset.annotate(
+            level_sequence_level=Subquery(level_sequence_levels),
+            level_sequence_position=Subquery(level_sequence_positions),
+        )
+
+    @admin.display(description="Level", ordering="level_sequence_level")
+    def level_sequence_level(self, obj):
+        level_sequence = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Explanation),
+            object_id=obj.id,
+        ).first()
+        if level_sequence:
+            return level_sequence.level
+        return None
+
+    @admin.display(description="Position", ordering="level_sequence_position")
+    def level_sequence_position(self, obj):
+        level_sequence = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Explanation),
+            object_id=obj.id,
+        ).first()
+        if level_sequence:
+            return level_sequence.position
+        return None
 
 
 class QuizResource(TranslationImportMixin, resources.ModelResource):
@@ -353,11 +391,32 @@ class quizQuestionsInline(admin.TabularInline):
 
 
 @admin.register(Quiz, site=admin_site)
-class QuizAdmin(ImportExportModelAdmin, TranslatableAdmin):
-    list_display = ("name",)
+class QuizAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
+    list_display = ("name", "level_sequence_level")
     fields = ("name", "tooltip")
     inlines = (quizQuestionsInline,)
     resource_class = QuizResource
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        levelSequences = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=OuterRef("pk"),
+        )
+        level_sequence_levels = levelSequences.values("level")[:1]
+        return queryset.annotate(
+            level_sequence_level=Subquery(level_sequence_levels),
+        )
+
+    @admin.display(description="Level", ordering="level_sequence_level")
+    def level_sequence_level(self, obj):
+        level_sequence = LevelSequence.objects.filter(
+            content_type=ContentType.objects.get_for_model(Question),
+            object_id=obj.questions.first().id,
+        ).first()
+        if level_sequence:
+            return level_sequence.level
+        return None
 
 
 class ContextsResource(TranslationImportMixin, resources.ModelResource):
@@ -406,7 +465,7 @@ class contextResourcesInline(admin.TabularInline):
 
 
 @admin.register(Context, site=admin_site)
-class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin):
+class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = ("name", "level_sequence_level", "level_sequence_position")
     fields = ("name",)
     inlines = (
@@ -465,7 +524,7 @@ class ResourcesResource(TranslationImportMixin, resources.ModelResource):
 
 
 @admin.register(Resource, site=admin_site)
-class ResourceAdmin(ImportExportModelAdmin, TranslatableAdmin):
+class ResourceAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = ("name", "level", "resourceType", "description")
     list_filter = ("level", "resourceType")
     resource_class = ResourcesResource
@@ -481,7 +540,7 @@ class ResourcesResourceType(TranslationImportMixin, resources.ModelResource):
 
 
 @admin.register(ResourceType, site=admin_site)
-class ResourceTypeAdmin(ImportExportModelAdmin, TranslatableAdmin):
+class ResourceTypeAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = ("index", "name")
     list_display_links = ["index", "name"]
     ordering = ["index"]
@@ -503,7 +562,7 @@ class LevelSequenceAdminResource(resources.ModelResource):
 
 
 @admin.register(LevelSequence, site=admin_site)
-class LevelSequenceAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class LevelSequenceAdmin(ImportExportModelAdmin, ExportActionMixin, admin.ModelAdmin):
     list_display = ("level", "position", "get_content_type_name", "content_object_str")
     list_filter = ("level",)
     ordering = ["level__index", "position"]
