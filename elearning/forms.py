@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from django import forms
+from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import BooleanField, Case, IntegerField, Value, When
 
 from .widgets import ButtonRadioSelect, SortingOptions
@@ -168,3 +169,9 @@ class inputUserUUIDForm(forms.Form):
             except ValueError:
                 raise forms.ValidationError("Invalid UUID format.")
         return user_uuid
+
+
+class CustomAuthForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["password"].widget.attrs["autocomplete"] = "off"

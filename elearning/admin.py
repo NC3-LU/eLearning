@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.models import User
+from django.contrib.auth.views import LoginView
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import OuterRef, Subquery
@@ -10,6 +11,7 @@ from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 from import_export.widgets import ManyToManyWidget
 from parler.admin import TranslatableAdmin
 
+from .forms import CustomAuthForm
 from .globals import MEDIA_TYPE, QUESTION_TYPES, TEXT_TYPE
 from .mixins import TranslationImportMixin
 from .models import (
@@ -41,6 +43,11 @@ from .widgets import ChoicesWidget, TranslatedNameM2MWidget, TranslatedNameWidge
 class CustomAdminSite(admin.AdminSite):
     site_header = SITE_NAME + " " + "Administration"
     site_title = SITE_NAME
+
+    def login(self, request, extra_context=None):
+        return LoginView.as_view(
+            template_name="admin/login.html", authentication_form=CustomAuthForm
+        )(request)
 
 
 admin_site = CustomAdminSite()
