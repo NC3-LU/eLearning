@@ -49,7 +49,11 @@ try:
     # SESSION COOKIES
     COOKIEBANNER = config.COOKIEBANNER
     SESSION_COOKIE_AGE = config.SESSION_COOKIE_AGE
+    SESSION_COOKIE_SECURE = config.SESSION_COOKIE_SECURE
     CSRF_COOKIE_AGE = config.CSRF_COOKIE_AGE
+    CSRF_COOKIE_HTTPONLY = config.CSRF_COOKIE_HTTPONLY
+    CSRF_COOKIE_SECURE = config.CSRF_COOKIE_SECURE
+
 
 except AttributeError as e:
     print("Please check you configuration file for the missing configuration variable:")
