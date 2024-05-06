@@ -39,7 +39,7 @@ from .models import (
     Score,
     User,
 )
-from .settings import COOKIEBANNER
+from .settings import COOKIEBANNER, COOKIEBANNER_AGE, COOKIEBANNER_SECURE
 from .viewLogic import (
     get_allowed_resources_ids,
     get_questions_success_rate,
@@ -65,10 +65,22 @@ def index(request):
         request.session["user_uuid"] = user_uuid_param
         return HttpResponseRedirect("/dashboard")
     levels = Level.objects.order_by("index")
+    cookiebanner_value = request.COOKIES.get("cookiebanner", None)
     context = {
+        "cookiebanner": True if cookiebanner_value is not None else False,
         "levels": levels,
     }
-    return render(request, "landing.html", context=context)
+    response = render(request, "landing.html", context=context)
+    if cookiebanner_value:
+        response.set_cookie(
+            "cookiebanner",
+            cookiebanner_value,
+            samesite="lax",
+            max_age=COOKIEBANNER_AGE,
+            secure=COOKIEBANNER_SECURE,
+            httponly=True,
+        )
+    return response
 
 
 @handle_template_not_found
