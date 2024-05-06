@@ -71,10 +71,10 @@ def index(request):
         "levels": levels,
     }
     response = render(request, "landing.html", context=context)
-    if cookiebanner_value:
+    if cookiebanner_value and "__temp__" in cookiebanner_value:
         response.set_cookie(
             "cookiebanner",
-            cookiebanner_value,
+            cookiebanner_value.replace("__temp__", ""),
             samesite="lax",
             max_age=COOKIEBANNER_AGE,
             secure=COOKIEBANNER_SECURE,
