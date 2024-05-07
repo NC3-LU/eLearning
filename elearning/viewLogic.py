@@ -580,9 +580,16 @@ def get_questions_success_rate(request: HttpRequest) -> LevelSequence:
                 sum_correct_answers += sum(
                     x == y for x, y in zip(correct_sorting, user_answerchoices)
                 )
-            ls["success_rate"] = sum_correct_answers / (
-                ls["nb_answers"] * ls["total_correct_question_answers"]
-            )
+
+            if (
+                ls["nb_answers"] is not None
+                and ls["total_correct_question_answers"] is not None
+            ):
+                ls["success_rate"] = sum_correct_answers / (
+                    ls["nb_answers"] * ls["total_correct_question_answers"]
+                )
+            else:
+                ls["success_rate"] = 0
 
         ls.pop("nb_answers")
         ls.pop("total_correct_question_answers")
