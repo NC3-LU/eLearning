@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.urls import include, path
 from django.views.i18n import set_language
 
@@ -61,6 +62,8 @@ urlpatterns = [
     path("resources_download/", views.resources_download, name="resources_download"),
     #   Report Download
     path("report/", views.report, name="report"),
+    #   Certificate Download
+    path("certificate/", views.certificate, name="certificate"),
 ]
 
 if DEBUG:

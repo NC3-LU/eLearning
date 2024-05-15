@@ -596,3 +596,22 @@ def get_questions_success_rate(request: HttpRequest) -> LevelSequence:
         ls.pop("question_type")
 
     return average_success_by_question_list
+
+
+def get_certificate_pdf(request: HttpRequest, user: User) -> bytes:
+    html_string = render_to_string(
+        "certificate/template.html",
+        {
+            "static_theme_dir": os.path.abspath(settings.STATIC_THEME_DIR),
+            "user_id": user.uuid,
+        },
+        request=request,
+    )
+
+    htmldoc = HTML(string=html_string)
+    stylesheets = [
+        CSS(os.path.join(settings.STATIC_THEME_DIR, "css/custom.css")),
+        CSS(os.path.join(settings.STATIC_THEME_DIR, "css/certificate.css")),
+    ]
+
+    return htmldoc.write_pdf(stylesheets=stylesheets)

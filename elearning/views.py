@@ -42,6 +42,7 @@ from .models import (
 from .settings import COOKIEBANNER, COOKIEBANNER_AGE, COOKIEBANNER_SECURE
 from .viewLogic import (
     get_allowed_resources_ids,
+    get_certificate_pdf,
     get_questions_success_rate,
     get_quiz_order,
     get_report_pdf,
@@ -615,5 +616,17 @@ def report(request):
 
     response = HttpResponse(pdf_report, content_type="application/pdf")
     response["Content-Disposition"] = "attachment;filename=Report.pdf"
+
+    return response
+
+
+@user_uuid_required
+def certificate(request):
+    user = get_user_from_request(request)
+
+    pdf_certificate = get_certificate_pdf(request, user)
+
+    response = HttpResponse(pdf_certificate, content_type="application/pdf")
+    response["Content-Disposition"] = "attachment;filename=Certificate_DAAZ.pdf"
 
     return response
