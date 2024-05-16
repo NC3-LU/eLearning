@@ -59,3 +59,11 @@ def duration(td):
     seconds_str = f"{seconds}s" if seconds and not hours_str else ""
 
     return f"{days_str}{hours_str}{minutes_str}{seconds_str}"
+
+
+@register.filter
+def accumulate_quiz_index(value, arg):
+    try:
+        return (int(value) * 4 - 4) + int(arg)
+    except (ValueError, TypeError):
+        return ""
