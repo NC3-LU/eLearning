@@ -398,7 +398,7 @@ def get_resources(user: User, resource_type_id: int, level_id: int):
     queryset = Resource.objects.all()
 
     if level_id:
-        queryset = Resource.objects.filter(level__id=level_id)
+        queryset = Resource.objects.filter(level__id__lte=level_id)
     if resource_type_id:
         queryset = Resource.objects.filter(resourceType_id=resource_type_id)
 
