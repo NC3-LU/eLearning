@@ -41,11 +41,11 @@ from .models import (
 )
 from .settings import COOKIEBANNER, COOKIEBANNER_AGE, COOKIEBANNER_SECURE
 from .viewLogic import (
-    get_allowed_resources_ids,
     get_certificate_pdf,
     get_questions_success_rate,
     get_quiz_order,
     get_report_pdf,
+    get_resources,
     get_slides_content,
     get_user_from_request,
     set_knowledge_course,
@@ -514,24 +514,7 @@ def resources_download(request):
     user = get_user_from_request(request)
     resource_type_id = request.GET.get("resource_type")
     level_id = request.GET.get("level")
-    resources = Resource.objects.all().order_by("level", "resourceType")
-
-    if resource_type_id:
-        resources = resources.filter(resourceType=resource_type_id)
-
-    if level_id:
-        resources = resources.filter(level=level_id)
-
-    allowed_resources_ids = get_allowed_resources_ids(user)
-
-    resources = resources.annotate(
-        disabled=Case(
-            When(id__in=allowed_resources_ids, then=Value(False)),
-            default=Value(True),
-            output_field=BooleanField(),
-        )
-    )
-
+    resources = get_resources(user, resource_type_id, level_id)
     ResourceFormSet = formset_factory(ResourceDownloadForm, extra=0)
 
     if request.method == "POST":
@@ -545,11 +528,16 @@ def resources_download(request):
             for index, _form in enumerate(formset):
                 checkbox_name = f"resources-{index}-resource"
                 if checkbox_name in request.POST:
-                    selected_resources_ids.append(request.POST.get(checkbox_name))
+                    selected_resources_ids.append(int(request.POST.get(checkbox_name)))
 
-        resources_selected = resources.filter(id__in=selected_resources_ids)
+        if selected_resources_ids is not None:
+            resources_selected = [
+                resource
+                for resource in resources
+                if resource.id in selected_resources_ids
+            ]
 
-        if resources_selected.count() > 1:
+        if len(resources_selected) > 1:
             zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
                 for resource in resources_selected:
@@ -562,8 +550,8 @@ def resources_download(request):
             )
             response["Content-Disposition"] = 'attachment; filename="resources.zip"'
 
-        elif resources_selected.count() == 1:
-            resource = resources_selected.first()
+        elif len(resources_selected) == 1:
+            resource = resources_selected[0]
             content_type, _ = mimetypes.guess_type(resource.path)
             file_name_temp, file_extension = os.path.splitext(resource.path)
             file_name = f"{resource.name}{file_extension}"
@@ -582,17 +570,6 @@ def resources_download(request):
             initial=[{"resource": resource} for resource in resources],
             prefix="resources",
         )
-
-    for form in formset:
-        if form.resource_type.index == 1:
-            form.icon_class = "text-warning"
-        elif form.resource_type.index == 2:
-            form.icon_class = "text-primary"
-        elif form.resource_type.index == 3:
-            form.icon_class = "text-blue-dark"
-
-        if form.fields["resource"].disabled:
-            form.icon_class = "text-secondary"
 
     return render(request, "modals/resources_download.html", {"formset": formset})
 

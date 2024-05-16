@@ -6,7 +6,7 @@ from uuid import UUID
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import (  # BooleanField,; Window,
+from django.db.models import (
     Case,
     Count,
     Exists,
@@ -14,6 +14,7 @@ from django.db.models import (  # BooleanField,; Window,
     F,
     FloatField,
     OuterRef,
+    Prefetch,
     Q,
     QuerySet,
     Subquery,
@@ -21,8 +22,6 @@ from django.db.models import (  # BooleanField,; Window,
     Value,
     When,
 )
-
-# from django.db.models.functions import Cast, Rank
 from django.db.models.functions import Cast
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -44,6 +43,7 @@ from .models import (
     Question,
     QuestionAnswerChoice,
     QuizQuestion,
+    Resource,
     Score,
     User,
 )
@@ -378,7 +378,7 @@ def set_status_carousel_controls(level: Level, position: int) -> List[bool]:
     return [previous_control_enable, next_control_enable]
 
 
-def get_allowed_resources_ids(user: User) -> List:
+def get_resources(user: User, resource_type_id: int, level_id: int):
     context_content_type = ContentType.objects.get_for_model(Context)
     contextResource_subquery = ContextResourceTemplate.objects.filter(
         context_id=OuterRef("object_id")
@@ -386,30 +386,49 @@ def get_allowed_resources_ids(user: User) -> List:
 
     context_sequences = LevelSequence.objects.filter(
         content_type=context_content_type,
-        level__lte=user.current_level,
         object_id__in=Subquery(contextResource_subquery),
+    ).order_by("level_id", "position")
+
+    resources_prefetch = Prefetch(
+        "content_object__resources",
+        queryset=Resource.objects.all().distinct(),
+        to_attr="resources_prefetch",
     )
 
-    allowed_resources_set = set()
+    queryset = Resource.objects.all()
 
-    if not user.current_level:
-        return list(allowed_resources_set)
+    if level_id:
+        queryset = Resource.objects.filter(level__id=level_id)
+    if resource_type_id:
+        queryset = Resource.objects.filter(resourceType_id=resource_type_id)
+
+    resources_prefetch = Prefetch(
+        "content_object__resources",
+        queryset=queryset.distinct(),
+        to_attr="resources_prefetch",
+    )
+
+    context_sequences = context_sequences.prefetch_related(resources_prefetch)
+
+    all_resources = []
 
     for sequence in context_sequences:
-        if (
-            sequence.level == user.current_level
-            and user.current_position
-            and sequence.position <= user.current_position
-        ):
-            allowed_resources_set.update(
-                sequence.content_object.resources.values_list("id", flat=True)
+        resources = sequence.content_object.resources_prefetch
+        disabled = (
+            False
+            if (
+                sequence.level == user.current_level
+                and user.current_position
+                and sequence.position <= user.current_position
             )
-        elif sequence.level.index < user.current_level.index:
-            allowed_resources_set.update(
-                sequence.content_object.resources.values_list("id", flat=True)
-            )
+            else True
+        )
 
-    return list(allowed_resources_set)
+        for resource in resources:
+            resource.disabled = disabled
+            all_resources.append(resource)
+
+    return all_resources
 
 
 def get_questions_and_quizzes(user: User, level: Level) -> List:

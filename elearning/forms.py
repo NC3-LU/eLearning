@@ -148,6 +148,15 @@ class ResourceDownloadForm(forms.Form):
             self.fields["resource"].label = initial["resource"].name
             self.fields["resource"].widget.attrs["value"] = initial["resource"].id
             self.fields["resource"].disabled = initial["resource"].disabled
+            if self.resource_type.index == 1:
+                self.icon_class = "text-warning"
+            elif self.resource_type.index == 2:
+                self.icon_class = "text-primary"
+            elif self.resource_type.index == 3:
+                self.icon_class = "text-blue-dark"
+
+            if self.fields["resource"].disabled:
+                self.icon_class = "text-secondary"
 
 
 class inputUserUUIDForm(forms.Form):
