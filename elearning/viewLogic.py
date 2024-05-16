@@ -384,7 +384,7 @@ def get_resources(user: User, resource_type_id: int, level_id: int):
         context_id=OuterRef("object_id")
     ).values("context_id")
 
-    context_sequences = LevelSequence.objects.filter(
+    all_context_sequences = LevelSequence.objects.filter(
         content_type=context_content_type,
         object_id__in=Subquery(contextResource_subquery),
     ).order_by("level_id", "position")
@@ -398,7 +398,7 @@ def get_resources(user: User, resource_type_id: int, level_id: int):
     queryset = Resource.objects.all()
 
     if level_id:
-        queryset = Resource.objects.filter(level__id__lte=level_id)
+        queryset = Resource.objects.filter(level__id=level_id)
     if resource_type_id:
         queryset = Resource.objects.filter(resourceType_id=resource_type_id)
 
@@ -408,24 +408,27 @@ def get_resources(user: User, resource_type_id: int, level_id: int):
         to_attr="resources_prefetch",
     )
 
-    context_sequences = context_sequences.prefetch_related(resources_prefetch)
+    context_sequences_filtered = all_context_sequences.prefetch_related(
+        resources_prefetch
+    )
+
+    def is_disabled(sequence):
+        if (
+            sequence.level == user.current_level
+            and user.current_position
+            and sequence.position <= user.current_position
+        ):
+            return False
+        elif sequence.level.index < user.current_level.index:
+            return False
+        return True
 
     all_resources = []
 
-    for sequence in context_sequences:
+    for sequence in context_sequences_filtered:
         resources = sequence.content_object.resources_prefetch
-        disabled = (
-            False
-            if (
-                sequence.level == user.current_level
-                and user.current_position
-                and sequence.position <= user.current_position
-            )
-            else True
-        )
-
         for resource in resources:
-            resource.disabled = disabled
+            resource.disabled = is_disabled(sequence)
             all_resources.append(resource)
 
     return all_resources
