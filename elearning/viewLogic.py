@@ -1,5 +1,6 @@
 import os
 from collections import Counter, OrderedDict
+from decimal import ROUND_HALF_UP, Decimal
 from typing import List
 from uuid import UUID
 
@@ -331,10 +332,13 @@ def get_quiz_order(level: Level) -> OrderedDict:
         total_nb_questions_before, count_before = items_before_position(
             quiz_ordered, quiz["position"]
         )
-
-        quiz["percentage"] = (
-            (quiz["position"] - total_nb_questions_before + count_before) / total_slides
+        percentage = (
+            Decimal(quiz["position"] - total_nb_questions_before + count_before)
+            / Decimal(total_slides)
         ) * 100
+        quiz["percentage"] = percentage.quantize(
+            Decimal("1.00"), rounding=ROUND_HALF_UP
+        )
     return quiz_ordered
 
 
