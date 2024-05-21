@@ -326,7 +326,11 @@ def course(request):
                 level_reviewed, position_level_reviewed
             )
 
-            user_score = user.score_set.get(level=level_reviewed)
+            try:
+                user_score = user.score_set.get(level=level_reviewed)
+            except Score.DoesNotExist:
+                messages.warning(request, _("No data available to review the level"))
+                return HttpResponseRedirect(reverse("dashboard"))
 
             context = {
                 "previous_control_enable": previous_control_enable,

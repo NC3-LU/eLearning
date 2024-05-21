@@ -4,7 +4,6 @@ from typing import List
 from uuid import UUID
 
 from django.conf import settings
-from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import (
     Case,
@@ -27,7 +26,6 @@ from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
 from weasyprint import CSS, HTML
 
 from .forms import AnswerForm
@@ -64,10 +62,6 @@ def set_next_level_user(request: HttpRequest, user: User) -> None:
     next_level = Level.objects.filter(index__gt=current_index).order_by("index").first()
 
     if not next_level:
-        messages.success(
-            request,
-            _("Congratulations! You have completed all available levels."),
-        )
         return HttpResponseRedirect(reverse("dashboard"))
 
     user.current_level = next_level
