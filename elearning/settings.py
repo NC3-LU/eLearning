@@ -37,11 +37,7 @@ try:
 
     ALLOWED_HOSTS = config.ALLOWED_HOSTS
     PUBLIC_URL = config.PUBLIC_URL
-    HOST_CONTACT = config.HOST_CONTACT
     SITE_NAME = config.SITE_NAME
-
-    EMAIL_HOST = config.EMAIL_HOST
-    EMAIL_PORT = config.EMAIL_PORT
 
     # Medias
     MEDIA_DIR = os.path.join(BASE_DIR, config.MEDIA_DIR)

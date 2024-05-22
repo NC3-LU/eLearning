@@ -4,21 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 PUBLIC_URL = ""
 ALLOWED_HOSTS = ["127.0.0.1", locals().get("PUBLIC_URL", "")]
-HOST_CONTACT = {
-    "name": "Organization Name",
-    "street": "Organization Street",
-    "zip_code": "Organization Zip Code",
-    "country": "Organization Country",
-    "phone": "Organization Phone Number",
-    "website": "https://www.example.org",
-    "contact_email": "contact@example.org",
-    "privacy_email": "privacy@exemple.org",
-    "tos_url": None,  # "https://www.example.org/tos"
-    "privacy_policy_url": None,  # "https://www.example.org/privacy_policy"
-    "contact_url": None,  # "https://www.example.org/contact_us"
-}
 
-# The generic site/tool name. Used to load specific config, templates, styles, logo.
+# The generic site/tool name.
 SITE_NAME = "E-Learning Platform"
 
 SECRET_KEY = "django-insecure-1*nt5exfgm+po13ngrz7fm5sitfvi24f!13t=z*l5zz*w9zic$"
@@ -46,9 +33,6 @@ CORS_ALLOW_METHODS = [
     "GET",
     "OPTIONS",
 ]
-
-EMAIL_HOST = "localhost"
-EMAIL_PORT = 25
 
 # Logging mechanism
 LOG_DIRECTORY = "./logs"
