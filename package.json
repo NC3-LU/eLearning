@@ -18,8 +18,8 @@
     "sass": "^1.66.1"
   },
   "engines": {
-    "node": "16.x",
-    "npm": "8.19.2"
+    "node": "20.x",
+    "npm": "10.5.2"
   },
   "scripts": {
     "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/'), 'static/npm_components', 'junction') } catch (e) { }\"",
