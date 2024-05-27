@@ -526,7 +526,8 @@ def get_questions_success_rate(request: HttpRequest) -> LevelSequence:
     )
 
     question_categories_subquery = Question.categories.through.objects.filter(
-        question_id=OuterRef("object_id")
+        question_id=OuterRef("object_id"),
+        category__translations__language_code=request.LANGUAGE_CODE,
     ).values("category__translations__name")
 
     quiz_id_subquery = QuizQuestion.objects.filter(
