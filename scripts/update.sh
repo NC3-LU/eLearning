@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
 # Define usage message
 usage() {
     echo "Usage: $0 [options]"
@@ -66,16 +70,23 @@ collect_static_files() {
     poetry run python manage.py collectstatic --no-input > /dev/null 2>&1
 }
 
+# Function to update finish
+update_finished() {
+    echo "--- Update finished ---"
+    echo -e "${GREEN}You can now restart the service.${NC} Example:"
+    echo "    sudo systemctl restart apache2.service"
+}
+
 
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        -u|--update-repositories) update_repositories; shift ;;
-        -npm|--update-npm-packages) update_npm_packages; shift ;;
-        -p|--update-python-packages) update_python_packages; shift ;;
-        -m|--migrate-database) migrate_database; shift ;;
-        -c|--compile-translations) compile_translations; shift ;;
-        -s|--collect-static) collect_static_files; shift ;;
+        -u|--update-repositories) update_repositories; update_finished; shift ;;
+        -npm|--update-npm-packages) update_npm_packages; update_finished; shift ;;
+        -p|--update-python-packages) update_python_packages; update_finished; shift ;;
+        -m|--migrate-database) migrate_database; update_finished; shift ;;
+        -c|--compile-translations) compile_translations; update_finished; shift ;;
+        -s|--collect-static) collect_static_files; update_finished; shift ;;
         -a|--update-all)
             update_repositories
             update_npm_packages
@@ -83,6 +94,7 @@ while [[ "$#" -gt 0 ]]; do
             migrate_database
             compile_translations
             collect_static_files
+            update_finished
             exit 0
             ;;
         --help) usage ;;
