@@ -9,14 +9,14 @@
 # -- Path setup --------------------------------------------------------------
 
 
-import os
-import sys
+# import os
+# import sys
 
-import django
+# import django
 
-sys.path.insert(0, os.path.abspath(".."))
-os.environ["DJANGO_SETTINGS_MODULE"] = "elearning.settings"
-django.setup()
+# sys.path.insert(0, os.path.abspath(".."))
+# os.environ["DJANGO_SETTINGS_MODULE"] = "elearning.settings"
+# django.setup()
 
 project = "NC3 E-Learning Platform"
 copyright = "2024, NC3 Team <info@nc3.lu>"
