@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.contenttypes.admin import GenericTabularInline
@@ -54,7 +55,7 @@ admin_site = CustomAdminSite()
 
 
 @admin.register(User, site=admin_site)
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(BaseUserAdmin):
     list_display = [
         "username",
         "first_name",
@@ -84,6 +85,36 @@ class UserAdmin(admin.ModelAdmin):
             },
         ),
     ]
+
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "username",
+                    "email",
+                    "password1",
+                    "password2",
+                ),
+            },
+        ),
+        (
+            "Advanced Permissions",
+            {
+                "classes": ["collapse"],
+                "fields": [
+                    "is_superuser",
+                    "is_staff",
+                    "is_active",
+                    "groups",
+                    "user_permissions",
+                ],
+            },
+        ),
+    )
 
 
 class LevelsResource(TranslationImportMixin, resources.ModelResource):
