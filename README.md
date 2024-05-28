@@ -1,103 +1,33 @@
 # NC3 E-Learning Platform
 
+[![Latest release](https://img.shields.io/github/release/informed-governance-project/NISINP.svg?style=flat-square)](https://github.com/informed-governance-project/NISINP/releases/latest)
+[![License](https://img.shields.io/github/license/informed-governance-project/NISINP.svg?style=flat-square)](https://www.gnu.org/licenses/agpl-3.0.html)
+[![Contributors](https://img.shields.io/github/contributors/informed-governance-project/NISINP.svg?style=flat-square)](https://github.com/informed-governance-project/NISINP/graphs/contributors)
+[![Stars](https://img.shields.io/github/stars/informed-governance-project/NISINP.svg?style=flat-square)](https://github.com/informed-governance-project/NISINP/stargazers)
+[![Workflow](https://github.com/informed-governance-project/NISINP/workflows/Python%20application%20tests/badge.svg?style=flat-square)](https://github.com/informed-governance-project/NISINP/actions?query=workflow%3A%22Python+application+tests%22)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Documentation Status](https://readthedocs.org/projects/nisinp/badge/?version=latest)](https://nisinp.readthedocs.io/en/latest/?badge=latest)
+
 ## Description
 
-Welcome to the E-Learning Project repository! This Django-based project provides an extensive platform for online learning management. It integrates various features essential for e-learning systems including user management, course creation, and interactive learning tools.
+E-Learning Platform  is an open source software solution integrating various features essential for e-learning systems including user management, course creation, and interactive learning tools.
 
-## Prerequisites
+This project is lead by [NC3-LU](https://www.nc3.lu).
+Developed in partnership with [CNPD](https://cnpd.public.lu/en.html) and co-funded by the European Union as part of the [ALTO Project](https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/how-to-participate/org-details/999999999/project/101074915/program/43251589/details)
 
-Before you begin, ensure you have met the following requirements:
+## Documentation
 
-- Python 3.11
-- PostgreSQL
-- Poetry for dependency management
+A documentation is available [here](https://elearning.readthedocs.io).
+You can download the
+[PDF version](https://elearning.readthedocs.io/_/downloads/en/latest/pdf/).
 
-## Installation
 
-Follow these steps to get your development environment running:
+## Contributing
 
-### 1. Clone the Repository
+Please read the [CONTRIBUTING](CONTRIBUTING.md) instructions.
 
-```bash
-git clone https://github.com/NC3-LU/eLearning.git
-cd eLearning
-```
-
-### 2. Initialize and Update Submodules
-
-The project uses a Git submodule to manage the template. Initialize and update the submodule with the following commands:
-
-```bash
-git submodule init theme
-git submodule update
-```
-
-### 3. Install Dependencies with Poetry
-
-```bash
-poetry install
-```
-
-### 4. Activate the Poetry Environment
-
-```bash
-poetry shell
-```
-
-### 5. Setup PostgreSQL Database
-
-```bash
-sudo -u postgres createdb $DB_NAME
-sudo -u postgres psql -c "alter user $DB_USER with encrypted password '$DB_PASSWORD';" > /dev/null
-sudo -u postgres psql -c "grant all privileges on database $DB_NAME to $DB_USER;" > /dev/null
-```
-
-Replace $DB_NAME with your database name, $DB_USER with your database username, and $DB_PASSWORD with your database password.
-
-### 6. Configure the Project
-
-Modify the config.py or config_dev.py file in the eLearning directory with your database settings and other configurations:
-
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'elearning_db',
-        'USER': 'your_username',
-        'PASSWORD': 'your_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-```
-
-### 7. Install Node Packages
-
-```bash
-npm install
-```
-
-### 8. Run Migrations
-
-```bash
-python manage.py migrate
-```
-
-### 9. Start the Development Server
-
-```bash
-python manage.py runserver
-```
-
-The development server will start at `http://127.0.0.1:8000/`.
-
-## Usage
-
-Once you have set up the project, you can:
-
-- Access the admin panel at `http://127.0.0.1:8000/admin`.
-- Create and manage courses and users through the admin panel.
 
 ## License
 
-This software is licensed under the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
+This software is licensed under
+[GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html)
