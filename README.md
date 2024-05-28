@@ -1,12 +1,12 @@
 # NC3 E-Learning Platform
 
-[![Latest release](https://img.shields.io/github/release/informed-governance-project/NISINP.svg?style=flat-square)](https://github.com/informed-governance-project/NISINP/releases/latest)
-[![License](https://img.shields.io/github/license/informed-governance-project/NISINP.svg?style=flat-square)](https://www.gnu.org/licenses/agpl-3.0.html)
-[![Contributors](https://img.shields.io/github/contributors/informed-governance-project/NISINP.svg?style=flat-square)](https://github.com/informed-governance-project/NISINP/graphs/contributors)
-[![Stars](https://img.shields.io/github/stars/informed-governance-project/NISINP.svg?style=flat-square)](https://github.com/informed-governance-project/NISINP/stargazers)
-[![Workflow](https://github.com/informed-governance-project/NISINP/workflows/Python%20application%20tests/badge.svg?style=flat-square)](https://github.com/informed-governance-project/NISINP/actions?query=workflow%3A%22Python+application+tests%22)
+[![Latest release](https://img.shields.io/github/release/NC3-LU/eLearning.svg?style=flat-square)](https://github.com/NC3-LU/eLearning/releases/latest)
+[![License](https://img.shields.io/github/license/NC3-LU/eLearning.svg?style=flat-square)](https://www.gnu.org/licenses/agpl-3.0.html)
+[![Contributors](https://img.shields.io/github/contributors/NC3-LU/eLearning.svg?style=flat-square)](https://github.com/NC3-LU/eLearning/graphs/contributors)
+[![Stars](https://img.shields.io/github/stars/NC3-LU/eLearning.svg?style=flat-square)](https://github.com/NC3-LU/eLearning/stargazers)
+[![Workflow](https://github.com/NC3-LU/eLearning/workflows/Python%20application%20tests/badge.svg?style=flat-square)](https://github.com/NC3-LU/eLearning/actions?query=workflow%3A%22Python+application+tests%22)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![Documentation Status](https://readthedocs.org/projects/nisinp/badge/?version=latest)](https://nisinp.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/elearning/badge/?version=latest)](https://elearning.readthedocs.io/en/latest/?badge=latest)
 
 ## Description
 
