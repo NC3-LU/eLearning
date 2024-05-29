@@ -14,6 +14,7 @@ NC3 E-Learning Platform
    prerequisites
    installation
    update
+   populating_db
 
 
 Presentation

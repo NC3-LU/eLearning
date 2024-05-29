@@ -121,6 +121,12 @@ For the Django secret key (``SECRET_KEY``), you can for example do:
     9cf5c7b13e469e6f6a9403b33410589031cfe927df6471a1cbdef1d4deb57c37
 
 
+Populating the DB
+-----------------
+
+If you want to populate the database with an existing data, see the :doc:`populating_db` documentation
+
+
 Launch the Django application
 -----------------------------
 
