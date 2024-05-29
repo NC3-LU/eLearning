@@ -11,13 +11,13 @@ All you have to do is:
 .. code-block:: bash
 
     $ cd <install_path>
-    $ bash scripts/update.sh -a
+    $ ./scripts/update.sh -a
 
-Usage: ``bash scripts/update.sh --help``
+Usage: ``./scripts/update.sh --help``
 
 .. code-block:: bash
 
-    $ bash scripts/update.sh --help
+    $ ./scripts/update.sh --help
     Usage: scripts/update.sh [options]
     Options:
     -u, --update-repositories   Update git repositories
