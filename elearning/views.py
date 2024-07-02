@@ -154,6 +154,9 @@ def accessibility(request):
 
 @handle_template_not_found
 def stats(request):
+    levels_qs = Level.objects.order_by("index")
+    first_level = levels_qs.first()
+    last_level = levels_qs.last()
     users_qs = User.objects.filter(
         current_level__translations__language_code=request.LANGUAGE_CODE
     )
@@ -162,6 +165,14 @@ def stats(request):
     )
     questions_success_rate = get_questions_success_rate(request)
     global_total_users = users_qs.count()
+    completed_users_count = score_qs.filter(
+        level_id=last_level.id, progress=100
+    ).aggregate(count=Count("id"))["count"]
+
+    if global_total_users > 0:
+        completion_rate = (completed_users_count / global_total_users) * 100
+    else:
+        completion_rate = 0
     global_avg_score = score_qs.aggregate(avg_score=Avg("score"))["avg_score"]
     avg_score_and_progress_by_level = list(
         score_qs.values("level__translations__name", "level__index")
@@ -175,7 +186,6 @@ def stats(request):
         )
         .values("level_index", "level_name", "avg_score", "avg_progress", "count")
     )
-    first_level = Level.objects.order_by("index").first()
 
     users_by_date = list(
         users_qs.annotate(
@@ -248,6 +258,7 @@ def stats(request):
     context = {
         "questions_success_rate": questions_success_rate,
         "global_total_users": global_total_users,
+        "completion_rate": completion_rate,
         "global_avg_score": global_avg_score,
         "global_avg_duration": global_avg_duration,
         "avg_score_and_progress_by_level": avg_score_and_progress_by_level,
