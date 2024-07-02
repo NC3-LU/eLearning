@@ -170,9 +170,9 @@ def stats(request):
     ).aggregate(count=Count("id"))["count"]
 
     if global_total_users > 0:
-        completion_rate = (completed_users_count / global_total_users) * 100
+        course_completion_rate = (completed_users_count / global_total_users) * 100
     else:
-        completion_rate = 0
+        course_completion_rate = 0
     global_avg_score = score_qs.aggregate(avg_score=Avg("score"))["avg_score"]
     avg_score_and_progress_by_level = list(
         score_qs.values("level__translations__name", "level__index")
@@ -258,7 +258,7 @@ def stats(request):
     context = {
         "questions_success_rate": questions_success_rate,
         "global_total_users": global_total_users,
-        "completion_rate": completion_rate,
+        "course_completion_rate": course_completion_rate,
         "global_avg_score": global_avg_score,
         "global_avg_duration": global_avg_duration,
         "avg_score_and_progress_by_level": avg_score_and_progress_by_level,
