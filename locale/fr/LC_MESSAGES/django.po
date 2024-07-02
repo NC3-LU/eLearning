@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-15 08:15+0000\n"
+"POT-Creation-Date: 2024-07-02 13:31+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,61 +18,61 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: elearning/admin.py:243 elearning/models.py:33
+#: elearning/admin.py:274 elearning/models.py:33
 msgid "Level"
 msgstr ""
 
-#: elearning/config.py:112 elearning/config_dev.py:113
+#: elearning/config.py:96 elearning/config_dev.py:97
 msgid "Cookie settings"
 msgstr ""
 
-#: elearning/config.py:116 elearning/config_dev.py:117
+#: elearning/config.py:100 elearning/config_dev.py:101
 msgid "Essential"
 msgstr ""
 
-#: elearning/config.py:118 elearning/config_dev.py:119
+#: elearning/config.py:102 elearning/config_dev.py:103
 msgid ""
 "This website uses cookies and other similar technologies strictly "
 "necessary                 for its operation, without the use of personal "
 "data."
 msgstr ""
 
-#: elearning/config.py:124 elearning/config_dev.py:125
+#: elearning/config.py:108 elearning/config_dev.py:109
 msgid "Meta cookie for the cookies that are set."
 msgstr ""
 
-#: elearning/config.py:125 elearning/config.py:131 elearning/config_dev.py:126
-#: elearning/config_dev.py:132
+#: elearning/config.py:109 elearning/config.py:115 elearning/config_dev.py:110
+#: elearning/config_dev.py:116
 msgid "Accepted cookies"
 msgstr ""
 
-#: elearning/config.py:126 elearning/config.py:140 elearning/config.py:146
-#: elearning/config_dev.py:127 elearning/config_dev.py:141
-#: elearning/config_dev.py:147
+#: elearning/config.py:110 elearning/config.py:124 elearning/config.py:130
+#: elearning/config_dev.py:111 elearning/config_dev.py:125
+#: elearning/config_dev.py:131
 msgid "6 months"
 msgstr ""
 
-#: elearning/config.py:130 elearning/config_dev.py:131
+#: elearning/config.py:114 elearning/config_dev.py:115
 msgid "Meta cookie for user language settings"
 msgstr ""
 
-#: elearning/config.py:132 elearning/config_dev.py:133
+#: elearning/config.py:116 elearning/config_dev.py:117
 msgid "Session"
 msgstr ""
 
-#: elearning/config.py:137 elearning/config_dev.py:138
+#: elearning/config.py:121 elearning/config_dev.py:122
 msgid "This cookie prevents Cross-Site-Request-Forgery attacks."
 msgstr ""
 
-#: elearning/config.py:139 elearning/config_dev.py:140
+#: elearning/config.py:123 elearning/config_dev.py:124
 msgid "Token"
 msgstr ""
 
-#: elearning/config.py:144 elearning/config_dev.py:145
+#: elearning/config.py:128 elearning/config_dev.py:129
 msgid "This cookie is necessary for user options"
 msgstr ""
 
-#: elearning/config.py:145 elearning/config_dev.py:146
+#: elearning/config.py:129 elearning/config_dev.py:130
 msgid "session ID"
 msgstr ""
 
@@ -232,34 +232,10 @@ msgstr ""
 msgid "Quiz Questions"
 msgstr ""
 
-#: elearning/viewLogic.py:69
-msgid "Congratulations! You have completed all available levels."
+#: elearning/views.py:343
+msgid "No data available to review the level"
 msgstr ""
 
-#: elearning/views.py:396 elearning/views.py:482
+#: elearning/views.py:411 elearning/views.py:497
 msgid "No data available to start the level"
-msgstr ""
-
-#: templates/admin/base_site.html:8
-msgid "Django administration"
-msgstr ""
-
-#: templates/home/privacy_policy.html:87
-msgid "Name"
-msgstr ""
-
-#: templates/home/privacy_policy.html:88
-msgid "Description"
-msgstr ""
-
-#: templates/home/privacy_policy.html:89
-msgid "Content"
-msgstr ""
-
-#: templates/home/privacy_policy.html:90
-msgid "Maximum term"
-msgstr ""
-
-#: templates/registration/base.html:13
-msgid "Log in"
 msgstr ""
