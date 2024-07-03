@@ -28,6 +28,8 @@ urlpatterns = [
     path("", views.index, name="index"),
     # Admin
     path("admin/", admin_site.urls),
+    # Accounts
+    path("accounts/", include("django.contrib.auth.urls")),
     # Language Selector
     path("set-language/", set_language, name="set_language"),
     #   Start Modal

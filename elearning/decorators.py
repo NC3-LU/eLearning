@@ -1,7 +1,9 @@
 from functools import wraps
 from uuid import UUID
 
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
 from django.template import TemplateDoesNotExist
@@ -47,3 +49,16 @@ def handle_template_not_found(view_func):
             raise Http404
 
     return wrapped_view
+
+
+def stats_login_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if getattr(settings, "ALLOW_ANONYMOUS_STATS_ACCESS", False):
+            return view_func(request, *args, **kwargs)
+        else:
+            return user_passes_test(
+                lambda u: u.is_authenticated, login_url=settings.LOGIN_URL
+            )(view_func)(request, *args, **kwargs)
+
+    return _wrapped_view

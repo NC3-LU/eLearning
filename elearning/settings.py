@@ -26,6 +26,9 @@ try:
     SECRET_KEY = config.SECRET_KEY
     HASH_KEY = config.HASH_KEY
 
+    # STATS ACCESS
+    ALLOW_ANONYMOUS_STATS_ACCESS = config.ALLOW_ANONYMOUS_STATS_ACCESS
+
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = config.DEBUG
     LOGGING = config.LOGGING
@@ -185,7 +188,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 LOGOUT_REDIRECT_URL = "/"
-LOGIN_URL = "/account/login"
+LOGIN_URL = "/accounts/login"
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

@@ -34,6 +34,9 @@ CORS_ALLOW_METHODS = [
     "OPTIONS",
 ]
 
+# Stats access
+ALLOW_ANONYMOUS_STATS_ACCESS = True
+
 # Logging mechanism
 LOG_DIRECTORY = "./logs"
 LOG_FILE = "django.log"

@@ -25,7 +25,11 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from .decorators import handle_template_not_found, user_uuid_required
+from .decorators import (
+    handle_template_not_found,
+    stats_login_required,
+    user_uuid_required,
+)
 from .forms import AnswerForm, ResourceDownloadForm, inputUserUUIDForm
 from .models import (
     Answer,
@@ -153,6 +157,7 @@ def accessibility(request):
 
 
 @handle_template_not_found
+@stats_login_required
 def stats(request):
     levels_qs = Level.objects.order_by("index")
     first_level = levels_qs.first()
