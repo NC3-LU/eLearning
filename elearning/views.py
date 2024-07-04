@@ -264,6 +264,7 @@ def stats(request):
         "questions_success_rate": questions_success_rate,
         "global_total_users": global_total_users,
         "course_completion_rate": course_completion_rate,
+        "completed_users_count": completed_users_count,
         "global_avg_score": global_avg_score,
         "global_avg_duration": global_avg_duration,
         "avg_score_and_progress_by_level": avg_score_and_progress_by_level,
