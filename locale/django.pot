@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-03 08:56+0000\n"
+"POT-Creation-Date: 2024-07-15 12:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -231,10 +231,10 @@ msgstr ""
 msgid "Quiz Questions"
 msgstr ""
 
-#: elearning/views.py:348
+#: elearning/views.py:349
 msgid "No data available to review the level"
 msgstr ""
 
-#: elearning/views.py:416 elearning/views.py:502
+#: elearning/views.py:417 elearning/views.py:503
 msgid "No data available to start the level"
 msgstr ""
