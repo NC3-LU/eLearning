@@ -37,6 +37,9 @@ CORS_ALLOW_METHODS = [
 # Stats access
 ALLOW_ANONYMOUS_STATS_ACCESS = True
 
+# Satisfaction survey URL
+SATISFACTION_SURVEY_URL = (None,)  # "https://www.example.org/survey"
+
 # Logging mechanism
 LOG_DIRECTORY = "./logs"
 LOG_FILE = "django.log"

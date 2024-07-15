@@ -45,6 +45,10 @@ try:
     # Medias
     MEDIA_DIR = os.path.join(BASE_DIR, config.MEDIA_DIR)
 
+    # Satisfaction Survey URL
+
+    SATISFACTION_SURVEY_URL = config.SATISFACTION_SURVEY_URL
+
     # SESSION COOKIES
     COOKIEBANNER = config.COOKIEBANNER
     SESSION_COOKIE_AGE = config.SESSION_COOKIE_AGE

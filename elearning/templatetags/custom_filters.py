@@ -67,3 +67,8 @@ def accumulate_quiz_index(value, arg):
         return (int(value) * 4 - 4) + int(arg)
     except (ValueError, TypeError):
         return ""
+
+
+@register.simple_tag
+def settings_value(name):
+    return getattr(settings, name, "")
