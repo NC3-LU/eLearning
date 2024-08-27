@@ -8,7 +8,7 @@ System packages
 
 .. code-block:: bash
 
-    $ sudo apt install gettext curl npm
+    $ sudo apt install gettext curl npm libpango-1.0-0 libpangoft2-1.0-0
 
 Poetry
 ------
@@ -48,7 +48,8 @@ Create a database, database user:
     ALTER ROLE
     postgres=# grant all privileges on database <database> to <username>;
     GRANT
-    postgres=#
+    postgres=# alter database <database> OWNER TO <username>;
+    ALTER DATABASE
 
 
 E-Learning Platform
