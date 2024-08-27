@@ -48,7 +48,7 @@ Create a database, database user:
     ALTER ROLE
     postgres=# grant all privileges on database <database> to <username>;
     GRANT
-    postgres=# alter database <database> OWNER TO <username>;
+    postgres=# alter database <database> owner to <username>;
     ALTER DATABASE
 
 
