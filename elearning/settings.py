@@ -59,6 +59,8 @@ try:
     COOKIEBANNER_AGE = config.COOKIEBANNER_AGE
     COOKIEBANNER_SECURE = config.COOKIEBANNER_SECURE
 
+    # PRESHARED SURVEY KEY
+    PRESHARED_SURVEY_KEY = config.PRESHARED_SURVEY_KEY
 
 except AttributeError as e:
     print("Please check you configuration file for the missing configuration variable:")

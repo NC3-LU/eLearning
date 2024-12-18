@@ -1,4 +1,6 @@
+import hashlib
 import os
+from datetime import datetime
 
 from django import template
 from django.conf import settings
@@ -72,3 +74,12 @@ def accumulate_quiz_index(value, arg):
 @register.simple_tag
 def settings_value(name):
     return getattr(settings, name, "")
+
+
+@register.simple_tag
+def generate_survey_token():
+    preshared_key = getattr(settings, "PRESHARED_SURVEY_KEY", "")
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    data = f"{preshared_key}{current_date}"
+    token = hashlib.sha256(data.encode()).hexdigest()
+    return token
