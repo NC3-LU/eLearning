@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+if [ "$#" -gt 0 ]; then
+    exec "$@"
+fi
+
 python manage.py migrate
 python manage.py compilemessages
 python manage.py collectstatic --clear --noinput
