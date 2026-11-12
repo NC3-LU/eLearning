@@ -51,6 +51,30 @@ Create a database, database user:
     postgres=# alter database <database> owner to <username>;
     ALTER DATABASE
 
+Alternatively, run the complete Docker stack defined in
+``docker/docker-compose.yml``. It includes PostgreSQL 18.6, the Alto web
+application, Nginx, and the separately packaged theme:
+
+.. code-block:: bash
+
+    $ docker compose -f docker/docker-compose.yml up --build -d
+    $ docker compose -f docker/docker-compose.yml exec db psql --version
+
+The application is exposed on ``127.0.0.1:8000`` by default. PostgreSQL is
+available only to the Docker services and stores its data in the
+``postgres_data`` volume. See ``docker/README.md`` for configuration, initial
+course data loading, and theme update instructions. The provided passwords
+and keys are intended for local development only and must be replaced in
+production.
+
+.. note::
+
+    This service creates a new PostgreSQL 18 data volume; it does not upgrade
+    an existing PostgreSQL 16 database. Back up and restore the existing
+    database before switching. The Docker database isn't published on the
+    host, so it can run alongside a host PostgreSQL service without a port
+    conflict.
+
 
 E-Learning Platform
 ----------------------------------------------------------------

@@ -8,7 +8,7 @@ Generally speaking, requirements are the following:
 
 - A GNU/Linux distribution. Tested on Ubuntu 22.04 LTS and 24.04 LTS ;
 - Python version >= 3.12.x ;
-- A PostgreSQL server for persistent storage. Tested with PostgreSQL 15.3 and 15.5;
+- A PostgreSQL server for persistent storage. Django supports PostgreSQL 15 or newer; the Docker stack pins PostgreSQL 18.6;
 
 For the Web server you can use Gunicorn, uWSGI, Apache or Nginx.
 

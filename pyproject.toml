@@ -23,6 +23,7 @@ django-import-export = ">=4.4.0,<5"
 django-parler = ">=2.4,<3"
 django-cookiebanner = ">=0.2.8,<0.3"
 weasyprint = ">=70.0,<71"
+gunicorn = ">=23,<24"
 
 
 [tool.poetry.group.dev.dependencies]

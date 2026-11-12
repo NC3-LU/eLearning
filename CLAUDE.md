@@ -122,6 +122,7 @@ theme/              Separate git repository: templates, static files, locale, se
 locale/             Application translations (French and German)
 docs/               Sphinx installation and operating documentation
 scripts/            Update, data dump, and data load scripts
+docker/             Web, Nginx, PostgreSQL 18, and Compose configuration
 ```
 
 ## Domain Model and Course Flow
@@ -187,6 +188,11 @@ When changing templates, CSS, JavaScript, images, PDF layouts, or theme translat
 2. Make and review the change inside the theme repository.
 3. Commit theme changes from `theme/`, not from the ALTO repository.
 4. Keep backend expectations and theme templates compatible.
+
+The theme also has its own `theme/docker/Dockerfile`. The Docker Compose
+stack builds it separately and shares its content with the web container
+through the `theme_data` volume. See `docker/README.md` before changing
+the Docker theme update workflow.
 
 Root `npm install` creates `static/npm_components` as a link to `node_modules`. Compile
 theme SCSS with:

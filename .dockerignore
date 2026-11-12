@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+__pycache__
+*.py[cod]
+*.sqlite3
+docker/volumes
+docs/_build
+elearning/config.py
+elearning/static
+logs
+node_modules
+sent_emails
+static
+theme
+theme_old
