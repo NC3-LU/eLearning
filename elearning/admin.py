@@ -143,7 +143,7 @@ class LevelAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
         "name",
         "description",
     )
-    resource_class = LevelsResource
+    resource_classes = [LevelsResource]
     ordering = ["index"]
 
 
@@ -164,7 +164,7 @@ class CategoryAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin
     )
     fields = ["index", "name"]
     list_display_links = ["index", "name"]
-    resource_class = CategoriesResource
+    resource_classes = [CategoriesResource]
     ordering = ["index"]
 
 
@@ -184,7 +184,7 @@ class AnswerChoiceAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionM
         "name",
         "tooltip",
     )
-    resource_class = AnswerChoicesResource
+    resource_classes = [AnswerChoicesResource]
 
 
 class MediasResource(resources.ModelResource):
@@ -204,7 +204,7 @@ class MediaAdmin(ImportExportModelAdmin, ExportActionMixin, admin.ModelAdmin):
     list_display = ("name", "path", "m_type")
     search_fields = ("name", "m_type")
     fields = ("name", "path", "m_type")
-    resource_class = MediasResource
+    resource_classes = [MediasResource]
 
 
 class TextsResource(TranslationImportMixin, resources.ModelResource):
@@ -225,7 +225,7 @@ class TextAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = ("name", "t_type")
     search_fields = ("name", "t_type")
     fields = ("name", "t_type", "description", "hyperlink")
-    resource_class = TextsResource
+    resource_classes = [TextsResource]
 
 
 class QuestionsResource(TranslationImportMixin, resources.ModelResource):
@@ -308,7 +308,7 @@ class QuestionAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin
         questionMediaInline,
         levelSequenceInline,
     )
-    resource_class = QuestionsResource
+    resource_classes = [QuestionsResource]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -389,7 +389,7 @@ class ExplanationAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMi
     fields = ("name", "question")
     list_filter = (LevelListFilter,)
     inlines = (explanationMediaInline, explanationTextInline, levelSequenceInline)
-    resource_class = ExplanationResource
+    resource_classes = [ExplanationResource]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -452,7 +452,7 @@ class QuizAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     fields = ("name", "tooltip")
     list_filter = (LevelListFilter,)
     inlines = (quizQuestionsInline,)
-    resource_class = QuizResource
+    resource_classes = [QuizResource]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -532,7 +532,7 @@ class ContextAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin)
         levelSequenceInline,
     )
     list_filter = (LevelListFilter,)
-    resource_class = ContextsResource
+    resource_classes = [ContextsResource]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -585,7 +585,7 @@ class ResourcesResource(TranslationImportMixin, resources.ModelResource):
 class ResourceAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionMixin):
     list_display = ("name", "level", "resourceType", "description")
     list_filter = ("level", "resourceType")
-    resource_class = ResourcesResource
+    resource_classes = [ResourcesResource]
     ordering = ["level__index"]
 
 
@@ -602,7 +602,7 @@ class ResourceTypeAdmin(ImportExportModelAdmin, TranslatableAdmin, ExportActionM
     list_display = ("index", "name")
     list_display_links = ["index", "name"]
     ordering = ["index"]
-    resource_class = ResourcesResourceType
+    resource_classes = [ResourcesResourceType]
 
 
 class LevelSequenceAdminResource(resources.ModelResource):

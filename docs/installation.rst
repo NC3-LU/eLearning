@@ -171,7 +171,7 @@ server. Install Apache and this module.
 
     .. code-block:: bash
 
-        LoadFile /home/<user>/.pyenv/versions/3.11.0/lib/libpython3.11.so
+        LoadFile /home/<user>/.pyenv/versions/3.13.0/lib/libpython3.13.so
         LoadModule wsgi_module /usr/lib/apache2/modules/mod_wsgi.so
 
 
@@ -213,7 +213,7 @@ For <virtualenv_path> check using :
         ServerAdmin info@nc3.lu
         ServerName elearning.nc3.lu
         DocumentRoot <install_path>
-        WSGIDaemonProcess elearning python-path=<install_path> python-home=<virtualenv_path>/lib/python3.10/site-packages/
+        WSGIDaemonProcess elearning python-path=<install_path> python-home=<virtualenv_path>/lib/python3.13/site-packages/
         WSGIProcessGroup elearning
         WSGIScriptAlias / <install_path>/elearning/wsgi.py
 

@@ -1,6 +1,5 @@
 from django import forms
 from django.template.loader import render_to_string
-from django.utils.html import format_html
 from import_export import widgets
 from parler.models import TranslationDoesNotExist
 
@@ -37,7 +36,7 @@ class ChoicesWidget(widgets.Widget):
     def clean(self, value, row=None, *args, **kwargs):
         return self.revert_choices.get(value, value) if value else None
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return self.choices.get(value, "")
 
 
@@ -73,7 +72,7 @@ class ButtonRadioSelect(forms.RadioSelect):
             "django/forms/widgets/button_radio_option.html", context
         )
 
-        return format_html(rendered_html)
+        return rendered_html
 
 
 class SortingOptions(forms.SelectMultiple):
@@ -96,4 +95,4 @@ class SortingOptions(forms.SelectMultiple):
             {"choices": choices, "is_answered": is_answered},
         )
 
-        return format_html(rendered_html)
+        return rendered_html
