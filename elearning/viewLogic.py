@@ -1,7 +1,6 @@
 import os
 from collections import Counter, OrderedDict
 from decimal import ROUND_HALF_UP, Decimal
-from typing import List
 from uuid import UUID
 
 from django.conf import settings
@@ -208,7 +207,7 @@ def set_score_course(
     user_score.save()
 
 
-def get_slides_content(user: User, level: Level, position: int, direction: str) -> List:
+def get_slides_content(user: User, level: Level, position: int, direction: str) -> list:
     slides = []
     if not direction:
         level_sequence = LevelSequence.objects.filter(
@@ -352,7 +351,7 @@ def items_before_position(ordered_dict: OrderedDict, current_position: int) -> t
     return total_nb_questions, count
 
 
-def set_status_carousel_controls(level: Level, position: int) -> List[bool]:
+def set_status_carousel_controls(level: Level, position: int) -> list[bool]:
     try:
         sequence_before = (
             LevelSequence.objects.filter(level=level, position__lt=position)
@@ -432,7 +431,7 @@ def get_resources(user: User, resource_type_id: int, level_id: int):
     return all_resources
 
 
-def get_questions_and_quizzes(user: User, level: Level) -> List:
+def get_questions_and_quizzes(user: User, level: Level) -> list:
     questions_and_quizzes = []
     question_content_type = ContentType.objects.get_for_model(Question)
     level_sequence = LevelSequence.objects.filter(
