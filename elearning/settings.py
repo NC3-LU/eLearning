@@ -245,6 +245,11 @@ STATICFILES_DIRS = [
     STATIC_THEME_DIR,
 ]
 
+STATICFILES_FINDERS = [
+    "elearning.staticfiles.LegacyLeadingSlashFileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+]
+
 # Used to get an access to the header on JS side.
 CORS_EXPOSE_HEADERS = [
     "content-disposition",

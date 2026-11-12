@@ -1,29 +1,40 @@
 #!/bin/bash
 
+set -euo pipefail
+
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-# Define the directory to check
-data_dir="theme/data"
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
+DATA_DIR="$PROJECT_ROOT/theme/data"
+DATA_FILE="$DATA_DIR/data.json"
 
-# Ensure the data directory exists
-if [ ! -d "$data_dir" ]; then
-    echo "Error: The directory $data_dir does not exist."
-    echo "Please make sure you are running the script from the project's root directory (./scripts/dump_data.sh)"
-    echo "or verify if the 'theme' folder exists in the project."
+if [ ! -d "$DATA_DIR" ]; then
+    echo "Error: The directory $DATA_DIR does not exist."
+    echo "Please make sure the theme is installed before dumping data."
     exit 1
 fi
 
-# Perform the dumpdata command
-poetry run python manage.py dumpdata elearning --indent=4  --exclude=elearning.answer --exclude=elearning.knowledge --exclude=elearning.score --exclude=elearning.user > "$data_dir/data.json"
+TEMP_FILE=$(mktemp "$DATA_DIR/.data.json.XXXXXX")
+trap 'rm -f "$TEMP_FILE"' EXIT
 
-# Define the path to the JSON file
-json_file="$data_dir/data.json"
+cd "$PROJECT_ROOT"
+poetry run python manage.py dumpdata elearning \
+    --natural-foreign \
+    --indent 4 \
+    --exclude elearning.answer \
+    --exclude elearning.knowledge \
+    --exclude elearning.score \
+    --exclude elearning.user \
+    --output "$TEMP_FILE"
 
-# Replace $(pwd) with <install_path> in the JSON file
-sed -i "s|$(pwd)|<install_path>|g" "$json_file"
+sed -i "s|$PROJECT_ROOT|<install_path>|g" "$TEMP_FILE"
+chmod 644 "$TEMP_FILE"
+mv "$TEMP_FILE" "$DATA_FILE"
+trap - EXIT
 
-echo "--- Dump completed ---"
-echo -e "${GREEN}You're now ready to push the data.json file.${NC} For example:"
+echo "--- Dump finished ---"
+echo -e "${GREEN}The portable data fixture is ready.${NC}"
 echo "      cd theme"
-echo "      git push -am \"[data]Updated dump json file\""
+echo "      git add data/data.json"

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Made course data exports portable across databases by using natural foreign keys and atomic fixture replacement.
 - Raised the minimum supported Python version from 3.10 to 3.12 and upgraded Django from 4.2 to the `>=6.0,<7` release line, currently locked at Django 6.1.3.
 - Updated the Django ecosystem packages, including django-bootstrap5, django-cors-headers, django-debug-toolbar, django-formtools, django-import-export, django-parler, DRF Spectacular, and WeasyPrint.
 - Migrated application settings, custom widgets, and admin import/export resources to their supported Django 6 and package APIs.
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Restored course rendering for legacy theme static paths that begin with a slash.
 - Restored page rendering with django-bootstrap5 26 by updating the theme's Bootstrap setting usage.
 - Replaced the removed Django `length_is` template filter in generated report templates.
 

@@ -1,46 +1,28 @@
 #!/bin/bash
 
+set -euo pipefail
+
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-# Define the directory to check
-data_dir="theme/data"
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
+DATA_FILE="$PROJECT_ROOT/theme/data/data.json"
 
-# Ensure the data directory exists
-if [ ! -d "$data_dir" ]; then
-    echo "Error: The directory $data_dir does not exist."
-    echo "Please make sure you are running the script from the project's root directory (./scripts/load_data.sh)"
-    echo "or verify if the 'theme' folder exists in the project."
+if [ ! -f "$DATA_FILE" ]; then
+    echo "Error: The data file $DATA_FILE does not exist."
+    echo "Please make sure the theme is installed before loading data."
     exit 1
 fi
 
+TEMP_FILE=$(mktemp --suffix=.json)
+trap 'rm -f "$TEMP_FILE"' EXIT
 
+sed "s|<install_path>|$PROJECT_ROOT|g" "$DATA_FILE" > "$TEMP_FILE"
 
-# Find a JSON file in the directory
-json_file=$(find "$data_dir" -maxdepth 1 -name "*.json" | head -n 1)
+cd "$PROJECT_ROOT"
+poetry run python manage.py loaddata "$TEMP_FILE"
 
-# Check if a JSON file was found
-if [ -n "$json_file" ]; then
-    new_path=$(pwd)
-
-    # Create a temporary file with a .json extension to store the modified JSON content
-    temp_file=$(mktemp --suffix=.json)
-
-    # Use sed to replace <install_path> with the new path and write to the temporary file
-    sed "s|<install_path>|$new_path|g" "$json_file" > "$temp_file"
-
-    # Run the loaddata command using the temporary file
-    poetry run python manage.py loaddata "$temp_file"
-
-    # Clean up the temporary file
-    rm "$temp_file"
-
-    echo "--- Load finished ---"
-    echo -e "${GREEN}You can now restart the service.${NC} Example:"
-    echo "    sudo systemctl restart apache2.service"
-
-else
-    # Output error message if no JSON file is found
-    echo "Error: No JSON file found in $data_dir."
-    exit 1
-fi
+echo "--- Load finished ---"
+echo -e "${GREEN}You can now restart the service.${NC} Example:"
+echo "    sudo systemctl restart apache2.service"
