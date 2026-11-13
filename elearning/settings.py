@@ -68,15 +68,6 @@ except AttributeError as e:
     exit(1)
 
 try:
-    CORS_ALLOWED_ORIGINS = config.CORS_ALLOWED_ORIGINS
-    CORS_ALLOWED_ORIGIN_REGEXES = config.CORS_ALLOWED_ORIGIN_REGEXES
-    CORS_ALLOW_METHODS = config.CORS_ALLOW_METHODS
-except AttributeError:
-    CORS_ALLOWED_ORIGINS = []
-    CORS_ALLOWED_ORIGIN_REGEXES = []
-    CORS_ALLOW_METHODS = []
-
-try:
     if LOG_DIRECTORY:
         # if not logging in stdout
         os.makedirs(LOG_DIRECTORY, exist_ok=True)
@@ -98,13 +89,9 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "django.contrib.sites",
     "elearning",
-    "drf_spectacular",
-    "drf_spectacular_sidecar",  # required for Django collectstatic discovery
-    "corsheaders",
     "django_bootstrap5",
     "import_export",
     "parler",
-    "formtools",
     "cookiebanner",
 ]
 
@@ -115,7 +102,6 @@ context_processors = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -248,11 +234,6 @@ STATICFILES_DIRS = [
 STATICFILES_FINDERS = [
     "elearning.staticfiles.LegacyLeadingSlashFileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-]
-
-# Used to get an access to the header on JS side.
-CORS_EXPOSE_HEADERS = [
-    "content-disposition",
 ]
 
 # Default settings

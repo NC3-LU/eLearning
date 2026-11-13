@@ -27,9 +27,9 @@ course progress.
 | Framework | Django | `>=6.0,<7` |
 | Database | PostgreSQL | required |
 | Package manager | Poetry | lock file committed |
-| Translations | django-parler | `>=2.3,<3` |
-| Admin data exchange | django-import-export | `>=3.2,<4` |
-| PDF generation | WeasyPrint | `>=61.1,<62` |
+| Translations | django-parler | `>=2.4,<3` |
+| Admin data exchange | django-import-export | `>=4.4,<5` |
+| PDF generation | WeasyPrint | `>=70,<71` |
 | Frontend | Bootstrap 5, jQuery, Chart.js | npm-managed |
 | Node.js / npm | Node 20 / npm 10.8 | from `package.json` |
 | Formatting | Black + isort | pre-commit |
@@ -94,7 +94,6 @@ Configuration values consumed by settings include:
 - `LANGUAGE_CODE`, `LANGUAGES`, `PARLER_DEFAULT_LANGUAGE_CODE`, and `PARLER_LANGUAGES`
 - cookie and session settings
 - `PRESHARED_SURVEY_KEY`
-- optional CORS origins, regular expressions, and methods
 
 Never copy development secrets into production. Production must use a new Django secret
 key and Fernet-compatible hash key, `DEBUG = False`, secure cookies, appropriate hosts,
@@ -255,9 +254,9 @@ The dump intentionally excludes learner answers, knowledge, scores, and users.
 
 ## API
 
-There is currently no application API. DRF Spectacular and its sidecar are installed,
-but `urls.py` defines ordinary Django views only; there are no serializers, viewsets, or
-API routers. Adding an API is an architectural change and requires explicit approval.
+There is currently no application API. `urls.py` defines ordinary Django views only;
+there are no serializers, viewsets, or API routers. Adding an API is an architectural
+change and requires explicit approval.
 
 ## Database and Migrations
 

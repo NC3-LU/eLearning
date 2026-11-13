@@ -134,7 +134,7 @@ Here is an example for the Fernet hash key (``HASH_KEY``):
 
 .. code-block:: bash
 
-    $ python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key())'
+    $ python -c 'import base64, secrets; print(base64.urlsafe_b64encode(secrets.token_bytes(32)))'
     b'Xaj5lFGAPiy2Ovzi4YmlWh-s4HHikFV4AswilOPPYN8='
 
 

@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Made course data exports portable across databases by using natural foreign keys and atomic fixture replacement.
 - Raised the minimum supported Python version from 3.10 to 3.12 and upgraded Django from 4.2 to the `>=6.0,<7` release line, currently locked at Django 6.1.3.
-- Updated the Django ecosystem packages, including django-bootstrap5, django-cors-headers, django-debug-toolbar, django-formtools, django-import-export, django-parler, DRF Spectacular, and WeasyPrint.
+- Updated the actively used Django ecosystem packages, including django-bootstrap5, django-debug-toolbar, django-import-export, django-parler, and WeasyPrint.
+- Removed unused runtime, development, and documentation dependencies and their obsolete configuration.
 - Migrated application settings, custom widgets, and admin import/export resources to their supported Django 6 and package APIs.
 - Added a migration preserving translated-model uniqueness constraints with django-parler 2.4.
 - Updated CI, pre-commit checks, installation documentation, and project instructions for Python 3.12+ and Django 6.
